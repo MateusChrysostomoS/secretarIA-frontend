@@ -1,0 +1,615 @@
+/* =====================================================================
+   Portal shell + shared portal UI (admin / doctor).
+   Uses brand-ds.css tokens only — no new palette. Theme-aware (light/dark).
+   ===================================================================== */
+
+.portal {
+  min-height: 100vh;
+  background: var(--page);
+  color: var(--ink);
+}
+
+/* --- Header --- */
+.portal-header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 64px; /* sidebar/main offset keys off this */
+  padding: 0 24px;
+  background: color-mix(in oklab, var(--page) 86%, transparent);
+  backdrop-filter: saturate(140%) blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+/* Non-sticky variant for the full-viewport product screens (/secretaria/*), whose
+   own height:100vh flex column already keeps the header pinned at the top. */
+.portal-header--flow {
+  position: relative;
+  flex-shrink: 0;
+}
+/* Brand + product lockup travel together on the left. */
+.portal-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+.portal-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.portal-wordmark {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  line-height: 1;
+}
+.portal-label {
+  margin-left: 2px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand-ink);
+  background: var(--brand-tint);
+  border: 1px solid color-mix(in oklab, var(--brand) 22%, transparent);
+}
+.portal-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.portal-user {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+}
+.portal-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-ink);
+  background: var(--brand-tint);
+  flex-shrink: 0;
+}
+.portal-user-label {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- Banner (full-width notice under the header, e.g. an admin error) --- */
+.portal-banner {
+  position: sticky;
+  top: 64px; /* sits directly under the sticky header */
+  z-index: 55;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 24px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--brand-ink);
+  background: var(--brand-tint);
+  border-bottom: 1px solid color-mix(in oklab, var(--brand) 22%, transparent);
+}
+.portal-banner svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+.portal-banner-strong {
+  font-weight: 700;
+}
+.portal-banner-spacer {
+  margin-left: auto;
+}
+.portal-banner--error {
+  color: var(--al-red-ink);
+  background: var(--al-red-bg);
+  border-bottom-color: var(--al-red-bd);
+}
+
+/* --- Body layout --- */
+.portal-body {
+  display: grid;
+  /* 250px, not 232px: "Configurações secretarIA" is the longest nav label and
+     needs ~163px of text width to stay on one line. */
+  grid-template-columns: 250px 1fr;
+  align-items: start;
+}
+.portal-sidebar {
+  position: sticky;
+  top: 64px; /* header height */
+  height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 18px 14px;
+  border-right: 1px solid var(--line);
+  overflow-y: auto;
+}
+.portal-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 13px;
+  border-radius: var(--r-md);
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  transition: all 0.15s var(--ease);
+}
+.portal-nav-item svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.portal-nav-item:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.portal-nav-item.active {
+  background: var(--brand-tint);
+  color: var(--brand-ink);
+  font-weight: 600;
+}
+.portal-main {
+  min-width: 0; /* allow tables to shrink/scroll inside the grid cell */
+  padding: 30px 32px 64px;
+  max-width: 1100px;
+}
+
+/* --- Page head --- */
+.portal-page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.portal-page-head h1 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(26px, 3vw, 34px);
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  color: var(--ink);
+}
+.portal-page-head .sub {
+  margin-top: 6px;
+  font-size: 14.5px;
+  color: var(--ink-soft);
+  max-width: 64ch;
+}
+
+/* --- Stat cards --- */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 20px 22px;
+  box-shadow: var(--shadow-sm);
+}
+.stat-card .stat-ico {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--brand-tint);
+  color: var(--brand);
+  margin-bottom: 14px;
+}
+.stat-card .stat-ico svg {
+  width: 20px;
+  height: 20px;
+}
+.stat-card .stat-value {
+  font-family: var(--font-serif);
+  font-size: 36px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ink);
+}
+.stat-card .stat-label {
+  margin-top: 7px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+/* --- Table --- */
+.ptable-wrap {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+}
+.ptable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.ptable th {
+  text-align: left;
+  padding: 13px 18px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.ptable td {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  vertical-align: middle;
+}
+.ptable tr:last-child td {
+  border-bottom: none;
+}
+.ptable tbody tr.clickable {
+  cursor: pointer;
+  transition: background 0.12s var(--ease);
+}
+.ptable tbody tr.clickable:hover {
+  background: var(--surface-2);
+}
+.ptable .cell-muted {
+  color: var(--ink-soft);
+}
+.ptable .cell-strong {
+  font-weight: 600;
+}
+
+/* --- Status / product badges --- */
+.pbadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.pbadge--green {
+  background: var(--al-green-bg);
+  color: var(--al-green-ink);
+  border: 1px solid var(--al-green-bd);
+}
+.pbadge--amber {
+  background: var(--al-amber-bg);
+  color: var(--al-amber-ink);
+  border: 1px solid var(--al-amber-bd);
+}
+.pbadge--red {
+  background: var(--al-red-bg);
+  color: var(--al-red-ink);
+  border: 1px solid var(--al-red-bd);
+}
+.pbadge--blue {
+  background: var(--st-blue-bg);
+  color: var(--st-blue-ink);
+  border: 1px solid var(--st-blue-bd);
+}
+.pbadge--muted {
+  background: var(--surface-inset);
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+}
+/* Compact size modifier — stacks with a tone class, e.g. for a secondary
+   "+ Gestor" tag sitting next to the primary role badge in a table cell. */
+.pbadge--sm {
+  padding: 1px 8px;
+  font-size: 11px;
+}
+/* product on/off marks */
+.pmark {
+  font-weight: 700;
+}
+.pmark--on {
+  color: var(--al-green-ink);
+}
+.pmark--off {
+  color: var(--ink-faint);
+}
+
+/* --- Toolbar / filters --- */
+.portal-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.portal-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  transition: all 0.15s var(--ease);
+}
+.portal-filter-pill:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.portal-filter-pill.active {
+  background: var(--brand-tint);
+  color: var(--brand-ink);
+  border-color: color-mix(in oklab, var(--brand) 28%, transparent);
+}
+
+/* --- States --- */
+.portal-state {
+  padding: 56px 24px;
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 14.5px;
+}
+.portal-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 80px 24px;
+  color: var(--ink-soft);
+}
+.portal-spinner {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 3px solid var(--line-strong);
+  border-top-color: var(--brand);
+  animation: portal-spin 0.7s linear infinite;
+}
+@keyframes portal-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.portal-error {
+  padding: 14px 16px;
+  border-radius: var(--r-md);
+  background: var(--al-red-bg);
+  color: var(--al-red-ink);
+  border: 1px solid var(--al-red-bd);
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+/* --- Forms (modal + inline) --- */
+.pfield {
+  margin-bottom: 16px;
+}
+.pfield label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 7px;
+}
+.pfield input,
+.pfield select,
+.pfield textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line-strong);
+  background: var(--surface-inset);
+  color: var(--ink);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.pfield input:focus,
+.pfield select:focus,
+.pfield textarea:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand) 22%, transparent);
+}
+/* Custom chevron. The native arrow sits flush against the right border while the text
+   is inset 13px, which reads as lopsided on a full-width select — this matches the
+   arrow's inset to the field padding. Colour is baked per theme because a data: URI
+   cannot inherit currentColor. */
+.pfield select {
+  appearance: none;
+  -webkit-appearance: none;
+  /* 13px inset + 14px glyph + 9px breathing room, so a long option never runs under it */
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235b6a64' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9.5l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 13px center;
+  background-size: 14px 14px;
+  cursor: pointer;
+}
+[data-theme="dark"] .pfield select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239aa4ae' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9.5l6 6 6-6'/%3E%3C/svg%3E");
+}
+.pfield textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* --- Modal --- */
+.portal-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(5, 8, 12, 0.55);
+  backdrop-filter: blur(5px);
+  animation: portal-fade 0.16s ease-out;
+}
+@keyframes portal-fade {
+  from {
+    opacity: 0;
+  }
+}
+.portal-modal-card {
+  width: 100%;
+  max-width: 460px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-xl);
+  padding: 26px;
+  box-shadow: var(--shadow-xl);
+  animation: portal-scale 0.2s var(--ease);
+}
+@keyframes portal-scale {
+  from {
+    transform: scale(0.97);
+    opacity: 0;
+  }
+}
+.portal-modal-card h2 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 21px;
+  color: var(--ink);
+  margin-bottom: 18px;
+}
+.portal-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+/* --- Pagination --- */
+.portal-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.portal-pagination .pg-btns {
+  display: flex;
+  gap: 8px;
+}
+
+/* --- Quick-link cards (doctor dashboard) --- */
+.portal-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+.portal-link-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 22px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.16s var(--ease);
+}
+.portal-link-card:hover {
+  border-color: color-mix(in oklab, var(--brand) 30%, transparent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+.portal-link-card .feat-ico {
+  width: 40px;
+  height: 40px;
+}
+.portal-link-card h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--ink);
+}
+.portal-link-card p {
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+/* --- Responsive: drop the portal pill first so the product lockup survives --- */
+@media (max-width: 700px) {
+  .portal-header {
+    gap: 10px;
+    padding: 0 14px;
+  }
+  .portal-label {
+    display: none;
+  }
+  .portal-brand-row {
+    gap: 10px;
+  }
+  /* Mode-switch buttons ("Modo médico" / "Voltar ao admin") go icon-only: their
+     labels are the widest thing in the header cluster. The button keeps its
+     title attribute, so the meaning is still reachable. */
+  .portal-header-btn-label {
+    display: none;
+  }
+}
+
+/* --- Responsive: collapse the sidebar to a scrollable top row --- */
+@media (max-width: 820px) {
+  .portal-body {
+    grid-template-columns: 1fr;
+  }
+  .portal-sidebar {
+    position: static;
+    height: auto;
+    flex-direction: row;
+    overflow-x: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    padding: 10px 14px;
+  }
+  .portal-nav-item span {
+    white-space: nowrap;
+  }
+  .portal-main {
+    padding: 22px 18px 48px;
+  }
+  .portal-user-label {
+    display: none;
+  }
+}

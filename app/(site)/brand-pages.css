@@ -1,0 +1,71 @@
+/* =====================================================================
+   Brain (site) page-local styles — the per-page <style> rules the design
+   pages defined on top of brand-ds.css (mobile nav, Brain-home hero
+   visuals, secretarIA-home steps/personalization). Loaded for all (site)
+   routes via the group layout. The /app dashboard shell keeps its own
+   dashboard-shell.css; the calendar/config apps use inline styles.
+   ===================================================================== */
+
+/* ---- mobile nav (BrandHeader) ---- */
+.mnav { display: none; }
+.mnav.open { display: block; border-top: 1px solid var(--line); padding: 10px 0 16px; background: var(--page); }
+.mnav a { display: block; padding: 11px 0; font-size: 15.5px; font-weight: 500; color: var(--ink-soft); }
+.mnav a:hover { color: var(--ink); }
+
+/* ---- Brain home — hero A visual + product mini-cards ---- */
+.hero-visual { display: flex; justify-content: center; }
+.prod-stack { display: flex; flex-direction: column; gap: 18px; width: 100%; max-width: 420px; }
+.mini-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 18px 20px; box-shadow: var(--shadow-md); }
+.mini-secretaria { background: var(--wa-screen); }
+.mini-head { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 12px; }
+.mini-dot { width: 8px; height: 8px; border-radius: 99px; }
+.mini-line { font-size: 14px; color: var(--ink); margin-bottom: 12px; }
+.mini-line .mk { font-family: var(--font-serif); font-style: italic; color: var(--brand); margin-right: 6px; font-weight: 600; }
+.mini-alerts { display: flex; flex-direction: column; gap: 7px; }
+
+/* ---- Brain home — products ---- */
+.prod-grid { gap: 26px; }
+.prod-card { display: flex; flex-direction: column; }
+.prod-top { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.prod-badge { align-self: flex-start; font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--brand-ink); background: var(--brand-tint); padding: 5px 11px; border-radius: 999px; }
+.prod-h { font-family: var(--font-serif); font-size: 34px; font-weight: 500; letter-spacing: -.01em; }
+.prod-lead { font-size: 15px; line-height: 1.6; }
+.alert-strip { display: flex; flex-direction: column; gap: 7px; }
+
+/* ---- Brain home — hero B duo (kept available; hero A ships) ---- */
+.prod-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 780px; margin: 46px auto 0; }
+.duo-card { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-xl); padding: 26px; box-shadow: var(--shadow-sm); transition: all .2s var(--ease); }
+.duo-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--brand); }
+.duo-k { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); }
+.duo-name { font-family: var(--font-serif); font-size: 28px; font-weight: 500; }
+.duo-desc { font-size: 14px; color: var(--ink-soft); line-height: 1.5; }
+.duo-go { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 700; color: var(--brand); margin-top: 4px; }
+.duo-go svg { width: 15px; height: 15px; }
+
+/* ---- Brain home — hero C workflow (kept available) ---- */
+.flow { display: flex; align-items: stretch; gap: 14px; margin: 44px 0 32px; }
+.flow-step { flex: 1; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-xl); padding: 24px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 10px; position: relative; }
+.flow-step .feat-ico { margin-top: 4px; }
+.flow-step strong { font-family: var(--font-serif); font-size: 18px; font-weight: 600; line-height: 1.2; }
+.flow-step p { font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; }
+.flow-num { font-family: var(--font-serif); font-size: 13px; font-weight: 600; color: var(--ink-faint); letter-spacing: .08em; }
+.flow-tag { align-self: flex-start; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--brand-ink); background: var(--brand-tint); padding: 3px 9px; border-radius: 999px; }
+.flow-arrow { display: flex; align-items: center; color: var(--ink-faint); }
+.flow-arrow svg { width: 22px; height: 22px; }
+
+/* ---- secretarIA home — steps, personalization, features ---- */
+.steps { gap: 20px; }
+.step { padding: 4px; }
+.behav-arrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--brand); margin-bottom: 12px; }
+.behav-arrow svg { width: 16px; height: 16px; }
+.cfg-field { display: flex; flex-direction: column; gap: 7px; }
+.cfg-label { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); }
+.cfg-val { font-size: 14px; line-height: 1.5; color: var(--ink); background: var(--surface-inset); border: 1px solid var(--line); border-radius: 11px; padding: 11px 13px; }
+.cfg-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.feats .card { display: flex; flex-direction: column; }
+
+/* ---- responsive ---- */
+@media (max-width: 1080px) { .flow { flex-direction: column; } .flow-arrow { transform: rotate(90deg); align-self: center; } }
+@media (max-width: 860px) { .steps { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 680px) { .prod-duo { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .steps { grid-template-columns: 1fr; } }

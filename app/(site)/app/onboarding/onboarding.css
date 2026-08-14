@@ -1,0 +1,165 @@
+/* =====================================================================
+   /app/onboarding — page-local styles layered on top of ../dashboard-shell.css
+   (.panel, .panel-head, .badge, .dash-header) and global brand-ds.css tokens.
+   Route-scoped like its sibling ../billing/billing.css.
+   ===================================================================== */
+
+/* --- State timeline (aquecimento -> conectado -> ativo) --- */
+.onb-timeline {
+  display: flex;
+  align-items: center;
+  margin: 22px 0 28px;
+}
+.onb-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+.onb-node-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--surface-2);
+  color: var(--ink-faint);
+  border: 2px solid var(--line-strong);
+  transition: all 0.18s var(--ease);
+}
+.onb-node.done .onb-node-dot {
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+}
+.onb-node.current .onb-node-dot {
+  background: var(--brand-tint);
+  color: var(--brand-ink);
+  border-color: var(--brand);
+}
+.onb-node-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+.onb-node.done .onb-node-label,
+.onb-node.current .onb-node-label {
+  color: var(--ink);
+}
+.onb-connector {
+  flex: 1;
+  height: 2px;
+  min-width: 24px;
+  margin: 0 8px 22px;
+  background: var(--line-strong);
+}
+.onb-connector.done {
+  background: var(--brand);
+}
+
+/* --- Blocker / status cards --- */
+.onb-card {
+  padding: 18px 20px;
+  border-radius: 14px;
+  margin: 4px 0 20px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.onb-card.warn {
+  background: var(--al-amber-bg);
+  border: 1px solid var(--al-amber-bd);
+  color: var(--al-amber-ink);
+}
+.onb-card.neutral {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+}
+.onb-card.success {
+  background: var(--al-green-bg);
+  border: 1px solid var(--al-green-bd);
+  color: var(--al-green-ink);
+}
+.onb-card-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.onb-attempt-line {
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  margin-top: 12px;
+}
+
+.onb-success-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.onb-success-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--al-green-bd);
+  color: var(--al-green-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* --- Owner-only pause toggles --- */
+.onb-switch {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  border-radius: 99px;
+  background: var(--line-strong);
+  flex-shrink: 0;
+  border: none;
+  cursor: pointer;
+  transition: background 0.18s var(--ease);
+  opacity: 1;
+}
+.onb-switch.on {
+  background: var(--brand);
+}
+.onb-switch:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.onb-switch-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 99px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.18s var(--ease);
+}
+.onb-switch.on .onb-switch-thumb {
+  transform: translateX(18px);
+}
+.onb-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.onb-toggle-row + .onb-toggle-row {
+  margin-top: 8px;
+}

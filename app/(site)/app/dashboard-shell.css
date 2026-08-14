@@ -1,0 +1,101 @@
+/* =====================================================================
+   Unified dashboard shell (/app) — page-local styles from dashboard.html,
+   on top of brand-ds.css. Route-scoped: imported only by the /app page so
+   its generic class names (.search, .seg, .badge, .panel, .row-card…)
+   never collide with the ported PreCheck dashboard at /dashboard.
+   ===================================================================== */
+body { min-height: 100vh; background: var(--page); }
+
+.dash-header { position: sticky; top: 0; z-index: 50; background: var(--page-grad); border-bottom: 1px solid var(--line); }
+.dash-nav { display: flex; align-items: center; gap: 22px; height: 64px; }
+.prod-tabs { display: inline-flex; gap: 3px; padding: 4px; background: var(--surface-2); border-radius: 999px; border: 1px solid var(--line); }
+.prod-tab { display: inline-flex; align-items: center; gap: 8px; padding: 8px 17px; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--ink-soft); transition: all .16s var(--ease); }
+.prod-tab svg { width: 16px; height: 16px; }
+.prod-tab.on { background: var(--brand); color: #fff; box-shadow: var(--shadow-sm); }
+.prod-tab[hidden] { display: none; }
+.dash-user { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.uava { width: 32px; height: 32px; border-radius: 99px; background: var(--brand-tint); color: var(--brand-ink); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; border: 1px solid var(--line); }
+.uname { font-size: 14px; font-weight: 600; }
+.dash-main { max-width: 1080px; margin: 0 auto; padding: 36px 28px 80px; }
+
+.panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
+.panel-title { font-family: var(--font-serif); font-size: 38px; font-weight: 500; letter-spacing: -.015em; line-height: 1.05; margin-top: 6px; }
+.panel-stats { display: flex; gap: 26px; text-align: right; flex-shrink: 0; }
+.panel-stats .v { font-family: var(--font-serif); font-size: 30px; font-weight: 500; line-height: 1; }
+.panel-stats .v.em { color: var(--brand); }
+.panel-stats .k { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); margin-top: 4px; }
+
+.search { display: flex; align-items: center; gap: 11px; padding: 13px 17px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line-strong); box-shadow: var(--shadow-sm); margin-bottom: 16px; }
+.search svg { width: 18px; height: 18px; color: var(--ink-faint); }
+.search input { flex: 1; border: none; background: none; outline: none; font-size: 15px; color: var(--ink); }
+.filters { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+.filt-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); }
+.seg { display: inline-flex; gap: 3px; padding: 3px; background: var(--surface-2); border-radius: 999px; border: 1px solid var(--line); }
+.seg button { padding: 6px 13px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+.seg button.on { background: var(--brand); color: #fff; }
+.reg-count { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 10px; }
+
+.rows { display: flex; flex-direction: column; gap: 10px; }
+.row-card { display: flex; align-items: center; gap: 16px; padding: 18px 20px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--line); box-shadow: var(--shadow-sm); }
+.row-main { flex: 1; min-width: 0; }
+.row-name { font-size: 15px; font-weight: 700; color: var(--ink); }
+.row-meta { font-size: 12.5px; color: var(--ink-faint); margin-top: 3px; font-weight: 500; }
+.row-meta b { color: var(--ink-soft); font-weight: 600; }
+.row-desc { font-size: 13.5px; color: var(--ink-soft); margin-top: 6px; }
+.row-desc.empty { font-style: italic; color: var(--ink-faint); }
+.row-right { display: flex; flex-direction: column; align-items: flex-end; gap: 9px; flex-shrink: 0; }
+.badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; line-height: 1; white-space: nowrap; }
+.badge .d { width: 6px; height: 6px; border-radius: 99px; }
+.badge--wait { background: var(--st-blue-bg); color: var(--st-blue-ink); border: 1px solid var(--st-blue-bd); }
+.badge--wait .d { background: var(--st-blue-ink); }
+.badge--done { background: var(--al-green-bg); color: var(--al-green-ink); border: 1px solid var(--al-green-bd); }
+.badge--done .d { background: var(--al-green-ink); }
+.badge--amber { background: var(--al-amber-bg); color: var(--al-amber-ink); border: 1px solid var(--al-amber-bd); }
+.badge--amber .d { background: var(--al-amber-ink); }
+.badge--teal { background: var(--brand-tint); color: var(--brand-ink); border: 1px solid color-mix(in oklab, var(--brand) 24%, transparent); }
+.badge--teal .d { background: var(--brand); }
+.badge--red { background: var(--al-red-bg); color: var(--al-red-ink); border: 1px solid var(--al-red-bd); }
+.badge--red .d { background: var(--al-red-ink); }
+
+.row-time { flex-shrink: 0; width: 88px; text-align: center; font-family: var(--font-serif); }
+.row-time .t { font-size: 18px; font-weight: 600; color: var(--ink); }
+.row-time .dur { font-size: 11.5px; color: var(--ink-faint); font-family: var(--font-sans); font-weight: 600; margin-top: 2px; }
+
+.panel-actions { display: flex; gap: 10px; flex-shrink: 0; }
+
+.dash-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; min-height: 50vh; color: var(--ink-faint); }
+.dash-loading[hidden] { display: none; }
+.spinner { width: 34px; height: 34px; border-radius: 99px; border: 3px solid var(--line-strong); border-top-color: var(--brand); animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty-ent { max-width: 440px; margin: 8vh auto; text-align: center; }
+.empty-ent .feat-ico { margin: 0 auto 18px; width: 54px; height: 54px; }
+
+/* Panel async states (loading skeleton / empty / stub-unavailable / error) — shared
+   by PreCheckPanel and SecretariaPanel via _components/PanelStates.tsx. */
+@keyframes panel-pulse { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+.sk-bar { background: var(--surface-2); border-radius: 6px; animation: panel-pulse 1.2s ease-in-out infinite; }
+.panel-state { max-width: 380px; margin: 34px auto; text-align: center; padding: 12px; }
+.panel-state--inline { margin: 6px auto; }
+.panel-state-ico { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 14px; background: var(--brand-tint); color: var(--brand-ink); margin-bottom: 14px; }
+.panel-state-ico svg { width: 20px; height: 20px; }
+.panel-state-ico.tone-error { background: var(--al-red-bg); color: var(--al-red-ink); }
+.panel-state-title { font-size: 15px; font-weight: 700; color: var(--ink); }
+.panel-state--inline .panel-state-title { font-size: 13.5px; font-weight: 600; color: var(--ink-faint); }
+.panel-state-hint { font-size: 13px; color: var(--ink-faint); margin-top: 6px; line-height: 1.5; }
+.panel-state-action { margin-top: 16px; }
+
+.ent-sim { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 70; display: flex; align-items: center; gap: 6px; padding: 6px 8px 6px 14px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 999px; box-shadow: var(--shadow-lg); }
+.ent-sim .lbl { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); }
+.ent-sim button { padding: 6px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+.ent-sim button.on { background: var(--brand); color: #fff; }
+
+.pagination { display: flex; align-items: center; justify-content: space-between; margin-top: 26px; font-size: 12.5px; color: var(--ink-faint); font-weight: 600; }
+.pagination .pg { display: flex; align-items: center; gap: 10px; }
+.panel[hidden] { display: none; }
+
+@media (max-width: 720px) {
+  .panel-head { flex-direction: column; gap: 14px; }
+  .panel-title { font-size: 30px; }
+  .uname { display: none; }
+  .row-desc { display: none; }
+}

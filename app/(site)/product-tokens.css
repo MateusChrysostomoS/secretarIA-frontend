@@ -1,0 +1,37 @@
+/* =====================================================================
+   secretarIA product-app tokens — the extra design tokens, keyframes and
+   scrollbar styling the calendar (Agenda) and Configuração screens need on
+   top of brand-ds.css. Mirrors the <head> of the standalone product HTML.
+   Imported only by the product routes (/secretaria/agenda, /configuracao).
+   ===================================================================== */
+
+/* appointment status tones (used by calendar blocks, badges, the drawer) */
+[data-theme="light"] {
+  --st-confirm-bg:#dcefe9; --st-confirm-ink:#0d6a5c; --st-confirm-bd:#a9d6cb;
+  --st-attend-bg:#dbeede;  --st-attend-ink:#27704a;  --st-attend-bd:#a8d3b6;
+  --st-pending-bg:#f6ead2; --st-pending-ink:#946420; --st-pending-bd:#e2c993;
+  --st-miss-bg:#f4ddd6;    --st-miss-ink:#a4452f;    --st-miss-bd:#e1b3a6;
+  --st-block:#e6e0d3;      --st-block-ink:#7c776a;   --st-block-bd:#cdc6b4;
+  /* WhatsApp message preview (config/agenda modals) */
+  --wa-bg:#dcf6c6; --wa-ink:#102a16; --wa-screen:#e7e0d2;
+}
+[data-theme="dark"] {
+  --st-confirm-bg:#0f342f; --st-confirm-ink:#4cc4b6; --st-confirm-bd:#1c4d46;
+  --st-attend-bg:#103425;  --st-attend-ink:#5cc088;  --st-attend-bd:#1d4d37;
+  --st-pending-bg:#352b12; --st-pending-ink:#e0b45a; --st-pending-bd:#534219;
+  --st-miss-bg:#3a201a;    --st-miss-ink:#e6917a;    --st-miss-bd:#583127;
+  --st-block:#1c222a;      --st-block-ink:#8a939d;   --st-block-bd:#2b323b;
+  --wa-bg:#075e54; --wa-ink:#eafff4; --wa-screen:#0b1116;
+}
+
+/* animations used by toasts, modals and the detail drawer */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes popIn { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes drawerIn { from { transform: translateX(24px); opacity: .4; } to { transform: none; opacity: 1; } }
+@keyframes tipIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* thin, themed scrollbars for scrollable product surfaces */
+.scroll { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+.scroll::-webkit-scrollbar { width: 9px; height: 9px; }
+.scroll::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 99px; border: 2px solid transparent; background-clip: padding-box; }
+.scroll::-webkit-scrollbar-track { background: transparent; }

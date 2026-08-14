@@ -1,0 +1,591 @@
+"use client";
+// ===== secretarIA — Agenda page (route entry) =====
+// Ported from _design-source/app.jsx.
+// This is the App shell: owns all state (theme, view, selection, modal,
+// toast) and the CRUD / status handlers that are still wireable.
+// Sub-components (Toolbar, Toast) live here; the calendar views, drawer, and
+// modals are imported from sibling files.
+//
+// De-demo note (agenda mock-purge round, 2026-07-22): this page used to seed
+// `appts`/`blocks` from _shared/data.ts's SEED_APPTS/SEED_BLOCKS (27 + 7
+// fabricated rows) and silently fall back to them whenever a real hub fetch
+// failed. Both are gone. This page now only ever renders real secretarIA hub
+// data, or an honest empty/error state — never a fabricated appointment, and
+// never a "success" toast for a mutation that didn't actually happen.
+
+// CSS tokens required by this screen — must be first imports
+import "../product-tokens.css";
+import "../app-shell.css";
+
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+
+import { useRouter } from "next/navigation";
+
+import { PortalHeader } from "../_components/PortalHeader";
+import { signOut } from "@/lib/sign-out";
+import {
+  Icon,
+  Btn,
+  Segmented,
+  IconBtn,
+} from "../_shared/ui";
+import type { IconName } from "../_shared/ui";
+import {
+  MONTH_LABEL,
+  PERIOD_LABEL,
+  dayFull,
+} from "../_shared/data";
+import type { Appt } from "../_shared/data";
+
+import { WeekView, DayView, MonthView } from "./calendar";
+import { Drawer }                        from "./drawer";
+import { NewApptModal, BlockModal }      from "./modals";
+
+import { HubNotice } from "../_shared/HubNotice";
+import { useSecretariaHub } from "../_shared/useSecretariaHub";
+import {
+  listCalendarEvents,
+  createAppointment,
+  createBlock as createHubBlock,
+  HubApiError,
+} from "@/lib/secretaria-hub";
+import { getMe } from "@/lib/manage-api";
+import {
+  currentWeekIsoRange,
+  slotToIsoRange,
+  mapHubEventsToAppts,
+  formatBlockSummary,
+} from "./lib/hub-mapping";
+
+// ---------------------------------------------------------------------------
+// Local types
+// ---------------------------------------------------------------------------
+
+type ViewMode = "semana" | "dia" | "mes";
+
+// "edit" / "resched" / "cancel" are intentionally absent — see createAppt/
+// createBlock below and drawer.tsx: those actions have no wireable hub
+// endpoint yet, so their entry points are disabled rather than opening a
+// modal that could only ever fake-mutate local state.
+type ModalState =
+  | { type: "new" }
+  | { type: "block" }
+  | null;
+
+type ToastState = { msg: string; icon?: IconName } | null;
+
+// ---------------------------------------------------------------------------
+// Toast — transient notification bar at the bottom of the screen
+// ---------------------------------------------------------------------------
+
+/**
+ * Floating toast notification displayed after user actions (create, edit, cancel…).
+ * Animated in via the product-tokens `popIn` keyframe.
+ * Returns null when no toast is active.
+ */
+function Toast({ toast }: { toast: ToastState }) {
+  if (!toast) return null;
+  return (
+    <div
+      style={{
+        position: "fixed",
+        bottom: 24,
+        left: "50%",
+        transform: "translateX(-50%)",
+        zIndex: 80,
+        animation: "popIn .25s var(--ease)",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 11,
+          padding: "13px 20px",
+          borderRadius: 14,
+          background: "#0e564d",
+          color: "#eafff4",
+          boxShadow: "var(--shadow-lg)",
+          fontSize: 14,
+          fontWeight: 500,
+          maxWidth: 460,
+        }}
+      >
+        {/* icon bubble */}
+        <span
+          style={{
+            width: 26,
+            height: 26,
+            borderRadius: 99,
+            background: "rgba(255,255,255,.16)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Icon name={toast.icon ?? "check"} size={15} />
+        </span>
+        {toast.msg}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Toolbar — view switcher, navigation, and primary action buttons
+// ---------------------------------------------------------------------------
+
+/**
+ * Top bar below the Header.
+ * Contains: prev/next chevrons, "Hoje" button, current period label,
+ * view segmented control, "Bloquear" and "Nova consulta" action buttons.
+ */
+function Toolbar({
+  view,
+  setView,
+  onNew,
+  onBlock,
+  day,
+  onToday,
+  disabled,
+}: {
+  view: ViewMode;
+  setView: (v: ViewMode) => void;
+  onNew: () => void;
+  onBlock: () => void;
+  day: number;
+  onToday: () => void;
+  // True whenever the real hub isn't usable (no session, not entitled,
+  // unavailable, or hub not configured in this environment) — creating here
+  // would only be able to fake-mutate local state, so both action buttons
+  // stay disabled instead of opening a modal that could never really submit.
+  disabled: boolean;
+}) {
+  // Label depends on the active view
+  const periodLabel =
+    view === "dia"    ? dayFull(day)   :
+    view === "mes"    ? MONTH_LABEL    :
+    PERIOD_LABEL;
+
+  // Secondary sub-label shown only in week view
+  const sub = view === "semana" ? "Junho de 2026" : "";
+
+  const disabledHint = disabled
+    ? "Disponível quando a agenda real estiver conectada."
+    : undefined;
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 16,
+        padding: "14px 26px",
+        borderBottom: "1px solid var(--line)",
+        flexShrink: 0,
+        flexWrap: "wrap",
+        rowGap: 12,
+      }}
+    >
+      {/* left cluster: navigation + period label */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ display: "flex", gap: 4 }}>
+          <IconBtn icon="chevL" title="Anterior" />
+          <IconBtn icon="chevR" title="Próximo" />
+        </div>
+        <Btn
+          variant="outline"
+          size="sm"
+          onClick={onToday}
+          style={{ borderRadius: 11 }}
+        >
+          Hoje
+        </Btn>
+        <div>
+          <div
+            style={{
+              fontSize: 19,
+              fontWeight: 600,
+              fontFamily: "var(--font-serif)",
+              color: "var(--ink)",
+              lineHeight: 1.15,
+            }}
+          >
+            {periodLabel}
+          </div>
+          {sub && (
+            <div
+              style={{ fontSize: 12, color: "var(--ink-faint)", marginTop: -1 }}
+            >
+              {sub}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* flexible spacer */}
+      <div style={{ flex: 1 }} />
+
+      {/* right cluster: view toggle + action buttons */}
+      <Segmented<ViewMode>
+        value={view}
+        onChange={setView}
+        size="sm"
+        options={[
+          { value: "dia",    label: "Dia" },
+          { value: "semana", label: "Semana" },
+          { value: "mes",    label: "Mês" },
+        ]}
+      />
+      <Btn
+        variant="outline"
+        size="sm"
+        icon="ban"
+        onClick={onBlock}
+        disabled={disabled}
+        title={disabledHint}
+        style={{ borderRadius: 11 }}
+      >
+        Bloquear
+      </Btn>
+      <Btn
+        variant="primary"
+        size="sm"
+        icon="plus"
+        onClick={onNew}
+        disabled={disabled}
+        title={disabledHint}
+        style={{ borderRadius: 11 }}
+      >
+        Nova consulta
+      </Btn>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// AgendaPage — route entry / App shell
+// ---------------------------------------------------------------------------
+
+/**
+ * secretarIA Agenda screen.
+ * Owns: calendar view, selection, modal, and toast state. The chrome (brand,
+ * theme toggle, account, Sair) is the shared PortalHeader, reused as-is from
+ * brain-frontend so it renders the same chrome as the rest of the Brain
+ * product family.
+ */
+export default function AgendaPage() {
+  const router = useRouter();
+
+  // --- Calendar state ---
+  const [view, setView]     = useState<ViewMode>("semana");
+  const [day, setDay]       = useState(1);           // index into WEEK_DAYS
+  // Permanently-empty fallback for `items` below (no setter — nothing writes
+  // to it). The demo-seed rows and the local-only "fabricate a row" create
+  // paths are gone; this route only ever shows REAL hub data or nothing.
+  const [appts] = useState<Appt[]>([]);
+  const [selected, setSelected] = useState<Appt | null>(null);
+  const [modal, setModal]   = useState<ModalState>(null);
+  const [toast, setToast]   = useState<ToastState>(null);
+
+  // Ref used to hold the auto-dismiss timer for the toast
+  const toastRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  // --- secretarIA hub: entitlement-gated real data path ---
+  const { session, ready: hubCheckReady, notEntitled, unavailable, hubReady, retry } = useSecretariaHub();
+  // Real events for the current week, once a hub fetch has succeeded. null
+  // means "no real fetch has succeeded yet" — the grid then falls back to
+  // `appts`, which is always empty (see above): no session, no entitlement,
+  // an unreachable hub, and a still-pending fetch all render the SAME honest
+  // empty grid, never fabricated rows.
+  const [hubAppts, setHubAppts] = useState<Appt[] | null>(null);
+  const [hubFetchFailed, setHubFetchFailed] = useState(false);
+
+  // Real clinic name (item 9 of the mock-purge round) — fetched once via
+  // GET /auth/me when a session exists, same source Header.tsx uses for its
+  // own de-demo identity. Stays "" while logged out or before the fetch
+  // settles; NewApptModal's message preview falls back to generic phrasing
+  // rather than ever showing a hardcoded demo clinic name.
+  const [clinicName, setClinicName] = useState("");
+  useEffect(() => {
+    if (!session) return;
+    let cancelled = false;
+    getMe(session)
+      .then((data) => {
+        if (!cancelled) setClinicName(data.tenant?.clinic_name ?? "");
+      })
+      .catch(() => {
+        // Expired/invalid session — HubNotice already surfaces a notice; the
+        // message preview just keeps the generic fallback phrasing.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [session]);
+
+  // Refetches the current week's real calendar events. Shared by the initial
+  // load effect below AND by createAppt/createBlock after a successful hub
+  // write, so the grid always reflects what secretarIA's Calendar actually
+  // holds instead of a fabricated local row. Also wired to the "Tentar
+  // novamente" retry button on the fetch-failure banner below.
+  const reloadWeek = useCallback(() => {
+    if (!session) return Promise.resolve();
+    const { startIso, endIso } = currentWeekIsoRange();
+    return listCalendarEvents(session, startIso, endIso)
+      .then((events) => {
+        setHubAppts(mapHubEventsToAppts(events));
+        setHubFetchFailed(false);
+      })
+      .catch((e) => {
+        console.error("secretaria hub: failed to load calendar events", e);
+        setHubAppts(null);
+        setHubFetchFailed(true);
+      });
+  }, [session]);
+
+  // Load the current week's real calendar events when the hub becomes usable.
+  // CANCEL/RESCHEDULE/EDIT/status-change stay disabled everywhere — see the
+  // TODO(hub-write) note in hub-mapping.ts and drawer.tsx (blocked on
+  // secretarIA exposing an appointment id on the read model, not a frontend gap).
+  useEffect(() => {
+    if (!hubReady || !session) return;
+    reloadWeek();
+  }, [hubReady, session, reloadWeek]);
+
+  // ---------------------------------------------------------------------------
+  // flash — shows a toast then auto-dismisses after 3.4 s
+  // ---------------------------------------------------------------------------
+
+  const flash = useCallback((msg: string, icon?: IconName) => {
+    setToast({ msg, icon });
+    clearTimeout(toastRef.current);
+    toastRef.current = setTimeout(() => setToast(null), 3400);
+  }, []);
+
+  // Combined list used by all three calendar views. `appts` is permanently
+  // empty (see above), so this is real hub data when a fetch has succeeded,
+  // or an honest empty grid otherwise. Blocks no longer need a separate local
+  // array — hub-mapping.ts classifies real "Bloqueado" events inline, so they
+  // arrive already mixed into `hubAppts`.
+  const items = useMemo(() => hubAppts ?? appts, [hubAppts, appts]);
+
+  // Keep the drawer in sync when the underlying appointment is mutated
+  const liveSelected = selected
+    ? items.find((i) => i.id === selected.id) ?? null
+    : null;
+
+  // ---------------------------------------------------------------------------
+  // Handlers
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Persist a newly created appointment. Only reachable when hubReady (the
+   * Toolbar's "Nova consulta" trigger is disabled otherwise — see below), so
+   * this always creates a REAL Google Calendar event via
+   * POST /tenants/me/calendar/appointments and refetches the week instead of
+   * fabricating a local row. The hub endpoint does not send a WhatsApp
+   * message, so the success flash never claims one was sent.
+   */
+  const createAppt = async (data: Omit<Appt, "id">, _message: string | null) => {
+    if (!hubReady || !session) {
+      // Defensive only — the trigger that opens this modal is disabled
+      // whenever hubReady is false, so this should be unreachable.
+      flash("A agenda real não está disponível agora.", "xCircle");
+      return;
+    }
+    const { startIso, endIso } = slotToIsoRange(data.day, data.start, data.dur);
+    const summary = [data.type, data.patient].filter(Boolean).join(" — ") || "Consulta";
+    try {
+      await createAppointment(session, {
+        start: startIso,
+        end: endIso,
+        summary,
+        description: data.notes || undefined,
+        phone: data.phone || null,
+      });
+      setModal(null);
+      await reloadWeek();
+      flash("Consulta criada na agenda.", "check");
+    } catch (e) {
+      console.error("secretaria hub: failed to create appointment", e);
+      const notice =
+        e instanceof HubApiError && e.status === 422
+          ? "Conecte o Google Calendar nas Configurações secretarIA para criar consultas reais."
+          : "Não foi possível criar na agenda real. Tente novamente.";
+      flash(notice, "xCircle");
+      // Keep the modal open on failure — do not fake a local success row.
+    }
+  };
+
+  /**
+   * Add a new time block to the calendar. Only reachable when hubReady (the
+   * Toolbar's "Bloquear" trigger is disabled otherwise — see below), so this
+   * always blocks the slot for real via POST /tenants/me/calendar/blocks and
+   * refetches the week. The summary is tagged with the "Bloqueado" prefix
+   * hub-mapping.ts's isBlockSummary recognises, so the block round-trips as a
+   * real bloqueio item instead of a generic appointment on the next fetch.
+   */
+  const createBlock = async (data: {
+    day: number;
+    start: number;
+    dur: number;
+    reason: string;
+  }) => {
+    if (!hubReady || !session) {
+      // Defensive only — the trigger that opens this modal is disabled
+      // whenever hubReady is false, so this should be unreachable.
+      flash("A agenda real não está disponível agora.", "xCircle");
+      return;
+    }
+    const { startIso, endIso } = slotToIsoRange(data.day, data.start, data.dur);
+    try {
+      await createHubBlock(session, {
+        start: startIso,
+        end: endIso,
+        summary: formatBlockSummary(data.reason),
+      });
+      setModal(null);
+      await reloadWeek();
+      flash(`Horário bloqueado: ${data.reason}.`, "ban");
+    } catch (e) {
+      console.error("secretaria hub: failed to create block", e);
+      const notice =
+        e instanceof HubApiError && e.status === 422
+          ? "Conecte o Google Calendar nas Configurações secretarIA para bloquear horários reais."
+          : "Não foi possível bloquear na agenda real. Tente novamente.";
+      flash(notice, "xCircle");
+      // Keep the modal open on failure — do not fake a local success row.
+    }
+  };
+
+  /** Navigate to DayView for a specific day index. */
+  const goDay = (d: number) => {
+    setDay(d);
+    setView("dia");
+  };
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
+
+  return (
+    <div
+      style={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        background: "var(--page)",
+      }}
+    >
+      {/* The admin "Modo médico" impersonation switch lives in the Brain
+          portal header, not here — this app has no admin surface. */}
+      <PortalHeader
+        portalLabel="Clínica"
+        userLabel={session?.email || clinicName || "Brain"}
+        onLogout={() => signOut((path) => router.push(path))}
+        product="secretaria"
+        // The screen below is a height:100vh flex column with its own internal
+        // scroll area, so the header is already pinned without `position: sticky`.
+        sticky={false}
+      />
+
+      {/* no session / not entitled / hub unavailable / hub not configured */}
+      <HubNotice
+        session={session}
+        notEntitled={notEntitled}
+        ready={hubCheckReady}
+        unavailable={unavailable}
+        onRetry={retry}
+      />
+
+      {/* honest error state when hubReady but the events fetch itself failed —
+          distinct from HubNotice's `unavailable` (token mint never succeeded) */}
+      {hubFetchFailed && (
+        <div
+          role="status"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 9,
+            margin: "0 26px 12px",
+            padding: "10px 14px",
+            borderRadius: 10,
+            background: "var(--st-pending-bg, #fff6e5)",
+            border: "1px solid var(--st-pending-bd, #f2d98a)",
+            color: "var(--st-pending-ink, #9a6b00)",
+            fontSize: 12.5,
+          }}
+        >
+          <Icon name="clock" size={15} style={{ flexShrink: 0 }} />
+          <span style={{ flex: 1 }}>Não foi possível carregar a agenda.</span>
+          <Btn
+            variant="outline"
+            size="sm"
+            onClick={() => { void reloadWeek(); }}
+            style={{ flexShrink: 0 }}
+          >
+            Tentar novamente
+          </Btn>
+        </div>
+      )}
+
+      <main
+        style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}
+      >
+        <Toolbar
+          view={view}
+          setView={setView}
+          day={day}
+          onNew={() => setModal({ type: "new" })}
+          onBlock={() => setModal({ type: "block" })}
+          onToday={() => {
+            setDay(1);
+            // From month view, jump back to week instead of staying in month
+            if (view === "mes") setView("semana");
+          }}
+          disabled={!hubReady}
+        />
+
+        {view === "semana" && (
+          <WeekView items={items} onSelect={setSelected} onDayClick={goDay} />
+        )}
+        {view === "dia" && (
+          <DayView dayIdx={day} items={items} onSelect={setSelected} />
+        )}
+        {view === "mes" && (
+          <MonthView items={items} onDayClick={goDay} />
+        )}
+      </main>
+
+      {/* Detail drawer — shows only when an item is selected. Read-only:
+          every item shown here comes from the hub, and the hub only supports
+          create so far — see drawer.tsx. */}
+      {liveSelected && (
+        <Drawer appt={liveSelected} onClose={() => setSelected(null)} />
+      )}
+
+      {/* Modals — one rendered at a time based on modal.type. Edit/Reschedule/
+          Cancel are not rendered here: their only entry point (the Drawer's
+          action buttons) is disabled, so they're unreachable — see
+          drawer.tsx and modals.tsx for the TODO(hub-write) follow-up. */}
+      {modal?.type === "new" && (
+        <NewApptModal
+          presetDay={view === "dia" ? day : undefined}
+          onClose={() => setModal(null)}
+          onCreate={createAppt}
+          clinicName={clinicName}
+        />
+      )}
+      {modal?.type === "block" && (
+        <BlockModal
+          presetDay={view === "dia" ? day : undefined}
+          onClose={() => setModal(null)}
+          onCreate={createBlock}
+        />
+      )}
+
+      <Toast toast={toast} />
+    </div>
+  );
+}

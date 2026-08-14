@@ -1,0 +1,21 @@
+/* ProductLockup — separated from the Brain brand by a hairline rule so the two
+   marks read as "product, by Brain" without competing for the same weight. */
+
+.portal-lockup {
+  display: inline-flex;
+  align-items: center;
+  padding-left: 14px;
+  border-left: 1px solid var(--line-strong);
+  font-size: 19px;
+  line-height: 1;
+  color: var(--ink);
+  user-select: none;
+}
+
+/* Narrow screens: keep the mark, shrink it — it is the screen's identity. */
+@media (max-width: 700px) {
+  .portal-lockup {
+    padding-left: 10px;
+    font-size: 16px;
+  }
+}

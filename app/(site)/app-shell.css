@@ -1,0 +1,8 @@
+/* =====================================================================
+   Full-viewport product shell — used only by the secretarIA Agenda and
+   Configuração screens, which fill the viewport and scroll internally
+   (their own .scroll panes) rather than scrolling the page body.
+   Imported per-route so it never affects the scrolling marketing pages.
+   ===================================================================== */
+html, body { height: 100%; }
+body { overflow: hidden; }

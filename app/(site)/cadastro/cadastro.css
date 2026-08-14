@@ -1,0 +1,278 @@
+/* =====================================================================
+   /cadastro — self-service signup wizard (Feature 0). Route-scoped,
+   layered on ../brand-ds.css tokens/classes only (no new design system).
+   ===================================================================== */
+
+.cad-main {
+  min-height: calc(100vh - 84px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px 20px 72px;
+}
+
+.cad-card {
+  max-width: 620px;
+  width: 100%;
+}
+
+.cad-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink-faint);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cad-progress-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+  margin-bottom: 30px;
+}
+
+.cad-progress-fill {
+  height: 100%;
+  background: var(--brand);
+  border-radius: 999px;
+  transition: width 0.3s var(--ease);
+}
+
+.cad-step-title {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.cad-step-desc {
+  font-size: 14.5px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  margin-bottom: 24px;
+  max-width: 56ch;
+}
+
+.cad-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.cad-actions .btn {
+  flex: 1;
+}
+
+/* Guided instructional screens (dedicated number, page creation). */
+.cad-guide-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 6px 0 22px;
+}
+
+.cad-guide-item {
+  display: flex;
+  gap: 13px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.cad-guide-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 99px;
+  background: var(--brand-tint);
+  color: var(--brand-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12.5px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Inline expanding notice under a radio group (manual-action explainer,
+   how-to-check guidance) — informational, never blocks continuing. */
+.cad-inline-note {
+  margin-top: 16px;
+}
+
+/* Lead callout on TestWindowExplainerStep — the "no máximo N dias até a
+   cobrança" headline, ahead of the numbered breakdown below it. */
+.cad-testwindow-highlight {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--brand-tint);
+  color: var(--brand-ink);
+  font-size: 14.5px;
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 6px 0 18px;
+}
+
+/* Add-on toggle cards (Task 1a) — same tokens as .radio-pill--block but a real
+   checkbox (multi-select, not a radio group). */
+.cad-addon-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 6px 0 22px;
+}
+
+.cad-addon-card {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color 0.14s var(--ease);
+}
+
+.cad-addon-card.on {
+  border-color: var(--brand);
+}
+
+.cad-addon-toggle {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  width: 100%;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+
+.cad-addon-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cad-addon-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1.5px solid var(--line-strong);
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.14s var(--ease);
+}
+.cad-addon-card.on .cad-addon-check {
+  border-color: var(--brand);
+  background: var(--brand);
+}
+.cad-addon-check svg {
+  width: 12px;
+  height: 12px;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+.cad-addon-card.on .cad-addon-check svg {
+  opacity: 1;
+}
+
+.cad-addon-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cad-addon-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.cad-addon-desc {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* "Como funciona" expandable (Task 1b) — native <details>, no extra JS. Sits as a
+   sibling of .cad-addon-toggle, not nested inside it (see AddonsStep). */
+.cad-addon-details {
+  border-top: 1px solid var(--line);
+  padding: 0 16px;
+}
+.cad-addon-details summary {
+  padding: 11px 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--brand-ink);
+  cursor: pointer;
+  list-style: none;
+}
+.cad-addon-details summary::-webkit-details-marker {
+  display: none;
+}
+.cad-addon-details summary::before {
+  content: "+ ";
+}
+.cad-addon-details[open] summary::before {
+  content: "\2013 "; /* en dash, mirrors the "+" collapse affordance when open */
+}
+.cad-addon-details-body {
+  padding: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.cad-addon-details-body p {
+  margin: 0 0 10px;
+}
+.cad-addon-details-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* Brief loading state while AddonsStep resolves add-on availability. */
+.cad-addon-loading {
+  padding: 30px 0;
+}
+
+/* Read-only summary rows on the last step. */
+.cad-summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.cad-summary-row:last-child {
+  border-bottom: none;
+}
+
+.cad-summary-label {
+  color: var(--ink-faint);
+  flex-shrink: 0;
+}
+
+.cad-summary-value {
+  color: var(--ink);
+  font-weight: 600;
+  text-align: right;
+}
+
+@media (max-width: 560px) {
+  .cad-actions {
+    flex-direction: column-reverse;
+  }
+}

@@ -1,0 +1,93 @@
+/* =====================================================================
+   /app/reativar — page-local styles layered on top of ../dashboard-shell.css
+   (.panel, .panel-head, .dash-header, .badge, .spinner) and global brand-ds.css
+   tokens. Route-scoped like its siblings ../onboarding/onboarding.css and
+   ../billing/billing.css — each /app/* page keeps its CSS self-contained, so
+   some overlap with their card/alert patterns (under different class names) is
+   intentional rather than a shared import across routes.
+   ===================================================================== */
+
+/* --- Status cards (one per test-window state) --- */
+.rtv-card {
+  padding: 18px 20px;
+  border-radius: 14px;
+  margin: 4px 0 20px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.rtv-card.info {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+}
+.rtv-card.warn {
+  background: var(--al-amber-bg);
+  border: 1px solid var(--al-amber-bd);
+  color: var(--al-amber-ink);
+}
+.rtv-card.success {
+  background: var(--al-green-bg);
+  border: 1px solid var(--al-green-bd);
+  color: var(--al-green-ink);
+}
+
+/* --- Deadline / days-total stat pair on the active-window state --- */
+.rtv-stats {
+  display: flex;
+  gap: 26px;
+  flex-wrap: wrap;
+  margin: 14px 0 22px;
+}
+.rtv-stat-value {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.rtv-stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
+
+.rtv-actions {
+  margin-top: 16px;
+}
+
+/* Generic inline error (mirrors the ssoError / portal-alert pattern used
+   elsewhere under /app). */
+.rtv-alert {
+  margin-top: 12px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--danger, #c0392b);
+}
+
+/* Amber callout for "no payment method on file" / "checkout required" —
+   informational but actionable (carries a Link). */
+.rtv-payment-notice {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--al-amber-bg);
+  border: 1px solid var(--al-amber-bd);
+  color: var(--al-amber-ink);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* Mirrors an arrow icon so it points left for the "Voltar ao painel" link
+   (defined locally rather than relying on ../billing/billing.css, which isn't
+   imported on this route). */
+.flip-h {
+  transform: scaleX(-1);
+}
+
+@media (max-width: 720px) {
+  .rtv-stats {
+    gap: 18px;
+  }
+}
