@@ -2,7 +2,7 @@
 
 **Rodada:** 2026-08-14 · **Estado:** BUILT + validado (`tsc --noEmit` limpo, 120 testes
 vitest verdes, `npm run build` gera `/out` com 11 rotas estáticas) · **NÃO deployado, NÃO
-pushed** (4 commits locais na `main`).
+pushed** (commits locais na `main`; nada empurrado para o `origin`).
 
 ---
 
@@ -129,6 +129,36 @@ exclusões deliberadas acima.
 6. **Checkbox "Lembrar de mim" removido** do login: no brain-frontend ele guarda estado que
    nada lê. UI que promete o que não entrega é pior que UI ausente.
 
+## Papel `secretary` — verificação da TAREFA 4 neste repo (2026-08-14)
+
+O prompt do papel `secretary` mandava replicar aqui as mudanças de frontend **se** este repo
+já existisse. Ele rodou primeiro, então o clone (ver "O que é este repo") já trouxe tudo —
+esta seção registra o que foi **conferido**, não o que foi reescrito. Contrato completo:
+`brain-api/docs/CHECKPOINT_secretary_role.md`.
+
+| Item | Estado |
+|---|---|
+| `Role` de 4 valores + `getDoctorSecretaries`/`createSecretaryInvite` em `lib/manage-api.ts` | ✅ veio no clone |
+| `InviteTeamMemberModal` (prop `kind`) + lista "SECRETÁRIAS (RECEPÇÃO)" + 2 botões em `ProfessionalsSection` | ✅ veio no clone |
+| `usePortalGuard([... "secretary" ...])` em `/app/onboarding` e `/app/reativar` | ✅ (são os 2 únicos call sites; `/agenda` e `/configuracao` não usam guard de papel — dependem da sessão/hub) |
+| `PORTAL_ROLES` inclui `secretary`, com teste (`portal-routes.test.ts`, "sends every clinic role to the agenda") | ✅ |
+| 4 testes de `getDoctorSecretaries`/`createSecretaryInvite` | ✅ dentro dos 77 de `manage-api.test.ts` |
+| Prompt de auto-vínculo escondido pra `secretary` | ✅ (`session?.role !== "secretary"`) |
+
+**Billing não se aplica aqui.** O bullet de billing da TAREFA 4 (achar uma checagem
+client-side de `is_owner` escondendo "Gerenciar assinatura") não tem alvo neste repo: não
+existe tela de gestão de assinatura aqui — `createPortalSession` não é chamado em nenhuma
+página. Billing é do domínio Brain. O que existe é `/app/reativar` (reativar assinatura
+pausada), que já aceita `secretary` no guard.
+
+**Anamneses não se aplicam aqui.** Não há rota clínica neste repo, então as 2 exclusões de
+anamnese do brain-frontend não têm equivalente. Único ponto que encosta no assunto: a
+agenda mostra um selo de status de pré-consulta (`appt.anamnese`) — **não é conteúdo
+clínico**, e o mapeamento real do hub (`agenda/lib/hub-mapping.ts`) sempre grava `"—"`; só
+dado de demonstração produz `"recebida"`/`"pendente"`. Ver a lacuna do "Ver resumo" abaixo.
+
+Gates locais rodados: `tsc.cmd --noEmit` limpo, **120 testes verdes**, `npm run build` limpo.
+
 ## Lacunas conhecidas (nada disto bloqueia o build)
 
 - [ ] **Não existe recuperação de senha.** O fluxo `esqueci_senha/*` do brain-frontend chama
@@ -145,9 +175,23 @@ exclusões deliberadas acima.
 - [ ] **Migração `0012_role_taxonomy` ainda não rodou em produção** na brain-api. Até rodar,
       a brain-api pode emitir os papéis legados `tenant_owner`/`tenant_staff` — por isso eles
       continuam aceitos em `PORTAL_ROLES` (com teste cobrindo).
-- [ ] **Papel `secretary` ainda não deployado.** O trabalho está BUILT nos dois repos mas não
+- [ ] **Papel `secretary` ainda não deployado.** O trabalho está BUILT nos três repos mas não
       commitado/deployado no brain-api — ver `brain-api/docs/CHECKPOINT_secretary_role.md`.
-      Este app já aceita o papel.
+      Este app já aceita o papel (verificação na seção acima).
+- [ ] **"Ver resumo" na gaveta da agenda é uma armadilha futura.** `agenda/drawer.tsx` renderiza
+      um link "Ver resumo" quando `appt.anamnese === "recebida"`. Hoje é **UI morta e
+      inalcançável**: o `<span>` não tem `onClick`, e `mapHubEventToAppt` grava `anamnese: "—"`
+      em todo evento real (só `modals.tsx` produz outro valor, em dado local). Quando alguém
+      ligar isso a conteúdo de anamnese de verdade, vira **superfície clínica do PreCheck
+      dentro de um app que a secretária alcança** — e o papel é explicitamente proibido de ver
+      anamnese (`403 secretary_precheck_not_allowed` na brain-api). Quem for implementar:
+      esconda de `role === "secretary"`, do mesmo jeito que `/doctor/anamneses` é escondido no
+      brain-frontend.
+- [ ] **Decidir para qual domínio o link de convite aponta.** A brain-api monta
+      `{FRONTEND_BASE_URL}/convite?token=…` com uma única env var, e **os dois** frontends têm
+      `/convite` (ambos role-agnósticos, ambos funcionam). Onde a var apontar é onde toda
+      pessoa convidada — médico e secretária — cai: no Brain vai parar em `/doctor/dashboard`,
+      aqui vai parar em `/agenda`. Não é bug, é uma decisão de deploy que ainda não foi tomada.
 - [ ] **Token da WABA expira em 60 dias e nada renova** (pendência antiga, de plataforma, não
       deste repo) — não bloqueia teste, bloqueia lançamento.
 - [ ] Sem deploy no EasyPanel e sem `git push` — nada foi empurrado para o `origin`.

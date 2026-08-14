@@ -1,11 +1,16 @@
 "use client";
 
-// /convite — professional-invite accept page (Feature D). Reads `?token=`
-// (the link emailed by POST /doctor/professionals/invites, or copied from the
-// owner's invite modal), exchanges it via POST /auth/exchange-invite-token,
-// then collects a password (POST /auth/set-password) before persisting the
-// session and routing into the portal. Brain-branded shell (checkout.css),
-// not the ported-PreCheck AuthShell — this is a Brain onboarding step.
+// /convite — team-invite accept page (Feature D). Reads `?token=` (the link
+// emailed by POST /doctor/professionals/invites OR POST /doctor/secretaries/invites,
+// or copied from the inviter's modal), exchanges it via POST
+// /auth/exchange-invite-token, then collects a password (POST /auth/set-password)
+// before persisting the session and routing into the portal. Brain-branded shell
+// (checkout.css), not the ported-PreCheck AuthShell — this is a Brain onboarding step.
+//
+// Role-agnostic by construction, and deliberately so: the exchange resolves the
+// user by token hash and mints THAT user's normal session, so the same screen
+// onboards an invited doctor and an invited secretary. Every string here talks
+// about "sua clínica" and "o painel", never a profession — keep it that way.
 // Wrapped in Suspense because useSearchParams requires it.
 
 import { Suspense, useEffect, useState } from "react";
