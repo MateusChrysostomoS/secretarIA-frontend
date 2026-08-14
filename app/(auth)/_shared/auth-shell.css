@@ -1,0 +1,625 @@
+/* ─────────────────────────────────────────────────────────────
+   Auth shell — the public entry screen (/).
+   Ported from PreCheck's login chrome; rebranded to secretarIA in AuthShell.tsx.
+   Ported from the Claude Design handoff (Login.html). Built on
+   the landing's cream + teal identity. Every rule is prefixed
+   with `main.login-page` so the styles never leak into — or get
+   overridden by — the dark app-shell CSS in globals.css.
+   The class name kept `login-page` for backwards-compat after the
+   shell was extracted; treat it as "auth-page" semantically.
+   ───────────────────────────────────────────────────────────── */
+
+main.login-page {
+  /* Landing design tokens (light identity) */
+  --bg:         #f7f6f2;
+  --surface:    #ffffff;
+  --surface-2:  #f1efe8;
+  --ink:        #0b1f2a;
+  --ink-2:      #1c3344;
+  --muted:      #5a6b76;
+  --dim:        #8a98a1;
+  --border:     #e6e1d6;
+  --border-2:   #d8d2c4;
+  --navy:       #0b3a4a;
+  --navy-2:     #0e4a5e;
+  --teal:       #1a8c93;
+  --green:      #5b8c5a;
+  --warning:    #c89638;
+  --danger:     #c4544c;
+  --success-bg: rgba(91, 140, 90, .10);
+  --success-bd: rgba(91, 140, 90, .26);
+  --success-fg: #3e6b3d;
+  --radius-lg:  20px;
+  --font-ui:    'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --shadow:     0 2px 8px rgba(11, 31, 42, .05), 0 8px 24px rgba(11, 31, 42, .06);
+
+  position: relative;
+  z-index: 1;                /* lift the whole page above the app-shell ambient circles */
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 48px 24px;
+  overflow: hidden;
+  font-family: var(--font-ui);
+  color: var(--ink);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(26, 140, 147, .08) 0%, transparent 60%),
+    radial-gradient(circle at 85% 15%, rgba(26, 140, 147, .10) 0%, transparent 50%),
+    radial-gradient(circle at 15% 85%, rgba(91, 140, 90, .08) 0%, transparent 55%),
+    radial-gradient(circle at 70% 90%, rgba(200, 150, 56, .05) 0%, transparent 55%),
+    var(--bg);
+  /* Smooth handoff when the user toggles light ↔ dark elsewhere in the app */
+  transition: background-color .3s ease, color .3s ease, border-color .3s ease;
+}
+
+/* Faint medical-grid paper texture */
+main.login-page .login-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .55;
+  background-image:
+    linear-gradient(to right,  rgba(11, 58, 74, .045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(11, 58, 74, .045) 1px, transparent 1px),
+    linear-gradient(to right,  rgba(11, 58, 74, .025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(11, 58, 74, .025) 1px, transparent 1px);
+  background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, transparent 0%, transparent 35%, #000 95%);
+          mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, transparent 0%, transparent 35%, #000 95%);
+}
+
+/* Slow-drifting decorative dots */
+main.login-page .login-dots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+main.login-page .login-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--teal);
+  opacity: .22;
+  box-shadow: 0 0 0 3px rgba(26, 140, 147, .12);
+  animation: login-float-dot 14s ease-in-out infinite;
+}
+main.login-page .login-dot.d1 { top: 18%; left: 10%; animation-delay: 0s; }
+main.login-page .login-dot.d2 { top: 28%; right: 12%; background: var(--green); box-shadow: 0 0 0 3px rgba(91, 140, 90, .12); animation-delay: -3s; animation-duration: 17s; }
+main.login-page .login-dot.d3 { bottom: 22%; left: 18%; background: var(--warning); box-shadow: 0 0 0 3px rgba(200, 150, 56, .12); animation-delay: -7s; animation-duration: 19s; }
+main.login-page .login-dot.d4 { bottom: 14%; right: 14%; animation-delay: -2s; animation-duration: 16s; }
+main.login-page .login-dot.d5 { top: 50%; left: 4%; opacity: .15; animation-delay: -5s; animation-duration: 22s; }
+main.login-page .login-dot.d6 { top: 60%; right: 5%; opacity: .15; animation-delay: -9s; animation-duration: 20s; }
+@keyframes login-float-dot {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(8px, -10px); }
+  50%      { transform: translate(-6px, -16px); }
+  75%      { transform: translate(-10px, 6px); }
+}
+
+/* ECG line — sits on the page, runs across the viewport, aligned to
+   the card's middle. The card sits in front and "interrupts" it. */
+main.login-page .page-ecg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 200px;
+  pointer-events: none;
+  z-index: 1;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%);
+}
+main.login-page .page-ecg svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+main.login-page .page-ecg .ecg-line {
+  fill: none;
+  stroke: var(--teal);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  filter: drop-shadow(0 0 12px rgba(26, 140, 147, .6)) drop-shadow(0 0 3px rgba(26, 140, 147, .4));
+  animation: login-ecg-trace 6.5s linear infinite;
+}
+main.login-page .page-ecg .ecg-ghost {
+  fill: none;
+  stroke: var(--teal);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .14;
+}
+/* 50/50 split so the trailing "cleaner" edge moves at the same speed as
+   the leading "draw" edge. Both halves cover 1000 dash-units across half
+   the duration → identical px/sec on screen. */
+@keyframes login-ecg-trace {
+  0%   { stroke-dashoffset: 1000; }   /* invisible — about to draw */
+  50%  { stroke-dashoffset: 0; }      /* fully drawn (midpoint) */
+  100% { stroke-dashoffset: -1000; }  /* fully cleaned — loops back seamlessly */
+}
+
+/* Centered column: brand · card · footer */
+main.login-page .login-shell {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+main.login-page .login-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  color: var(--ink);
+}
+main.login-page .login-brand .wordmark {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--ink);
+}
+main.login-page .login-brand .wordmark em {
+  font-style: italic;
+  color: var(--teal);
+}
+main.login-page .login-brand .role {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+main.login-page .login-card {
+  position: relative;
+  width: 100%;
+  max-width: none;           /* override globals.css .login-card { max-width: 400px } */
+  padding: 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+main.login-page .login-title {
+  margin-bottom: 6px;
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: -0.018em;
+  line-height: 1.15;
+  color: var(--ink);
+  text-wrap: balance;
+}
+main.login-page .login-title em {
+  font-style: italic;
+  color: var(--teal);
+}
+main.login-page .login-sub {
+  margin-bottom: 26px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+main.login-page .login-error {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  background: rgba(196, 84, 76, .06);
+  border: 1px solid rgba(196, 84, 76, .22);
+  border-radius: 9px;
+  color: #8a3530;
+  font-size: 13px;
+}
+main.login-page .login-error.show { display: flex; }
+main.login-page .login-error svg {
+  flex-shrink: 0;
+  color: var(--danger);
+}
+
+/* Success banner — same shape as .login-error but in the green family.
+   Used by the entry screen when it
+   receives ?reset=success. */
+main.login-page .login-success {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  background: var(--success-bg);
+  border: 1px solid var(--success-bd);
+  border-radius: 9px;
+  color: var(--success-fg);
+  font-size: 13px;
+}
+main.login-page .login-success.show { display: flex; }
+main.login-page .login-success svg {
+  flex-shrink: 0;
+  color: var(--green);
+}
+
+main.login-page .login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+main.login-page .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;                 /* override globals.css .field { margin-bottom: 18px } */
+}
+main.login-page .login-form .field label {
+  margin: 0;                 /* override globals.css .field label { margin-bottom: 7px } */
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+main.login-page .field input {
+  width: 100%;
+  padding: 11px 14px;
+  font-family: var(--font-ui);
+  font-size: 14.5px;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--border-2);
+  border-radius: 9px;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+main.login-page .field input::placeholder { color: var(--dim); }
+main.login-page .field input:focus {
+  background: var(--surface);
+  border-color: var(--teal);
+  box-shadow: 0 0 0 4px rgba(26, 140, 147, .10);
+}
+
+/* Field-level helper text — small note under the input
+   (used to explain password rules on the new-password screen). */
+main.login-page .field-hint {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+main.login-page .pwd-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+main.login-page .pwd-wrap input {
+  flex: 1;
+  padding-right: 44px;
+}
+main.login-page .pwd-toggle {
+  position: absolute;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color .15s, background .15s;
+}
+main.login-page .pwd-toggle:hover {
+  color: var(--ink);
+  background: var(--surface-2);
+}
+
+main.login-page .login-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 13px;
+}
+main.login-page .login-row label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-2);
+  cursor: pointer;
+  user-select: none;
+}
+main.login-page .login-row input[type="checkbox"] {
+  -webkit-appearance: none;
+          appearance: none;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  background: var(--bg);
+  border: 1px solid var(--border-2);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+main.login-page .login-row input[type="checkbox"]:checked {
+  background: var(--teal);
+  border-color: var(--teal);
+}
+main.login-page .login-row input[type="checkbox"]:checked::after {
+  content: '';
+  width: 9px;
+  height: 5px;
+  border-left: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(-45deg) translate(1px, -1px);
+}
+main.login-page .login-row a {
+  color: var(--teal);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color .15s;
+}
+main.login-page .login-row a:hover { color: var(--navy); }
+
+/* Buttons — navy primary, the same mould as the landing CTA */
+main.login-page .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 12px 20px;
+  font-family: var(--font-ui);
+  font-size: 14.5px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  text-decoration: none;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform .08s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease, color .15s ease;
+}
+main.login-page .btn:active { transform: translateY(1px); }
+main.login-page .btn-primary {
+  color: #fff;
+  background: var(--navy);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .06) inset, 0 6px 20px -8px rgba(11, 58, 74, .55);
+}
+main.login-page .btn-primary:hover {
+  background: var(--navy-2);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .06) inset, 0 10px 24px -8px rgba(11, 58, 74, .7);
+}
+main.login-page .btn-primary:disabled {
+  opacity: .6;
+  cursor: default;
+}
+main.login-page .login-submit {
+  width: 100%;
+  margin-top: 8px;
+  padding: 14px 20px;
+  font-size: 15px;
+}
+/* Secondary action on the entry screen ("Contratar secretarIA"). Outlined rather
+   than filled so the two paths on this page never compete: both are one click
+   away, but only signing in is the primary intent of the card. Built from the
+   same tokens as .btn-primary, so the dark block below re-themes it for free. */
+main.login-page .btn-secondary {
+  color: var(--ink);
+  background: transparent;
+  border-color: var(--border-2);
+}
+main.login-page .btn-secondary:hover {
+  color: var(--teal);
+  border-color: var(--teal);
+}
+
+main.login-page .login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0 18px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+main.login-page .login-divider::before,
+main.login-page .login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+main.login-page .login-help {
+  font-size: 13.5px;
+  text-align: center;
+  color: var(--muted);
+}
+main.login-page .login-help a {
+  color: var(--ink);
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-2);
+  transition: color .15s, border-color .15s;
+}
+main.login-page .login-help a:hover {
+  color: var(--teal);
+  border-color: var(--teal);
+}
+
+main.login-page .login-foot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  font-size: 12px;
+  color: var(--dim);
+}
+main.login-page .login-foot a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color .15s;
+}
+main.login-page .login-foot a:hover { color: var(--ink); }
+main.login-page .login-foot .sep { opacity: .5; }
+
+/* Step indicator — small "Etapa X de Y" pill at the top of forgot-password cards.
+   Keeps the user oriented through the 3-step flow without taking visual weight. */
+main.login-page .step-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--teal);
+  background: rgba(26, 140, 147, .08);
+  border: 1px solid rgba(26, 140, 147, .18);
+  border-radius: 999px;
+}
+main.login-page .step-indicator .step-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--teal);
+}
+
+@media (max-width: 480px) {
+  main.login-page .login-card { padding: 24px 22px; }
+  main.login-page .login-brand .wordmark { font-size: 28px; }
+}
+
+/* Respect reduced-motion: hold the dots still and show the ECG fully drawn */
+@media (prefers-reduced-motion: reduce) {
+  main.login-page .login-dot { animation: none; }
+  main.login-page .page-ecg .ecg-line {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   DARK THEME (data-theme="dark" on <html>)
+   Ported from the Claude Design handoff's dark-mode block in Login.html.
+   The auth pages have no theme toggle of their own — they passively
+   follow the global theme written by ThemeToggle into localStorage and
+   applied to <html> before first paint by THEME_INIT_SCRIPT.
+   Every rule is scoped to `html[data-theme="dark"] main.login-page` so
+   it wins by specificity over the light-theme defaults declared above
+   and stays sandboxed from the rest of the app shell.
+   ───────────────────────────────────────────────────────────── */
+
+html[data-theme="dark"] main.login-page {
+  /* Dark token set — mirrors Dashboard.html & the dark sections of the landing */
+  --bg:         #0b1f2a;
+  --surface:    #122a35;
+  --surface-2:  #173342;
+  --ink:        #f3eee0;
+  --ink-2:      #e0d8c4;
+  --muted:      #a0adb8;
+  --dim:        #6e7c87;
+  --border:     rgba(255, 255, 255, 0.07);
+  --border-2:   rgba(255, 255, 255, 0.14);
+  --teal:       #2aa6a8;
+  --teal-2:     #45c2c4;            /* hover/accent — only used in dark */
+  --warning:    #d4a851;
+  --danger:     #e57168;
+  --success-bg: rgba(91, 140, 90, .12);
+  --success-bd: rgba(91, 140, 90, .35);
+  --success-fg: #a4cfa1;
+  /* Glows lifted a touch so they read against the deeper background */
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(42, 166, 168, .10) 0%, transparent 60%),
+    radial-gradient(circle at 85% 15%, rgba(42, 166, 168, .14) 0%, transparent 50%),
+    radial-gradient(circle at 15% 85%, rgba(91, 140, 90, .10) 0%, transparent 55%),
+    radial-gradient(circle at 70% 90%, rgba(200, 150, 56, .06) 0%, transparent 55%),
+    var(--bg);
+}
+
+/* Medical-grid paper texture inverts to thin white lines on navy */
+html[data-theme="dark"] main.login-page .login-grid {
+  opacity: .8;
+  background-image:
+    linear-gradient(to right,  rgba(255, 255, 255, .045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, .045) 1px, transparent 1px),
+    linear-gradient(to right,  rgba(255, 255, 255, .022) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, .022) 1px, transparent 1px);
+}
+
+/* Floating dots: a touch more opaque so they hold up against the dark backdrop */
+html[data-theme="dark"] main.login-page .login-dot { opacity: .32; }
+html[data-theme="dark"] main.login-page .login-dot.d5,
+html[data-theme="dark"] main.login-page .login-dot.d6 { opacity: .22; }
+
+/* ECG: stronger teal glow on the live trace, slightly more visible ghost echo */
+html[data-theme="dark"] main.login-page .page-ecg .ecg-line {
+  filter:
+    drop-shadow(0 0 14px rgba(42, 166, 168, .75))
+    drop-shadow(0 0 3px  rgba(42, 166, 168, .50));
+}
+html[data-theme="dark"] main.login-page .page-ecg .ecg-ghost { opacity: .22; }
+
+/* Focus halo uses the darker, brighter teal at higher alpha — the light-theme
+   value (10% of the lighter teal) disappears on a navy field. Background and
+   borders intentionally inherit the light-theme rules: `--bg` is now navy and
+   reads as a softer-than-card surface, which gives inputs an inset feel. */
+html[data-theme="dark"] main.login-page .field input:focus {
+  box-shadow: 0 0 0 4px rgba(42, 166, 168, .18);
+}
+
+/* Error banner: warmer pink on dark to keep the danger reading legible */
+html[data-theme="dark"] main.login-page .login-error {
+  background: rgba(229, 113, 104, .08);
+  border-color: rgba(229, 113, 104, .28);
+  color: #f0a89f;
+}
+html[data-theme="dark"] main.login-page .login-error svg { color: var(--danger); }
+
+/* Step indicator: a touch brighter on dark */
+html[data-theme="dark"] main.login-page .step-indicator {
+  color: var(--teal-2);
+  background: rgba(42, 166, 168, .12);
+  border-color: rgba(42, 166, 168, .28);
+}
+html[data-theme="dark"] main.login-page .step-indicator .step-dot {
+  background: var(--teal-2);
+}
+
+/* "Schedule demo" link adapts — uses ink-2 + teal-2 to retain a soft accent */
+html[data-theme="dark"] main.login-page .login-help a {
+  color: var(--ink-2);
+  border-color: var(--border-2);
+}
+html[data-theme="dark"] main.login-page .login-help a:hover {
+  color: var(--teal-2);
+  border-color: var(--teal-2);
+}
+
+/* "Forgot password" hover: light-theme jumps to var(--navy), which sits too
+   close to the dark page background — swap to the brighter teal-2 instead. */
+html[data-theme="dark"] main.login-page .login-row a:hover { color: var(--teal-2); }
