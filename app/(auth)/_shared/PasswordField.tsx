@@ -1,9 +1,8 @@
 "use client";
 
 // PasswordField — labelled <input type="password"> with a show/hide toggle.
-// Used by the entry screen (/). In brain-frontend it was also shared with the
-// password-reset screens, which this app does not have.
-// so they stay visually identical.
+// Shared by the entry screen (/) and /esqueci_senha/atualizar_senha's new-password
+// form, so they stay visually identical — same split as in brain-frontend.
 
 import { useState } from "react";
 

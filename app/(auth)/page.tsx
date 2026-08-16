@@ -16,10 +16,23 @@
 // Authentication itself is unchanged: POST /auth/token against brain-api via
 // lib/manage-api.login(), which is the identity authority for every Brain
 // domain. The same credentials work in the Brain portal.
+//
+// "Esqueci minha senha" was deliberately OMITTED at the initial split (2026-08-14):
+// brain-api had no reset endpoints yet, and brain-frontend's own link pointed at
+// the wrong backend anyway (PreCheck's API — see docs/CHECKPOINT_secretaria_frontend.md).
+// Now that brain-api exposes its own /auth/password-reset/*, the link is back,
+// pointing at the /esqueci_senha flow ported into this app. It rides in a bare
+// `.login-row` (no checkbox here — "Lembrar de mim" was dropped, see the doc
+// above) so it reads as a small tertiary affordance and never competes with
+// "Entrar" or "Contratar secretarIA" for attention.
+//
+// Reads ?reset=success (set by /esqueci_senha/atualizar_senha's redirect back
+// here) to show a confirmation banner — which means this component now reads
+// URL state, so it needs the Suspense boundary static export requires.
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
 import { login } from "@/lib/manage-api";
 import { SIGNUP_HREF, resolvePostLogin } from "@/lib/portal-routes";
@@ -28,13 +41,29 @@ import { AuthShell } from "./_shared/AuthShell";
 import { PasswordField } from "./_shared/PasswordField";
 
 export default function EntryPage() {
+  return (
+    <Suspense fallback={<EntryFallback />}>
+      <EntryInner />
+    </Suspense>
+  );
+}
+
+function EntryInner() {
   const router = useRouter();
+  const search = useSearchParams();
 
   // --- State ---
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // --- Derived ---
+  // Shown when /esqueci_senha/atualizar_senha redirects here after a finished reset.
+  const justReset = search.get("reset") === "success";
+  const success = justReset
+    ? "Senha redefinida com sucesso. Entre com a nova senha."
+    : "";
 
   // --- Handlers ---
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -80,6 +109,7 @@ export default function EntryPage() {
       }
       subtitle="Entre para ver a agenda e configurar o atendimento no WhatsApp."
       error={error}
+      success={success}
       belowCard={
         <>
           <div className="login-divider">ou</div>
@@ -121,6 +151,13 @@ export default function EntryPage() {
           required
         />
 
+        {/* Tertiary affordance — not a full `.login-row` pair (no "Lembrar de
+            mim" checkbox here, see the file header), just the link right-aligned
+            so it stays subordinate to "Entrar" below. */}
+        <div className="login-row" style={{ justifyContent: "flex-end" }}>
+          <Link href="/esqueci_senha">Esqueci minha senha</Link>
+        </div>
+
         <button
           type="submit"
           className="btn btn-primary login-submit"
@@ -136,6 +173,21 @@ export default function EntryPage() {
           )}
         </button>
       </form>
+    </AuthShell>
+  );
+}
+
+function EntryFallback() {
+  return (
+    <AuthShell
+      title={
+        <>
+          A <em>secretarIA</em> da sua clínica.
+        </>
+      }
+      subtitle="Carregando…"
+    >
+      <div style={{ height: 200 }} aria-hidden="true" />
     </AuthShell>
   );
 }

@@ -1,12 +1,12 @@
 {
   "app/(auth)/_shared/AuthShell.tsx": {
-    "mtime": 1786747894.2875566,
-    "ast_hash": "8eb293f330abf7e43d078b486229bd98",
+    "mtime": 1786752946.1526375,
+    "ast_hash": "d6f12e626ef372135b44e23f8c2972e8",
     "semantic_hash": ""
   },
   "app/(auth)/_shared/PasswordField.tsx": {
-    "mtime": 1786748599.869335,
-    "ast_hash": "c9b57035826b6148556fd764e1ce8576",
+    "mtime": 1786752947.533775,
+    "ast_hash": "8e39106a984cb109cdcae58785794726",
     "semantic_hash": ""
   },
   "app/(auth)/layout.tsx": {
@@ -15,8 +15,8 @@
     "semantic_hash": ""
   },
   "app/(auth)/page.tsx": {
-    "mtime": 1786748347.2994678,
-    "ast_hash": "1efa6d15042315a00e29ebbbb831129b",
+    "mtime": 1786753047.833322,
+    "ast_hash": "6fb84dc8b1fccf7aa54568cee0ffd1b0",
     "semantic_hash": ""
   },
   "app/(site)/_components/BrandGlyph.tsx": {
@@ -410,8 +410,8 @@
     "semantic_hash": ""
   },
   "lib/manage-api.ts": {
-    "mtime": 1786748494.7503138,
-    "ast_hash": "6b214bfc53aa8ef9170a18e151dfc617",
+    "mtime": 1786752915.7332778,
+    "ast_hash": "3111cc0d712c02343e0bb104b20db3ec",
     "semantic_hash": ""
   },
   "lib/portal-routes.ts": {
@@ -460,8 +460,28 @@
     "semantic_hash": ""
   },
   "docs/CHECKPOINT_secretaria_frontend.md": {
-    "mtime": 1786750247.006446,
-    "ast_hash": "0587987ae205b5420c7fc0095f5a3ca2",
+    "mtime": 1786753177.232628,
+    "ast_hash": "979847e4a54b453de278c06953354006",
+    "semantic_hash": ""
+  },
+  "app/(auth)/_shared/StepIndicator.tsx": {
+    "mtime": 1786752940.99035,
+    "ast_hash": "1e077447e8ad5af9e35e5a607ce0fb38",
+    "semantic_hash": ""
+  },
+  "app/(auth)/esqueci_senha/atualizar_senha/page.tsx": {
+    "mtime": 1786752988.4022675,
+    "ast_hash": "c0cc10210d95be127ab12d11c4f3070f",
+    "semantic_hash": ""
+  },
+  "app/(auth)/esqueci_senha/page.tsx": {
+    "mtime": 1786752959.4808757,
+    "ast_hash": "c41d844bf1d7f2f46888b0576d59b742",
+    "semantic_hash": ""
+  },
+  "app/(auth)/esqueci_senha/token/page.tsx": {
+    "mtime": 1786752973.373368,
+    "ast_hash": "76f275c4d6dc29aedb5b0304b1996233",
     "semantic_hash": ""
   }
 }

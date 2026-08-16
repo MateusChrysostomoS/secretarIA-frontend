@@ -5,9 +5,10 @@
 // optional slots cover everything else.
 //
 // Ported from brain-frontend's (SignOut) group, where it was shared by /login
-// and /esqueci_senha/*. This app has a single public route, and no password
-// reset (brain-api exposes no reset endpoint — see docs/), so the shell now
-// serves one caller.
+// and /esqueci_senha/*. Now brain-api exposes its own native reset endpoints
+// (see lib/manage-api.ts), so the /esqueci_senha/* flow was ported here too —
+// the shell again serves multiple callers (the entry screen and the 3 reset
+// steps), same as it did in brain-frontend.
 
 import Link from "next/link";
 import type { ReactNode } from "react";

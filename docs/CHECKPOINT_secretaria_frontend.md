@@ -1,8 +1,12 @@
 # CHECKPOINT — secretarIA-frontend (split out of brain-frontend)
 
-**Rodada:** 2026-08-14 · **Estado:** BUILT + validado (`tsc --noEmit` limpo, 120 testes
-vitest verdes, `npm run build` gera `/out` com 11 rotas estáticas) · **NÃO deployado, NÃO
+**Rodada:** 2026-08-14 · **Estado:** BUILT + validado (`tsc --noEmit` limpo, 128 testes
+vitest verdes, `npm run build` gera `/out` com 14 rotas estáticas) · **NÃO deployado, NÃO
 pushed** (commits locais na `main`; nada empurrado para o `origin`).
+
+**Atualização mesma rodada:** o fluxo `/esqueci_senha` (recuperação de senha), que a
+rodada original tinha deixado de fora, foi portado — ver "O que foi portado" e a nota em
+"Lacunas conhecidas". Rotas subiram de 11 para 14; testes de 120 para 128.
 
 ---
 
@@ -25,7 +29,7 @@ da rodada do papel `secretary` (ver `brain-frontend/docs/CHECKPOINT_secretary_ro
 Isso foi deliberado — aquele prompt rodou primeiro, como recomendado, então o clone já
 nasce com `InviteTeamMemberModal`, a lista de secretárias e o `Role` de 4 valores.
 
-## Mapa de rotas (11, todas estáticas)
+## Mapa de rotas (14, todas estáticas)
 
 | Rota | O que é | Origem no brain-frontend |
 |---|---|---|
@@ -38,6 +42,7 @@ nasce com `InviteTeamMemberModal`, a lista de secretárias e o `Role` de 4 valor
 | `/app/reativar` | reativação de assinatura pausada | `(site)/app/reativar/*` |
 | `/calendar/connected` | callback OAuth do Google Calendar | idem |
 | `/convite` | aceite de convite de profissional/secretária | `(site)/convite/*` |
+| `/esqueci_senha`, `/esqueci_senha/token`, `/esqueci_senha/atualizar_senha` | recuperação de senha (3 passos) | `(SignOut)/esqueci_senha/*` — portado nesta mesma rodada, ver "O que foi portado" |
 
 O prefixo `/secretaria` foi removido — este app inteiro **é** a secretarIA, então
 `/secretaria/agenda` virou `/agenda` e `/secretaria/configuracao` virou `/configuracao`.
@@ -82,15 +87,36 @@ em `environment: "node"`, sem jsdom, então o que vale testar precisa viver fora
   `app-shell.css`, `dashboard-shell.css`, `PortalShell.css` e os componentes de marca.
 - Todas as telas da tabela de rotas acima, com seus testes existentes
   (`meta-embedded-signup.test.ts` veio junto).
+- **`app/(SignOut)/esqueci_senha/*` + `StepIndicator`** (rodada de 2026-08-14, depois da
+  divisão inicial): as 3 telas de recuperação de senha, agora apontando para
+  **`lib/manage-api.ts`** (`requestPasswordReset`/`verifyResetToken`/`confirmPasswordReset`,
+  CALL SITEs #9-#11) em vez de `lib/api.ts` (PreCheck) — brain-api ganhou
+  `/auth/password-reset/{request,verify,confirm}` nativos, então o fluxo agora funciona de
+  verdade para qualquer clínica, incluindo as que só existem na brain-api (todo signup por
+  `/cadastro`). Ajustes feitos ao portar (nenhuma tela é cópia 1:1):
+  - Toda checagem de erro trocou de string-match em `err.message` (o original comparava
+    `msg.toLowerCase().includes("rate limit")`, que não bate com o texto real da brain-api,
+    `"Too many attempts. Try again in a minute."`) para `err.status` via `ManageApiError`
+    — mesmo idioma já usado em `RestartButton`/`InviteTeamMemberModal`/etc.
+  - Links de volta apontam para `/` (não existe `/login` aqui); o rótulo virou "Entrar"
+    (não "Voltar ao login"), e o redirect final de `atualizar_senha` é `/?reset=success`
+    em vez de `/login?reset=success` — `/` (agora com Suspense, por causa do
+    `useSearchParams`) lê esse parâmetro e mostra o banner de sucesso.
+  - Validação de senha nova (`lib/password-policy.ts`, com teste) segue a regra real do
+    endpoint de confirm (8-72 caracteres, letra E dígito) em vez do check só-de-tamanho do
+    brain-frontend original. Deliberadamente **não** reaproveita
+    `(site)/cadastro/lib/password.ts` — aquele helper não tem teto de 72 e serve outro
+    endpoint (`/public/signup-intents`).
+  - Link "Esqueci minha senha" de volta em `/`, num `.login-row` (só o link, sem o checkbox
+    "Lembrar de mim" que este app não tem) alinhado à direita.
 
 ## O que ficou de fora — e por quê
 
 | Deixado de fora | Motivo |
 |---|---|
 | `app/(SignIn)/*` (dashboard, inbound, metrics, summary, users) | painel legado standalone do PreCheck; autentica por `localStorage["precheck_token"]` direto no PreCheck, sem passar pela brain-api |
-| `lib/api.ts`, `lib/auth.ts`, `lib/types.ts` | cliente da API do **PreCheck** (`NEXT_PUBLIC_API_URL`) — ver "Lacunas" |
+| `lib/api.ts`, `lib/auth.ts`, `lib/types.ts` | cliente da API do **PreCheck** (`NEXT_PUBLIC_API_URL`) — não portado; o único consumidor que existia (`esqueci_senha/*`) foi reapontado para `lib/manage-api.ts`, ver "O que foi portado" |
 | `lib/useAuthGuard.ts` | superseded pelo `usePortalGuard` |
-| `app/(SignOut)/esqueci_senha/*` + `StepIndicator` | fluxo de reset de senha — ver "Lacunas" |
 | `(site)/admin/*`, `(site)/doctor/*`, `(site)/app/page.tsx`, `(site)/app/billing/*` | domínio Brain |
 | `(site)/page.tsx`, `(site)/secretaria/page.tsx`, `app/precheck/page.tsx`, `components/landing/*`, `app/landing.css` | landing/marketing — "sem landing page por enquanto" |
 | `BackToAdminButton`, `useImpersonation` | o "Modo médico" começa e termina no portal Brain; este app não tem superfície de admin |
@@ -161,17 +187,12 @@ Gates locais rodados: `tsc.cmd --noEmit` limpo, **120 testes verdes**, `npm run 
 
 ## Lacunas conhecidas (nada disto bloqueia o build)
 
-- [ ] **Não existe recuperação de senha.** O fluxo `esqueci_senha/*` do brain-frontend chama
-      a **API do PreCheck** (`lib/api.ts` → `NEXT_PUBLIC_API_URL` → `/auth/password-reset/*`).
-      **A brain-api não tem nenhum endpoint de reset** — sua superfície de auth é `/token`,
-      `/refresh`, `/logout`, `/me`, `/exchange-onboarding-token`, `/exchange-invite-token`,
-      `/set-password`. Pior: uma clínica que nasceu pelo `/cadastro` existe só na brain-api,
-      não no banco do PreCheck — o reset responderia "enviamos o e-mail" e nunca enviaria nada.
-      Decisão do usuário em 2026-08-14: **omitir por enquanto**. Para existir de verdade,
-      a brain-api precisa de `POST /auth/password-reset/{request,verify,confirm}`; aí as 3
-      telas voltam. Hoje, quem esquece a senha depende de suporte.
-      *(Isto também é um bug latente no brain-frontend: o link "Esqueci a senha" de lá reseta
-      a senha do PreCheck, não a identidade Brain.)*
+- [x] ~~Não existe recuperação de senha.~~ **Resolvido em 2026-08-14** (mesma rodada): a
+      brain-api ganhou `POST /auth/password-reset/{request,verify,confirm}` nativos, e as 3
+      telas `esqueci_senha/*` foram portadas apontando para eles — ver "O que foi portado" e
+      o mapa de rotas. Link "Esqueci minha senha" de volta em `/`.
+      *(O bug irmão continua existindo no brain-frontend — lá "Esqueci a senha" ainda chama a
+      API do PreCheck, não a identidade Brain. Fora do escopo deste repo.)*
 - [ ] **Migração `0012_role_taxonomy` ainda não rodou em produção** na brain-api. Até rodar,
       a brain-api pode emitir os papéis legados `tenant_owner`/`tenant_staff` — por isso eles
       continuam aceitos em `PORTAL_ROLES` (com teste cobrindo).
@@ -224,7 +245,7 @@ de Environment do EasyPanel NÃO tem efeito nenhum** — isso já quebrou uma in
 ```
 npm install
 npm run dev     # http://localhost:3000
-npm test        # vitest, 120 testes
+npm test        # vitest, 128 testes
 npm run build   # gera /out
 ```
 

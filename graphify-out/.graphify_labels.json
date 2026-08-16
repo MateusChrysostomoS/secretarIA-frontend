@@ -38,7 +38,5 @@
   "36": "next-env.d.ts",
   "37": "vitest.config.ts",
   "38": "ManageApiError",
-  "39": "PriorApiStep.tsx",
-  "40": "WhatsappUsageStep.tsx",
   "41": "clearSession"
 }

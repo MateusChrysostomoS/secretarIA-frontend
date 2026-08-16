@@ -25,6 +25,9 @@
 //   GET  /billing/precheck/usage    -> PreCheck plan quota/usage/top-ups (getPrecheckBillingUsage)
 //   POST /billing/precheck/topup    -> Stripe Checkout URL for N avulso units   (createPrecheckTopupSession)
 //   POST /billing/precheck/upgrade  -> upgrade precheck_basic -> precheck_advanced (upgradePrecheckPlan)
+//   POST /auth/password-reset/request -> generic anti-enumeration message (requestPasswordReset)
+//   POST /auth/password-reset/verify  -> pre-flight token check            (verifyResetToken)
+//   POST /auth/password-reset/confirm -> consume token, set new password   (confirmPasswordReset)
 
 // ---------------------------------------------------------------------------
 // Types
@@ -780,6 +783,67 @@ export async function setPassword(
     { method: "POST", body: JSON.stringify({ new_password: password }) },
     session.token,
   );
+}
+
+// ---------------------------------------------------------------------------
+// Password reset (public, unauthenticated) — brain-api's native reset flow.
+// Ported into THIS app for the first time: brain-frontend's equivalent screens
+// called the PreCheck API instead (lib/api.ts -> NEXT_PUBLIC_API_URL), which
+// silently did nothing for any clinic that only exists in brain-api (every
+// self-serve /cadastro signup). brain-api now exposes its own
+// /auth/password-reset/{request,verify,confirm}, mirroring the PreCheck
+// contract's shape exactly (see docs/CHECKPOINT_secretaria_frontend.md).
+//
+// All three `detail` strings are backend-owned, human PT-BR prose meant for
+// direct display (not a machine code) — the request step's message is
+// deliberately IDENTICAL whether or not the e-mail exists (anti-enumeration),
+// so callers must render it as-is and never branch on its content.
+// ---------------------------------------------------------------------------
+
+export type PasswordResetMessage = { detail: string };
+
+// MANAGE-API CALL SITE #9 — password reset step 1. POST /auth/password-reset/request
+// { email }. ALWAYS resolves 200 with the same generic message regardless of whether
+// the address belongs to an account. Throws ManageApiError 429 when the shared per-IP
+// auth budget (login/refresh/reset) is exceeded.
+export async function requestPasswordReset(
+  email: string,
+): Promise<PasswordResetMessage> {
+  return manageFetch<PasswordResetMessage>("/auth/password-reset/request", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+// MANAGE-API CALL SITE #10 — password reset step 2. POST /auth/password-reset/verify
+// { token }. Read-only pre-flight so the UI can reject a broken/expired/already-used
+// link before the user types a new password — does NOT consume the token. Throws
+// ManageApiError 400 (invalid token) or 429 (rate limited).
+export async function verifyResetToken(
+  token: string,
+): Promise<PasswordResetMessage> {
+  return manageFetch<PasswordResetMessage>("/auth/password-reset/verify", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+}
+
+// MANAGE-API CALL SITE #11 — password reset step 3. POST /auth/password-reset/confirm
+// { token, new_password }. Consumes the token and sets the new password; brain-api
+// does NOT auto-login the caller, so the caller here routes back to / afterwards.
+// Throws ManageApiError 400 (invalid/expired/already-used token), 422 (password not
+// 8-72 chars, or missing a letter/digit — see lib/password-policy.ts for the client-side
+// mirror of this exact rule), or 429 (rate limited).
+export async function confirmPasswordReset(
+  token: string,
+  newPassword: string,
+): Promise<PasswordResetMessage> {
+  return manageFetch<PasswordResetMessage>("/auth/password-reset/confirm", {
+    method: "POST",
+    // Backend field is snake_case `new_password` (schemas/auth.py PasswordResetConfirmIn,
+    // extra="forbid") — same field name setPassword() above already sends.
+    body: JSON.stringify({ token, new_password: newPassword }),
+  });
 }
 
 // ---------------------------------------------------------------------------
