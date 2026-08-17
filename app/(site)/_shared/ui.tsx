@@ -122,8 +122,8 @@ export function Btn({
     display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
     padding: pad, fontSize: fs, fontWeight: 600, borderRadius: 999, letterSpacing: ".005em",
     transition: "all .18s var(--ease)", whiteSpace: "nowrap", lineHeight: 1,
-    opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? "none" : "auto",
-    cursor: "pointer", border: "none",
+    opacity: disabled ? 0.5 : 1,
+    cursor: disabled ? "not-allowed" : "pointer", border: "none",
   };
 
   const variantStyles: Record<BtnVariant, CSSProperties> = {
@@ -137,7 +137,13 @@ export function Btn({
 
   return (
     <button
+      type="button"
       title={title}
+      // The real DOM attribute, not just the dimmed look: `pointerEvents:
+      // none` alone stops the mouse but leaves the button tabbable and
+      // Enter/Space-activatable, and leaves assistive tech announcing it as
+      // available. A disabled Save must be disabled for everyone.
+      disabled={disabled}
       onClick={onClick}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}

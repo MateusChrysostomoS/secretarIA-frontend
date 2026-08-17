@@ -3,7 +3,7 @@
 // Shows the tenant-wide mode selector (per_professional vs. shared_account),
 // then an OAuth connect card when disconnected, and a connected state card
 // when gcal.connected is true.
-// When `onConnect`/`onDisconnect` are provided (hubReady in the parent page),
+// When `onConnect`/`onDisconnect` are provided (hubTokenReady in the parent page),
 // they drive the real secretarIA hub OAuth handoff. When either is
 // undefined, the corresponding action is genuinely unavailable — the button
 // renders disabled with an explanatory hint, never a fabricated result.

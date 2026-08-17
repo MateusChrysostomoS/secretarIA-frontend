@@ -21,10 +21,11 @@ type RequirementRowProps = {
   requirement: Requirement;
   onChange: (text: string) => void;
   onRemove: () => void;
+  readOnly?: boolean;
 };
 
 // One requirement line: free-text input + remove button.
-function RequirementRow({ requirement, onChange, onRemove }: RequirementRowProps) {
+function RequirementRow({ requirement, onChange, onRemove, readOnly }: RequirementRowProps) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
       {/* leading dot bullet to read as a list item */}
@@ -34,10 +35,12 @@ function RequirementRow({ requirement, onChange, onRemove }: RequirementRowProps
         onChange={e => onChange(e.target.value)}
         placeholder="Ex.: Jejum de 8 horas antes da consulta"
         style={{ flex: 1 }}
+        disabled={readOnly}
       />
       <button
         type="button"
         onClick={onRemove}
+        disabled={readOnly}
         title="Remover orientação"
         aria-label="Remover orientação"
         style={{
@@ -45,7 +48,8 @@ function RequirementRow({ requirement, onChange, onRemove }: RequirementRowProps
           display: "flex", alignItems: "center", justifyContent: "center",
           color: "var(--ink-faint)",
           background: "var(--surface)", border: "1px solid var(--line)",
-          cursor: "pointer",
+          opacity: readOnly ? 0.5 : 1,
+          cursor: readOnly ? "not-allowed" : "pointer",
         }}
       >
         <Icon name="x" size={15} />
@@ -63,10 +67,19 @@ type ServiceCardProps = {
   onChange: (updated: Service) => void;
   onRemove: () => void;
   canRemove: boolean;
+  // True until the selected professional's config has hydrated — see
+  // ServicesSection.
+  readOnly?: boolean;
 };
 
 // Renders a single appointment-type card with its requirements editor.
-export function ServiceCard({ service, onChange, onRemove, canRemove }: ServiceCardProps) {
+export function ServiceCard({
+  service,
+  onChange,
+  onRemove,
+  canRemove,
+  readOnly,
+}: ServiceCardProps) {
   // Start expanded when the type already has requirements, so they're visible.
   const [expanded, setExpanded] = useState(() => service.requirements.length > 0);
 
@@ -92,6 +105,9 @@ export function ServiceCard({ service, onChange, onRemove, canRemove }: ServiceC
     });
 
   const count = service.requirements.length;
+  // One place to decide "can this card be removed right now", so the visual
+  // state and the DOM disabled attribute can never disagree.
+  const removable = canRemove && !readOnly;
 
   return (
     <div style={{
@@ -116,11 +132,13 @@ export function ServiceCard({ service, onChange, onRemove, canRemove }: ServiceC
             placeholder="Nome do serviço"
             aria-label="Nome do serviço"
             style={{ flex: 1, minWidth: 160 }}
+            disabled={readOnly}
           />
           <CSelect
             value={service.dur}
             onChange={e => onChange({ ...service, dur: +e.target.value })}
             style={{ width: 116 }}
+            disabled={readOnly}
           >
             {DURATION_OPTIONS.map(d => (
               <option key={d} value={d}>{d} min</option>
@@ -132,6 +150,7 @@ export function ServiceCard({ service, onChange, onRemove, canRemove }: ServiceC
             placeholder="R$ — (opcional)"
             aria-label="Valor"
             style={{ width: 120 }}
+            disabled={readOnly}
           />
         </div>
 
@@ -141,6 +160,7 @@ export function ServiceCard({ service, onChange, onRemove, canRemove }: ServiceC
             <CToggle
               on={service.active}
               onChange={v => onChange({ ...service, active: v })}
+              disabled={readOnly}
             />
             <span style={{
               fontSize: 12.5, fontWeight: 600,
@@ -153,7 +173,7 @@ export function ServiceCard({ service, onChange, onRemove, canRemove }: ServiceC
           <button
             type="button"
             onClick={onRemove}
-            disabled={!canRemove}
+            disabled={!removable}
             title="Remover serviço"
             aria-label="Remover serviço"
             style={{
@@ -161,8 +181,8 @@ export function ServiceCard({ service, onChange, onRemove, canRemove }: ServiceC
               display: "flex", alignItems: "center", justifyContent: "center",
               background: "var(--surface)", border: "1px solid var(--line)",
               color: "var(--ink-faint)",
-              opacity: canRemove ? 1 : 0.4,
-              cursor: canRemove ? "pointer" : "not-allowed",
+              opacity: removable ? 1 : 0.4,
+              cursor: removable ? "pointer" : "not-allowed",
             }}
           >
             <Icon name="x" size={16} />
@@ -216,6 +236,7 @@ export function ServiceCard({ service, onChange, onRemove, canRemove }: ServiceC
                 requirement={r}
                 onChange={text => setRequirement(i, text)}
                 onRemove={() => removeRequirement(i)}
+                readOnly={readOnly}
               />
             ))
           )}
@@ -224,12 +245,15 @@ export function ServiceCard({ service, onChange, onRemove, canRemove }: ServiceC
           <button
             type="button"
             onClick={addRequirement}
+            disabled={readOnly}
             style={{
               alignSelf: "flex-start",
               display: "inline-flex", alignItems: "center", gap: 6,
               fontSize: 13, fontWeight: 600, color: "var(--brand)",
               padding: "5px 2px",
-              background: "none", border: "none", cursor: "pointer",
+              background: "none", border: "none",
+              opacity: readOnly ? 0.5 : 1,
+              cursor: readOnly ? "not-allowed" : "pointer",
             }}
           >
             <Icon name="plus" size={15} />

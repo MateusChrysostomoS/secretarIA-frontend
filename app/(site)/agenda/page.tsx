@@ -293,7 +293,7 @@ export default function AgendaPage() {
   const toastRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // --- secretarIA hub: entitlement-gated real data path ---
-  const { session, ready: hubCheckReady, notEntitled, unavailable, hubReady, retry } = useSecretariaHub();
+  const { session, ready: hubCheckReady, notEntitled, unavailable, hubTokenReady, retry } = useSecretariaHub();
   // Real events for the current week, once a hub fetch has succeeded. null
   // means "no real fetch has succeeded yet" — the grid then falls back to
   // `appts`, which is always empty (see above): no session, no entitlement,
@@ -349,9 +349,9 @@ export default function AgendaPage() {
   // TODO(hub-write) note in hub-mapping.ts and drawer.tsx (blocked on
   // secretarIA exposing an appointment id on the read model, not a frontend gap).
   useEffect(() => {
-    if (!hubReady || !session) return;
+    if (!hubTokenReady || !session) return;
     reloadWeek();
-  }, [hubReady, session, reloadWeek]);
+  }, [hubTokenReady, session, reloadWeek]);
 
   // ---------------------------------------------------------------------------
   // flash — shows a toast then auto-dismisses after 3.4 s
@@ -380,7 +380,7 @@ export default function AgendaPage() {
   // ---------------------------------------------------------------------------
 
   /**
-   * Persist a newly created appointment. Only reachable when hubReady (the
+   * Persist a newly created appointment. Only reachable when hubTokenReady (the
    * Toolbar's "Nova consulta" trigger is disabled otherwise — see below), so
    * this always creates a REAL Google Calendar event via
    * POST /tenants/me/calendar/appointments and refetches the week instead of
@@ -388,9 +388,9 @@ export default function AgendaPage() {
    * message, so the success flash never claims one was sent.
    */
   const createAppt = async (data: Omit<Appt, "id">, _message: string | null) => {
-    if (!hubReady || !session) {
+    if (!hubTokenReady || !session) {
       // Defensive only — the trigger that opens this modal is disabled
-      // whenever hubReady is false, so this should be unreachable.
+      // whenever hubTokenReady is false, so this should be unreachable.
       flash("A agenda real não está disponível agora.", "xCircle");
       return;
     }
@@ -419,7 +419,7 @@ export default function AgendaPage() {
   };
 
   /**
-   * Add a new time block to the calendar. Only reachable when hubReady (the
+   * Add a new time block to the calendar. Only reachable when hubTokenReady (the
    * Toolbar's "Bloquear" trigger is disabled otherwise — see below), so this
    * always blocks the slot for real via POST /tenants/me/calendar/blocks and
    * refetches the week. The summary is tagged with the "Bloqueado" prefix
@@ -432,9 +432,9 @@ export default function AgendaPage() {
     dur: number;
     reason: string;
   }) => {
-    if (!hubReady || !session) {
+    if (!hubTokenReady || !session) {
       // Defensive only — the trigger that opens this modal is disabled
-      // whenever hubReady is false, so this should be unreachable.
+      // whenever hubTokenReady is false, so this should be unreachable.
       flash("A agenda real não está disponível agora.", "xCircle");
       return;
     }
@@ -499,7 +499,7 @@ export default function AgendaPage() {
         onRetry={retry}
       />
 
-      {/* honest error state when hubReady but the events fetch itself failed —
+      {/* honest error state when hubTokenReady but the events fetch itself failed —
           distinct from HubNotice's `unavailable` (token mint never succeeded) */}
       {hubFetchFailed && (
         <div
@@ -544,7 +544,7 @@ export default function AgendaPage() {
             // From month view, jump back to week instead of staying in month
             if (view === "mes") setView("semana");
           }}
-          disabled={!hubReady}
+          disabled={!hubTokenReady}
         />
 
         {view === "semana" && (

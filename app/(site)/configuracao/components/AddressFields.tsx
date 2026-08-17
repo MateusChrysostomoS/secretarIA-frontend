@@ -1,8 +1,17 @@
 "use client";
 // AddressFields — the structured clinic address block for Section 01.
-// REAL as of the Onboarding & Multi-Professional contract (Feature 1):
-// TenantConfigWire.address round-trips these fields — see toWireAddress/
-// applyWireAddress in lib/hub-mapping.ts.
+//
+// These fields DO round-trip: TenantConfigWire.address <-> tenants.address, via
+// toWireAddress/applyWireAddress in lib/hub-mapping.ts. What they do NOT do is
+// reach the bot. A search of secretarIA turns up exactly two readers of
+// tenants.address — the hub config endpoint that echoes it back, and the model
+// column itself. The only address the agent ever speaks is Unit.address, a
+// different table, surfaced by the multi_unit plugin's list_units tool; the
+// scoped-help prompt even lists "endereço" as out of scope.
+//
+// So the copy below calls this registration data and stops there. Making it
+// answer "onde fica?" is a separate end-to-end scope (resolver + prompt
+// injection + tests), not a tooltip.
 
 import { Field, TextInput } from "../../_shared/ui";
 import type { ClinicCtx } from "../lib/types";
@@ -23,14 +32,20 @@ export function AddressFields({ v, set, readOnly }: AddressFieldsProps) {
       <span style={{
         fontSize: 12.5, fontWeight: 600, color: "var(--ink-soft)", letterSpacing: ".01em",
       }}>
-        Endereço da clínica
+        Endereço da clínica <span style={{ fontWeight: 500, color: "var(--ink-faint)" }}>
+          (dado cadastral)
+        </span>
       </span>
+      <p style={{ fontSize: 12, color: "var(--ink-faint)", lineHeight: 1.5, margin: "-4px 0 0" }}>
+        Fica guardado no cadastro da clínica. A secretarIA ainda não usa este endereço nas
+        respostas do WhatsApp — se você atende em mais de um local, cadastre as unidades.
+      </p>
 
       {/* row 1: street + number | complement */}
       <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 16 }}>
         <Field
           label="Endereço (rua e número)"
-          tip="A secretarIA envia ao paciente quando perguntam “onde fica?” e na confirmação da consulta."
+          tip="Guardado no cadastro da clínica. Hoje não é enviado automaticamente ao paciente."
         >
           <TextInput
             value={v.addressLine}

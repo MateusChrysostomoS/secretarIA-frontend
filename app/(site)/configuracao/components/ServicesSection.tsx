@@ -19,10 +19,19 @@ type ServicesSectionProps = {
   services: Service[];
   setServices: Dispatch<SetStateAction<Service[]>>;
   professionalName?: string;
+  // True until the SELECTED professional's config has hydrated. Editing the
+  // (necessarily empty) list before that would build a payload that wipes
+  // whatever the hub actually holds for them — see lib/hydration.ts.
+  readOnly?: boolean;
 };
 
 // Renders the appointment-type cards with add/remove controls inside Section 06.
-export function ServicesSection({ services, setServices, professionalName }: ServicesSectionProps) {
+export function ServicesSection({
+  services,
+  setServices,
+  professionalName,
+  readOnly,
+}: ServicesSectionProps) {
   const update = (i: number, s: Service) =>
     setServices(prev => prev.map((x, j) => (j === i ? s : x)));
 
@@ -53,6 +62,7 @@ export function ServicesSection({ services, setServices, professionalName }: Ser
             onChange={ns => update(i, ns)}
             onRemove={() => remove(i)}
             canRemove={services.length > 1}
+            readOnly={readOnly}
           />
         ))}
 
@@ -60,13 +70,16 @@ export function ServicesSection({ services, setServices, professionalName }: Ser
         <button
           type="button"
           onClick={add}
+          disabled={readOnly}
           style={{
             display: "inline-flex", alignItems: "center", gap: 8,
             alignSelf: "flex-start", marginTop: 2,
             padding: "9px 15px", borderRadius: 10,
             fontSize: 13.5, fontWeight: 600,
             color: "var(--brand)", background: "var(--brand-tint)",
-            border: "1px dashed var(--brand)", cursor: "pointer",
+            border: "1px dashed var(--brand)",
+            opacity: readOnly ? 0.5 : 1,
+            cursor: readOnly ? "not-allowed" : "pointer",
           }}
         >
           <Icon name="plus" size={16} />

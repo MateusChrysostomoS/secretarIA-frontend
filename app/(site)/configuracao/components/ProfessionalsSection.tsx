@@ -74,6 +74,12 @@ type ProfessionalsSectionProps = {
   // roster). null/absent = no dedicated calendar yet. Only meaningful in
   // "shared_account" mode.
   googleCalendarIdByProfessional: Record<string, string | null>;
+  // True until the SELECTED professional's config has hydrated (see
+  // lib/hydration.ts). Gates ONLY the three profile fields below — the roster
+  // actions (invite, self-bind, calendar) each carry their own guards, and the
+  // professional selector must stay live precisely so it can trigger the
+  // hydration of the newly picked id.
+  readOnly?: boolean;
 };
 
 export function ProfessionalsSection({
@@ -89,6 +95,7 @@ export function ProfessionalsSection({
   googleCalendarMode,
   clinicCalendarConnected,
   googleCalendarIdByProfessional,
+  readOnly,
 }: ProfessionalsSectionProps) {
   // null = closed; otherwise which flavour of invite the modal is showing.
   const [inviteKind, setInviteKind] = useState<InviteKind | null>(null);
@@ -99,7 +106,7 @@ export function ProfessionalsSection({
   const [selfBindDismissed, setSelfBindDismissed] = useState(false);
   // Secretaries are fetched HERE rather than by the parent page (which owns the
   // professional roster): the list is purely local to brain-api — no secretaria
-  // hub round-trip — so it does not need the page's `hubReady` gate, and it
+  // hub round-trip — so it does not need the page's `hubTokenReady` gate, and it
   // feeds none of the page's selected-professional state machine.
   const [secretaries, setSecretaries] = useState<DoctorSecretary[] | null>(null);
 
@@ -269,6 +276,7 @@ export function ProfessionalsSection({
                   value={profile.specialty}
                   onChange={(e) => onProfileChange("specialty", e.target.value)}
                   placeholder="Clínica geral, Cardiologia…"
+                  disabled={readOnly}
                 />
               </Field>
             </div>
@@ -281,6 +289,7 @@ export function ProfessionalsSection({
                 onChange={(e) => onProfileChange("about", e.target.value)}
                 rows={3}
                 placeholder="Ex.: Atende adultos e idosos há 12 anos, com foco em acompanhamento contínuo…"
+                disabled={readOnly}
               />
             </Field>
             <Field
@@ -292,6 +301,7 @@ export function ProfessionalsSection({
                 onChange={(e) => onProfileChange("contextDoctorMessage", e.target.value)}
                 rows={2}
                 placeholder="Opcional"
+                disabled={readOnly}
               />
             </Field>
           </div>

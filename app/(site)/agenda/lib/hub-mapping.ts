@@ -10,7 +10,7 @@
 // type, and an "agendado" status.
 //
 // Write status: CREATE (POST .../appointments) and BLOCK (POST .../blocks)
-// are wired for real when hubReady — see page.tsx's createAppt/createBlock,
+// are wired for real when hubTokenReady — see page.tsx's createAppt/createBlock,
 // which use slotToIsoRange below to turn the modal's day/start/dur into the
 // same real-world week currentWeekIsoRange anchors the read on.
 // CANCEL, RESCHEDULE, EDIT, and quick status-change stay disabled (no local
