@@ -387,6 +387,12 @@ export function getTenantConfig(session: Session): Promise<TenantConfigWire> {
 }
 
 // PUT /tenants/me/config — partial update; only provided fields are applied.
+//
+// LEGACY for the Configuração screen: saving that screen means writing the
+// tenant AND one professional, and doing it with this call plus a second one
+// leaves a half-saved clinic when the second fails. Use
+// updateHubConfiguration below; this stays exported as its fallback and for
+// callers that genuinely only touch tenant-level fields.
 export function updateTenantConfig(
   session: Session,
   patch: TenantConfigUpdatePayload,
@@ -395,6 +401,57 @@ export function updateTenantConfig(
     method: "PUT",
     body: JSON.stringify(patch),
   });
+}
+
+// ---------------------------------------------------------------------------
+// Transactional configuration save (PUT /tenants/me/configuration)
+// ---------------------------------------------------------------------------
+
+// Body for the aggregate save. `professional_id` and `professional` travel as
+// a pair — the backend rejects one without the other, since an id with no
+// patch is a no-op that still looks like a write.
+export type HubConfigurationUpdatePayload = {
+  tenant?: TenantConfigUpdatePayload;
+  professional_id?: string;
+  professional?: ProfessionalConfigUpdatePayload;
+};
+
+// Both halves come back as the backend persisted them, built by the same
+// readers the GETs use — so a caller can hydrate straight from this response
+// and a later GET will agree with it.
+export type HubConfigurationWire = {
+  tenant: TenantConfigWire;
+  professional: ProfessionalWire | null;
+};
+
+// PUT /tenants/me/configuration — saves the tenant config and (optionally) one
+// professional's config in a SINGLE server-side transaction. Either both land
+// or neither does; there is no state where the clinic's greeting changed but
+// the professional's hours did not.
+export function updateHubConfiguration(
+  session: Session,
+  body: HubConfigurationUpdatePayload,
+): Promise<HubConfigurationWire> {
+  return hubFetch<HubConfigurationWire>(session, "/tenants/me/configuration", {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+/**
+ * Does this error mean "the deployed backend predates the transactional
+ * endpoint" — as opposed to "the save genuinely failed"?
+ *
+ * Only a 404/405 on the route itself qualifies. A 5xx, a timeout or a 422 are
+ * REAL failures and must surface as failures: dressing them up as a version
+ * mismatch would silently downgrade to the two-PUT path and reintroduce the
+ * very half-save this endpoint exists to prevent.
+ *
+ * Exists solely for the rollout window, when a new frontend bundle can reach
+ * an older API. Delete it once the backend is deployed everywhere.
+ */
+export function isLegacyBackend(error: unknown): boolean {
+  return error instanceof HubApiError && (error.status === 404 || error.status === 405);
 }
 
 // GET /tenants/me/calendar/events?start=&end= — agenda read model for a window.

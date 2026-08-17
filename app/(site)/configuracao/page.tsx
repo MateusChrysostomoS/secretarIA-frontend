@@ -1,30 +1,34 @@
 "use client";
 // Configuração page — the full-viewport secretarIA chatbot configuration screen.
-// Owns all form state (ctx, messages, postConsult, pixDeposit, professionals,
-// services, days, prefs, gcal) and the scrollspy logic. Composed of SideNav +
-// eight Section components; a sticky save bar sits at the bottom. Theme is
-// initialised from the existing [data-theme] attribute after mount to avoid
-// an SSR hydration mismatch.
+// Composition + wiring only: the rules live in lib/hydration.ts (what may be
+// edited and saved), lib/snapshot.ts (what "the last authoritative state" is)
+// and lib/save.ts (the guarded write path).
 //
-// Onboarding & Multi-Professional pass: added Mensagens + Profissionais
-// sections; Services/Availability now edit the SELECTED professional instead
-// of a single tenant-wide list; Context dropped specialty/about (now
-// per-professional) and gained real address/insurances/collect_insurance.
-// Every authenticated tenant member (owner or not) gets full read/write
-// access — a non-owner session's own professional is just preselected in
-// ProfessionalsSection (see loadProfessionals), it isn't locked read-only.
+// FAIL-CLOSED HYDRATION (FIX 07)
+// ------------------------------
+// The old version enabled this screen on a proxy — a hub token minted and a
+// base URL configured — and seeded every field with sales-demo values as a
+// "pre-hydration placeholder". A tenant whose GET /tenants/me/config returned
+// 500 therefore sat in front of an editable form full of demo greeting, demo
+// Pix policy, demo hours and demo services, and Save would PUT all of it over
+// their real configuration.
 //
-// Demo-data honesty: the initial state below seeds sales-demo values (used
-// ONLY as a pre-hydration placeholder / logged-out showcase). Once a session
-// exists, that placeholder is either replaced by real hydrated data
-// (hubReady) or explicitly cleared to an honest empty state (hub
-// unreachable/not configured) — see the `hubUnreachable` effect below. It is
-// never left showing fake data to a logged-in tenant.
+// Now: an authenticated session starts EMPTY and READ-ONLY, and each source
+// (tenant / roster / selected professional) carries its own explicit
+// idle→loading→loaded|error phase. Editing unlocks per scope only after that
+// scope's GET actually succeeded; Save is refused — with zero PUTs — for any
+// other combination. Failure shows an error with a retry, and never falls back
+// to demo data. Switching professional invalidates the professional scope
+// until that exact id has hydrated, and a late response for a previous
+// selection is dropped instead of repainting the current one.
+//
+// The demo showcase still exists, but only for a SESSION-LESS visitor, and
+// only through lib/demo-seed.ts's `.forVisitor` unwrap.
 
 import "../product-tokens.css";
 import "../app-shell.css";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useReducer, useMemo } from "react";
 import type { MutableRefObject } from "react";
 import { useRouter } from "next/navigation";
 import { Icon, Btn } from "../_shared/ui";
@@ -34,10 +38,10 @@ import { PortalHeader } from "../_components/PortalHeader";
 import { SecretariaWordmark } from "../_components/SecretariaWordmark";
 import { signOut } from "@/lib/sign-out";
 import { useSecretariaHub } from "../_shared/useSecretariaHub";
-import { CLINIC } from "../_shared/data";
 
 import { SideNav } from "./components/SideNav";
 import { CToast } from "./components/CToast";
+import { LoadStateNotice } from "./components/LoadStateNotice";
 import { ContextSection } from "./components/ContextSection";
 import { MessagesSection } from "./components/MessagesSection";
 import { PostConsultSection } from "./components/PostConsultSection";
@@ -49,7 +53,13 @@ import { GoogleSection } from "./components/GoogleSection";
 
 import {
   DEFAULT_PIX_DEPOSIT,
+  EMPTY_CLINIC_CTX,
+  EMPTY_GCAL,
+  EMPTY_MESSAGES,
+  EMPTY_POST_CONSULT,
+  EMPTY_PREFS,
   EMPTY_PROFESSIONAL_PROFILE,
+  closedWeek,
   type ClinicCtx,
   type DayConfig,
   type GcalState,
@@ -61,95 +71,89 @@ import {
   type Service,
 } from "./lib/types";
 import {
-  applyWireAddress,
-  applyWireAppointmentTypes,
-  applyWireBusinessHours,
-  applyWireGcal,
-  applyWireInsurances,
-  applyWireMessages,
-  applyWirePixDeposit,
-  applyWirePostConsult,
-  applyWireProfessionalProfile,
   buildConfigUpdatePayload,
   buildProfessionalConfigPayload,
 } from "./lib/hub-mapping";
 import {
+  DEMO_CTX,
+  DEMO_PROFESSIONAL_ID,
+  DEMO_PROFILE,
+  DEMO_ROSTER,
+  DEMO_SERVICES,
+  demoWeek,
+} from "./lib/demo-seed";
+import {
+  INITIAL_HYDRATION_STATE,
+  buildLoadFailedEvent,
+  canEditProfessionalFields,
+  canEditTenantFields,
+  emitConfigEvent,
+  hydrationReducer,
+  saveBlockedReason,
+  statusOf,
+} from "./lib/hydration";
+import {
+  EMPTY_SNAPSHOT,
+  dirtySections,
+  emptyProfessionalSlices,
+  emptyTenantSlices,
+  professionalSlicesFromWire,
+  snapshotForTenant,
+  tenantSlicesFromWire,
+  type AuthoritativeSnapshot,
+  type ProfessionalSlices,
+  type TenantSlices,
+} from "./lib/snapshot";
+import {
+  PARTIAL_SAVE_MESSAGE,
+  SAVE_BLOCKED_MESSAGE,
+  performSave,
+  retryProfessionalOnly,
+} from "./lib/save";
+import {
   disconnectCalendar,
   getProfessionals,
   getTenantConfig,
+  isLegacyBackend,
   startCalendarOauth,
+  updateHubConfiguration,
   updateProfessionalConfig,
   updateTenantConfig,
+  type HubConfigurationUpdatePayload,
+  type ProfessionalConfigUpdatePayload,
   type ProfessionalWire,
+  type TenantConfigUpdatePayload,
   type TenantConfigWire,
 } from "@/lib/secretaria-hub";
-import { getDoctorProfessionals, type DoctorProfessional } from "@/lib/manage-api";
-
-// ---------------------------------------------------------------------------
-// Weekday seed — used to initialise/reset the days state
-// ---------------------------------------------------------------------------
-
-// [key, label] pairs in ISO week order (Mon → Sun)
-const WD: [string, string][] = [
-  ["seg", "Segunda"],
-  ["ter", "Terça"],
-  ["qua", "Quarta"],
-  ["qui", "Quinta"],
-  ["sex", "Sexta"],
-  ["sab", "Sábado"],
-  ["dom", "Domingo"],
-];
-
-// A fully-closed week — the base every professional's hydration starts from,
-// so switching between professionals never leaks one professional's ranges
-// onto another's blank days (see the per-professional hydration effect below).
-function closedWeek(): DayConfig[] {
-  return WD.map(([key, label]) => ({ key, label, on: false, ranges: [] }));
-}
-
-// Rich demo seed — used only for the logged-out/not-entitled showcase and as
-// the pre-hydration placeholder, so the page never looks empty before data loads.
-function demoWeek(): DayConfig[] {
-  return WD.map(([key, label], i) => ({
-    key,
-    label,
-    on: i < 5, // Mon–Fri open by default
-    ranges:
-      i < 5
-        ? [{ start: 8 * 60, end: 12 * 60 }, { start: 14 * 60, end: 18 * 60 }]
-        : [{ start: 9 * 60, end: 12 * 60 }],
-  }));
-}
-
-// Single demo roster row shown before real professionals load (keeps the new
-// Profissionais section from looking stuck-loading in demo/logged-out mode).
-const DEMO_PROFESSIONAL_ID = "demo";
-const DEMO_ROSTER: DoctorProfessional[] = [
-  {
-    id: DEMO_PROFESSIONAL_ID,
-    name: CLINIC.name,
-    is_active: true,
-    has_calendar: false,
-    has_hours: true,
-    has_services: true,
-    complete: false,
-    linked_user_email: null,
-    invite_pending: false,
-  },
-];
+import { getDoctorProfessionals, type DoctorProfessional, type Session } from "@/lib/manage-api";
 
 // SideNav section ids — used for scrollspy
 const NAV_IDS = ["ctx", "msg", "pos", "pix", "prof", "srv", "disp", "gcal"] as const;
 type NavId = (typeof NAV_IDS)[number];
 
+/**
+ * Which professional to select once a roster lands. Keeps a still-valid
+ * current selection (a staff member who switched to a colleague shouldn't snap
+ * back on every refresh), otherwise defaults a non-owner to their own
+ * professional, otherwise takes the first row so single-professional tenants
+ * need no click at all.
+ */
+function pickProfessional(
+  roster: DoctorProfessional[],
+  session: Session,
+  current: string | null,
+): string | null {
+  if (current && roster.some((p) => p.id === current)) return current;
+  // is_owner is the new claim; role === "tenant_owner" is the legacy fallback.
+  const isOwner = session.isOwner || session.role === "tenant_owner";
+  if (!isOwner && session.professionalId) return session.professionalId;
+  return roster[0]?.id ?? null;
+}
+
 // ---------------------------------------------------------------------------
 // ConfiguracaoPage — default export
 // ---------------------------------------------------------------------------
 
-/**
- * ConfiguracaoPage — the full-viewport secretarIA Configuração screen.
- * Port of ConfigApp from _design-source/config.jsx.
- */
 export default function ConfiguracaoPage() {
   const router = useRouter();
 
@@ -183,311 +187,465 @@ export default function ConfiguracaoPage() {
   const [toast, setToast] = useState<{ message: string; kind: "success" | "error" } | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const flash = (message: string, kind: "success" | "error" = "success") => {
+  const flash = useCallback((message: string, kind: "success" | "error" = "success") => {
     setToast({ message, kind });
     if (toastTimer.current) clearTimeout(toastTimer.current);
     // Auto-dismiss after 3 s, matching the source behaviour
     toastTimer.current = setTimeout(() => setToast(null), 3000);
-  };
+  }, []);
 
-  // --- Section 01: clinic context ---
-  // clinicName is hub-backed (read-only hydrate from TenantConfigRead; never
-  // sent on save). address/insurances/collectInsurance are REAL wire fields.
-  // phone stays demo-only — secretarIA still has no clinic-phone wire field.
-  const [ctx, setCtx] = useState<ClinicCtx>({
-    clinicName: "Consultório Dr. Aurélio Lima",
-    addressLine: "",
-    addressComplement: "",
-    neighborhood: "",
-    city: "",
-    state: "",
-    postalCode: "",
-    phone: "+55 11 3000-0000",
-    insurances: "Unimed, Bradesco Saúde, SulAmérica",
-    collectInsurance: true,
-  });
-  // Generic setter — preserves each key's value type (string or boolean).
-  const setCtxK = <K extends keyof ClinicCtx>(key: K, value: ClinicCtx[K]) =>
-    setCtx(prev => ({ ...prev, [key]: value }));
-
-  // --- Section 02: messages (greeting/persona copy) — REAL wire fields, first UI ---
-  const [messages, setMessages] = useState<Messages>({
-    greetingMessage: "",
-    returningGreetingMessage: "",
-    language: "pt-BR",
-  });
-  const setMessagesK = <K extends keyof Messages>(key: K, value: Messages[K]) =>
-    setMessages(prev => ({ ...prev, [key]: value }));
-
-  // --- Section 03: post-consult (message sent + knowledge used to answer
-  // questions) — REAL wire fields (post_consult_message/post_consult_knowledge),
-  // first UI ---
-  const [postConsult, setPostConsult] = useState<PostConsult>({
-    postConsultMessage: "",
-    postConsultKnowledge: "",
-  });
-  const setPostConsultK = <K extends keyof PostConsult>(key: K, value: PostConsult[K]) =>
-    setPostConsult(prev => ({ ...prev, [key]: value }));
-
-  // --- Section 04: Sinal via Pix (deposit policy) — REAL wire fields
-  // (pix_deposit_*/pix_refund_window_hours/pix_retention_policy/
-  // pix_partial_refund_percent/pix_reschedule_limit); asaasConnected hydrates
-  // from asaas_connected but is READ-ONLY and never sent back on save ---
-  const [pixDeposit, setPixDeposit] = useState<PixDeposit>(DEFAULT_PIX_DEPOSIT);
-  const setPixDepositK = <K extends keyof PixDeposit>(key: K, value: PixDeposit[K]) =>
-    setPixDeposit(prev => ({ ...prev, [key]: value }));
-
-  // --- Section 05: professionals ---
-  // `roster` (brain-api GET /doctor/professionals) drives the list UI
-  // (completeness/invite state); `hubProfessionalsById` (secretarIA hub GET
-  // /tenants/me/professionals) supplies the editable fields used to hydrate
-  // services/days/profile for whichever professional is selected.
-  const [roster, setRoster] = useState<DoctorProfessional[] | null>(DEMO_ROSTER);
-  const [rosterError, setRosterError] = useState(false);
-  const [hubProfessionalsById, setHubProfessionalsById] = useState<Record<string, ProfessionalWire>>({});
-  const [selectedProfessionalId, setSelectedProfessionalId] = useState<string | null>(DEMO_PROFESSIONAL_ID);
-  const [profile, setProfile] = useState<ProfessionalProfile>({
-    specialty: "Clínica geral",
-    about: "",
-    contextDoctorMessage: "",
-  });
-  const setProfileK = <K extends keyof ProfessionalProfile>(key: K, value: ProfessionalProfile[K]) =>
-    setProfile(prev => ({ ...prev, [key]: value }));
-
-  // --- Section 06: services (appointment types) — now per-professional ---
-  // Each type carries an active flag and its pre-visit requirements (Feature 2).
-  const [services, setServices] = useState<Service[]>([
-    {
-      id: 1, name: "Primeira consulta", dur: 60, price: "R$ 450", active: true,
-      requirements: [
-        { id: 11, text: "Trazer documento com foto e carteirinha do convênio" },
-        { id: 12, text: "Chegar 15 minutos antes para o cadastro" },
-      ],
-    },
-    {
-      id: 2, name: "Retorno", dur: 30, price: "", active: true,
-      requirements: [
-        { id: 21, text: "Trazer exames solicitados na consulta anterior" },
-      ],
-    },
-    { id: 3, name: "Teleconsulta", dur: 40, price: "R$ 350", active: true, requirements: [] },
-  ]);
-
-  // --- Section 07: availability — now per-professional ---
-  const [days, setDays] = useState<DayConfig[]>(demoWeek());
-
-  // defaultDur round-trips (appointment_duration_min) and stays TENANT-level.
-  // gap/lead are demo-only: TenantConfigUpdate has no inter-appointment-gap or
-  // minimum-lead-time field.
-  const [prefs, setPrefs] = useState<Prefs>({ defaultDur: 50, gap: 10, lead: 2 });
-  const setPrefK = (key: keyof Prefs, value: number) =>
-    setPrefs(prev => ({ ...prev, [key]: value }));
-
-  // --- secretarIA hub: entitlement-gated real data path ---
+  // --- secretarIA hub: token mint + entitlement check ---
+  // `hubTokenReady` proves a token was minted and a base URL is configured. It
+  // does NOT prove any hub GET succeeded — that is what the hydration state
+  // below is for, and conflating the two is the bug this screen used to have.
   const {
     session,
     ready: hubCheckReady,
     notEntitled,
     unavailable: hubUnavailable,
-    hubReady,
+    hubTokenReady,
     retry: retryHub,
   } = useSecretariaHub();
 
-  // True once we KNOW real data can't load for this LOGGED-IN tenant right
-  // now — either the hub is transiently unreachable (every mint retry
-  // failed) or this environment has no hub base URL configured at all.
-  // Reaching `hubCheckReady` with a session, no entitlement refusal, and
-  // still no hubReady can only mean one of those two things — see HubNotice
-  // for the identical derivation. Drives both the warning banner (via
-  // HubNotice's own props) and the "never show demo data" effect below.
-  const hubUnreachable = hubCheckReady && !!session && !notEntitled && !hubReady;
+  // --- hydration state machine (lib/hydration.ts) ---
+  const [hydration, dispatch] = useReducer(hydrationReducer, INITIAL_HYDRATION_STATE);
 
-  // Applies a TenantConfigWire onto every tenant-level piece of local state
-  // (ctx/messages/postConsult/pixDeposit/prefs.defaultDur/gcal.connected) via
-  // the same applyWire* mappers used everywhere else. Shared by the initial
-  // hydration effect below AND handleSave, so a successful save reflects
-  // exactly what the backend actually persisted — never what the form
-  // happened to hold locally a moment before the request was sent.
-  const applyTenantConfig = useCallback((cfg: TenantConfigWire) => {
-    setCtx((prev) => ({
-      ...prev,
-      clinicName: cfg.clinic_name || prev.clinicName,
-      ...applyWireAddress(cfg.address),
-      insurances: cfg.insurances ? applyWireInsurances(cfg.insurances) : prev.insurances,
-      collectInsurance: cfg.collect_insurance,
-    }));
-    setMessages(applyWireMessages(cfg));
-    setPostConsult(applyWirePostConsult(cfg));
-    setPixDeposit(applyWirePixDeposit(cfg));
-    setPrefs((prev) => ({
-      ...prev,
-      defaultDur: cfg.appointment_duration_min || prev.defaultDur,
-    }));
-    setGcal(applyWireGcal(cfg));
+  // Cycle counters live in refs because async callbacks need the value that
+  // was current when THEY were issued, not whatever a later render holds.
+  const generationRef = useRef(0);
+  const rosterGenerationRef = useRef(0);
+  const attemptsRef = useRef({ tenant: 0, roster: 0, professional: 0 });
+  // Mirrors hydration.selectedProfessionalId for the same reason.
+  const selectedRef = useRef<string | null>(null);
+  selectedRef.current = hydration.selectedProfessionalId;
+
+  // --- form state — EMPTY until something real is read back ---
+  const [ctx, setCtx] = useState<ClinicCtx>(EMPTY_CLINIC_CTX);
+  const setCtxK = <K extends keyof ClinicCtx>(key: K, value: ClinicCtx[K]) =>
+    setCtx((prev) => ({ ...prev, [key]: value }));
+
+  const [messages, setMessages] = useState<Messages>(EMPTY_MESSAGES);
+  const setMessagesK = <K extends keyof Messages>(key: K, value: Messages[K]) =>
+    setMessages((prev) => ({ ...prev, [key]: value }));
+
+  const [postConsult, setPostConsult] = useState<PostConsult>(EMPTY_POST_CONSULT);
+  const setPostConsultK = <K extends keyof PostConsult>(key: K, value: PostConsult[K]) =>
+    setPostConsult((prev) => ({ ...prev, [key]: value }));
+
+  const [pixDeposit, setPixDeposit] = useState<PixDeposit>(DEFAULT_PIX_DEPOSIT);
+  const setPixDepositK = <K extends keyof PixDeposit>(key: K, value: PixDeposit[K]) =>
+    setPixDeposit((prev) => ({ ...prev, [key]: value }));
+
+  const [prefs, setPrefs] = useState<Prefs>(EMPTY_PREFS);
+  const setPrefK = (key: keyof Prefs, value: number) =>
+    setPrefs((prev) => ({ ...prev, [key]: value }));
+
+  const [gcal, setGcal] = useState<GcalState>(EMPTY_GCAL);
+  const setGcalMode = (mode: GcalState["mode"]) => setGcal((prev) => ({ ...prev, mode }));
+
+  const [services, setServices] = useState<Service[]>([]);
+  const [days, setDays] = useState<DayConfig[]>(closedWeek);
+  const [profile, setProfile] = useState<ProfessionalProfile>(EMPTY_PROFESSIONAL_PROFILE);
+  const setProfileK = <K extends keyof ProfessionalProfile>(key: K, value: ProfessionalProfile[K]) =>
+    setProfile((prev) => ({ ...prev, [key]: value }));
+
+  const [roster, setRoster] = useState<DoctorProfessional[] | null>(null);
+
+  // The last state the SERVER confirmed, per tenant. Written only from a 2xx
+  // (GET on hydration, or the body a PUT echoed back) — never from local form
+  // state and never from a demo seed. Descartar restores from here.
+  const [snapshot, setSnapshot] = useState<AuthoritativeSnapshot>(EMPTY_SNAPSHOT);
+  const snapshotRef = useRef(snapshot);
+  snapshotRef.current = snapshot;
+
+  const [saving, setSaving] = useState(false);
+  // A ref, not the state above, is what actually blocks a double click: two
+  // clicks in the same tick both read the pre-update `saving === false`, but
+  // only the first gets past a ref that is set synchronously.
+  const savingRef = useRef(false);
+
+  // Set only after a LEGACY half-save (tenant committed, professional not) —
+  // impossible against a backend with the transactional endpoint. While set,
+  // Save retries just the professional: the tenant is already persisted and
+  // has been adopted from the server's response, so re-sending it would be
+  // pure noise on a screen the user is trying to reconcile.
+  const [professionalPending, setProfessionalPending] = useState<string | null>(null);
+
+  // --- applying whole slices ---
+  const applyTenantSlices = useCallback((s: TenantSlices) => {
+    setCtx(s.ctx);
+    setMessages(s.messages);
+    setPostConsult(s.postConsult);
+    setPixDeposit(s.pixDeposit);
+    setPrefs(s.prefs);
+    setGcal(s.gcal);
   }, []);
 
-  // Hydrate tenant-level fields from the real tenant config once the hub is
-  // usable. business_hours/appointment_types are NOT read here — they're
-  // professional-scoped now (see the hydration effect below).
+  const applyProfessionalSlices = useCallback((s: ProfessionalSlices) => {
+    setServices(s.services);
+    setDays(s.days);
+    setProfile(s.profile);
+  }, []);
+
+  // --- session resolution: the only place `mode` is decided ---
   useEffect(() => {
-    if (!hubReady || !session) return;
-    getTenantConfig(session)
-      .then(applyTenantConfig)
-      .catch((e) => {
-        // Real config failed to load — keep whatever's on screen (the demo
-        // seed, or the honest-empty state from the hubUnreachable effect);
-        // this mirrors the agenda page's fallback rule.
-        console.error("secretaria hub: failed to load tenant config", e);
-      });
-  }, [hubReady, session, applyTenantConfig]);
+    if (!hubCheckReady) return;
+    dispatch({ type: "session_resolved", mode: session ? "authenticated" : "visitor" });
+  }, [hubCheckReady, session]);
 
-  // Loads the professionals roster (brain-api) + editable configs (hub).
-  // Re-run after any mutation (invite created, self-bind, calendar connect)
-  // via the components' onRosterChanged/onChanged callbacks.
-  const loadProfessionals = useCallback(() => {
-    if (!hubReady || !session) return;
-    getDoctorProfessionals(session)
-      .then((list) => {
-        setRoster(list);
-        setRosterError(false);
-        setSelectedProfessionalId((prev) => {
-          // Keep whatever's already validly selected — including a staff
-          // member who switched to a colleague — rather than snapping back
-          // every reload. Only DEFAULT a staff member to their own
-          // professional the first time (no prior selection).
-          if (prev && list.some((p) => p.id === prev)) return prev;
-          // Non-owner member with a professional bound to them defaults to it.
-          // is_owner is the new claim; role === "tenant_owner" is the legacy
-          // fallback during the transition.
-          if (!(session.isOwner || session.role === "tenant_owner") && session.professionalId) {
-            return session.professionalId;
-          }
-          return list[0]?.id ?? null; // single-professional tenants auto-select
-        });
-      })
-      .catch((e) => {
-        console.error("secretaria hub: failed to load professionals roster", e);
-        setRosterError(true);
-      });
-    getProfessionals(session)
-      .then((list) => {
-        setHubProfessionalsById(Object.fromEntries(list.map((p) => [p.id, p])));
-      })
-      .catch((e) => {
-        console.error("secretaria hub: failed to load professional configs", e);
-      });
-  }, [hubReady, session]);
-
+  // A snapshot must never outlive the session that produced it.
   useEffect(() => {
-    loadProfessionals();
-  }, [loadProfessionals]);
+    const tenantId = session?.tenantId ?? null;
+    setSnapshot((prev) => (prev.tenantId && prev.tenantId !== tenantId ? EMPTY_SNAPSHOT : prev));
+  }, [session]);
 
-  // Hydrates services/days/profile from whichever professional is currently
-  // selected. Always starts from a closed week + empty services (never from
-  // the previously-selected professional's local state), so switching
-  // professionals can never leak one professional's schedule onto another's.
+  // --- visitor showcase: the ONE place demo values may be applied ---
   useEffect(() => {
-    if (!selectedProfessionalId) return;
-    const p = hubProfessionalsById[selectedProfessionalId];
-    if (!p) return; // demo id, or hub list hasn't loaded yet — keep current (demo) values
-    setServices(
-      p.appointment_types.length > 0 ? applyWireAppointmentTypes(p.appointment_types) : [],
-    );
-    setDays(applyWireBusinessHours(p.business_hours, closedWeek()));
-    setProfile(applyWireProfessionalProfile(p));
-  }, [selectedProfessionalId, hubProfessionalsById]);
-
-  // --- Section 08: Google Calendar (tenant-level; unchanged single-professional path) ---
-  // `connected` round-trips read-only (TenantConfigRead.calendar_connected).
-  // `mode` (google_calendar_mode) is writable via the mode selector — see
-  // GcalState in lib/types.ts.
-  const [gcal, setGcal] = useState<GcalState>({ connected: false, mode: "per_professional" });
-  const setGcalMode = (mode: GcalState["mode"]) =>
-    setGcal((prev) => ({ ...prev, mode }));
-
-  // --- Demo-data honesty: once we know real data can't load for a
-  // LOGGED-IN tenant (hub unreachable or not configured in this
-  // environment), drop every sales-demo seed value so nothing fake is ever
-  // presented as real — sections render their empty/disabled real state
-  // instead, under HubNotice's warning banner. Self-heals the moment
-  // hubReady flips true: the hydration effects above overwrite this with
-  // the actual saved config. Logged-out visitors are UNAFFECTED — the
-  // labeled demo showcase (HubNotice's "você está vendo dados de
-  // demonstração") is untouched.
-  useEffect(() => {
-    if (!hubUnreachable) return;
-    setCtx({
-      clinicName: "",
-      addressLine: "",
-      addressComplement: "",
-      neighborhood: "",
-      city: "",
-      state: "",
-      postalCode: "",
-      phone: "",
-      insurances: "",
-      collectInsurance: false,
+    if (hydration.mode !== "visitor") return;
+    applyTenantSlices({ ...emptyTenantSlices(), ctx: DEMO_CTX.forVisitor });
+    applyProfessionalSlices({
+      services: DEMO_SERVICES.forVisitor,
+      days: demoWeek(),
+      profile: DEMO_PROFILE.forVisitor,
     });
-    setMessages({ greetingMessage: "", returningGreetingMessage: "", language: "pt-BR" });
-    setPostConsult({ postConsultMessage: "", postConsultKnowledge: "" });
-    setPixDeposit(DEFAULT_PIX_DEPOSIT);
-    setRoster(null);
-    setRosterError(true); // reuses ProfessionalsSection's existing "couldn't load" message
-    setHubProfessionalsById({});
-    setSelectedProfessionalId(null);
-    setProfile(EMPTY_PROFESSIONAL_PROFILE);
-    setServices([]);
-    setDays(closedWeek());
-    setGcal({ connected: false, mode: "per_professional" });
-  }, [hubUnreachable]);
+    setRoster(DEMO_ROSTER.forVisitor);
+    dispatch({ type: "professional_selected", id: DEMO_PROFESSIONAL_ID });
+  }, [hydration.mode, applyTenantSlices, applyProfessionalSlices]);
 
-  // --- Save: writes to the real hub config, or refuses honestly ---
-  // Two PUTs when a professional is selected: tenant-level (Mensagens +
-  // Pós-consulta + Sinal via Pix + address/insurances/collect_insurance/
-  // appointment_duration_min) and professional-level (hours/services/
-  // specialty/about/context). gap/lead have no wire counterpart and stay
-  // silently local-only, same as before. NEVER shows the success toast
-  // without a real 2xx from the tenant-level PUT.
-  const handleSave = async () => {
-    if (!session) {
-      flash("Entre na sua conta para salvar a configuração.", "error");
-      return;
-    }
-    if (!hubReady) {
-      flash(
-        "Não foi possível salvar: sua clínica não está conectada no momento. Tente novamente em instantes.",
-        "error",
-      );
-      return;
-    }
-    try {
-      const savedCfg = await updateTenantConfig(
-        session,
-        buildConfigUpdatePayload(ctx, messages, postConsult, pixDeposit, prefs.defaultDur, gcal.mode),
-      );
-      // Reflect exactly what the backend persisted — same mappers the
-      // hydration effect uses — rather than trusting the local form state.
-      applyTenantConfig(savedCfg);
-      if (selectedProfessionalId && selectedProfessionalId !== DEMO_PROFESSIONAL_ID) {
-        const saved = await updateProfessionalConfig(
-          session,
-          selectedProfessionalId,
-          buildProfessionalConfigPayload(days, services, profile),
+  // --- selection: clears the professional form BEFORE the new one hydrates ---
+  const selectProfessional = useCallback(
+    (id: string | null) => {
+      if (id === selectedRef.current) return;
+      // Wiping first is what guarantees professional B never briefly shows
+      // (or, worse, saves) professional A's hours and services.
+      applyProfessionalSlices(emptyProfessionalSlices());
+      dispatch({ type: "professional_selected", id });
+    },
+    [applyProfessionalSlices],
+  );
+
+  // --- authenticated hydration ---
+  // One full cycle: tenant config + roster (brain-api rows and hub configs
+  // together, because a selection is only usable when both are present).
+  const hydrate = useCallback(() => {
+    if (hydration.mode !== "authenticated" || !session || !hubTokenReady) return;
+
+    const generation = ++generationRef.current;
+    const rosterGeneration = ++rosterGenerationRef.current;
+    const tenantAttempt = ++attemptsRef.current.tenant;
+    const rosterAttempt = ++attemptsRef.current.roster;
+    dispatch({ type: "hydration_started", generation, rosterGeneration });
+
+    const tenantId = session.tenantId;
+
+    getTenantConfig(session)
+      .then((cfg) => {
+        if (generationRef.current !== generation) return; // superseded
+        applyTenantSlices(tenantSlicesFromWire(cfg));
+        setSnapshot((prev) => ({
+          tenantId,
+          tenant: cfg,
+          professionalsById: prev.tenantId === tenantId ? prev.professionalsById : {},
+        }));
+        dispatch({ type: "load_succeeded", scope: "tenant", generation });
+      })
+      .catch((e) => {
+        if (generationRef.current !== generation) return;
+        // Fail closed. Fall back to the last CONFIRMED snapshot for this same
+        // tenant when there is one, otherwise to an honest empty form — never
+        // to the demo seed, and never leaving unsaved local edits on a screen
+        // the user can no longer trust.
+        const confirmedNow = snapshotForTenant(snapshotRef.current, tenantId);
+        applyTenantSlices(
+          confirmedNow.tenant ? tenantSlicesFromWire(confirmedNow.tenant) : emptyTenantSlices(),
         );
-        setHubProfessionalsById((prev) => ({ ...prev, [selectedProfessionalId]: saved }));
-        loadProfessionals(); // refresh roster completeness chips (has_hours/has_services)
+        dispatch({ type: "load_failed", scope: "tenant", generation, status: statusOf(e) });
+        emitConfigEvent(buildLoadFailedEvent("tenant", e, tenantAttempt));
+      });
+
+    Promise.all([getDoctorProfessionals(session), getProfessionals(session)])
+      .then(([rows, configs]) => {
+        if (rosterGenerationRef.current !== rosterGeneration) return; // superseded
+        const byId: Record<string, ProfessionalWire> = Object.fromEntries(
+          configs.map((p) => [p.id, p]),
+        );
+        setRoster(rows);
+        setSnapshot((prev) => ({
+          tenantId,
+          tenant: prev.tenantId === tenantId ? prev.tenant : null,
+          professionalsById: byId,
+        }));
+        dispatch({ type: "load_succeeded", scope: "roster", generation: rosterGeneration });
+        selectProfessional(pickProfessional(rows, session, selectedRef.current));
+      })
+      .catch((e) => {
+        if (rosterGenerationRef.current !== rosterGeneration) return;
+        setRoster(null);
+        applyProfessionalSlices(emptyProfessionalSlices());
+        dispatch({
+          type: "load_failed",
+          scope: "roster",
+          generation: rosterGeneration,
+          status: statusOf(e),
+        });
+        emitConfigEvent(buildLoadFailedEvent("roster", e, rosterAttempt));
+      });
+  }, [
+    hydration.mode,
+    session,
+    hubTokenReady,
+    applyTenantSlices,
+    applyProfessionalSlices,
+    selectProfessional,
+  ]);
+
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
+
+  // --- roster-only refresh (invite created, self-bind, calendar connect) ---
+  // Deliberately does NOT re-read the tenant config: doing so would overwrite
+  // whatever the user has typed but not yet saved.
+  const reloadRoster = useCallback(() => {
+    if (hydration.mode !== "authenticated" || !session || !hubTokenReady) return;
+
+    const rosterGeneration = ++rosterGenerationRef.current;
+    const rosterAttempt = ++attemptsRef.current.roster;
+    dispatch({ type: "roster_reload_started", rosterGeneration });
+
+    const tenantId = session.tenantId;
+
+    Promise.all([getDoctorProfessionals(session), getProfessionals(session)])
+      .then(([rows, configs]) => {
+        if (rosterGenerationRef.current !== rosterGeneration) return;
+        const byId: Record<string, ProfessionalWire> = Object.fromEntries(
+          configs.map((p) => [p.id, p]),
+        );
+        setRoster(rows);
+        setSnapshot((prev) => ({ ...prev, tenantId, professionalsById: byId }));
+        dispatch({ type: "load_succeeded", scope: "roster", generation: rosterGeneration });
+        // Only re-picks when the current selection vanished from the roster;
+        // an unchanged, already-hydrated selection keeps its unsaved edits.
+        selectProfessional(pickProfessional(rows, session, selectedRef.current));
+      })
+      .catch((e) => {
+        if (rosterGenerationRef.current !== rosterGeneration) return;
+        dispatch({
+          type: "load_failed",
+          scope: "roster",
+          generation: rosterGeneration,
+          status: statusOf(e),
+        });
+        emitConfigEvent(buildLoadFailedEvent("roster", e, rosterAttempt));
+      });
+  }, [hydration.mode, session, hubTokenReady, selectProfessional]);
+
+  // --- per-professional hydration ---
+  // Runs only while the professional scope is `loading` (i.e. right after a
+  // selection change), so a roster refresh never clobbers unsaved edits on an
+  // already-hydrated professional.
+  useEffect(() => {
+    if (hydration.mode !== "authenticated") return;
+    if (hydration.professional.phase !== "loading") return;
+    if (hydration.roster.phase !== "loaded") return;
+
+    const id = hydration.selectedProfessionalId;
+    if (!id) return;
+
+    const rosterGeneration = rosterGenerationRef.current;
+    const wire = snapshot.professionalsById[id];
+
+    if (!wire) {
+      // In the roster but absent from the hub's config list — treat as a
+      // failed professional load rather than opening a blank form that would
+      // overwrite whatever the hub actually holds.
+      applyProfessionalSlices(emptyProfessionalSlices());
+      dispatch({ type: "professional_failed", id, rosterGeneration, status: null });
+      emitConfigEvent(
+        buildLoadFailedEvent("professional", null, ++attemptsRef.current.professional),
+      );
+      return;
+    }
+
+    applyProfessionalSlices(professionalSlicesFromWire(wire));
+    dispatch({ type: "professional_loaded", id, rosterGeneration });
+  }, [
+    hydration.mode,
+    hydration.professional.phase,
+    hydration.roster.phase,
+    hydration.selectedProfessionalId,
+    snapshot.professionalsById,
+    applyProfessionalSlices,
+  ]);
+
+  // --- derived gates ---
+  const tenantEditable = canEditTenantFields(hydration);
+  const professionalEditable = canEditProfessionalFields(hydration);
+  const saveBlocked = saveBlockedReason(hydration);
+  const confirmed = snapshotForTenant(snapshot, session?.tenantId ?? null);
+  // Descartar needs an authoritative baseline of its own — a demo seed is
+  // never one, which is why visitors get a disabled button.
+  const canDiscard = hydration.mode === "authenticated" && confirmed.tenant !== null && !saving;
+
+  // --- Save: guarded by lib/save.ts, which refuses without any PUT ---
+  // Adopts what the backend actually persisted as the new form state AND the
+  // new authoritative snapshot, so a later Descartar returns here.
+  const adoptTenantResult = useCallback(
+    (tenantId: string, wire: TenantConfigWire) => {
+      applyTenantSlices(tenantSlicesFromWire(wire));
+      setSnapshot((prev) => ({ ...prev, tenantId, tenant: wire }));
+    },
+    [applyTenantSlices],
+  );
+
+  const adoptProfessionalResult = useCallback(
+    (tenantId: string, id: string, wire: ProfessionalWire) => {
+      applyProfessionalSlices(professionalSlicesFromWire(wire));
+      setSnapshot((prev) => ({
+        ...prev,
+        tenantId,
+        professionalsById: { ...prev.professionalsById, [id]: wire },
+      }));
+    },
+    [applyProfessionalSlices],
+  );
+
+  const saveDeps = () => ({
+    state: hydration,
+    putConfiguration: (body: HubConfigurationUpdatePayload) =>
+      updateHubConfiguration(session!, body),
+    putTenant: (patch: TenantConfigUpdatePayload) => updateTenantConfig(session!, patch),
+    putProfessional: (id: string, patch: ProfessionalConfigUpdatePayload) =>
+      updateProfessionalConfig(session!, id, patch),
+    buildTenantPatch: () =>
+      buildConfigUpdatePayload(ctx, messages, postConsult, pixDeposit, prefs.defaultDur, gcal.mode),
+    buildProfessionalPatch: () => buildProfessionalConfigPayload(days, services, profile),
+    isLegacyBackend,
+  });
+
+  const handleSave = async () => {
+    // Ref first: `saving` state has not re-rendered yet on a fast double click.
+    if (savingRef.current) return;
+    if (!session) {
+      emitConfigEvent({ event: "config_save_blocked", reason: "no_session" });
+      flash(SAVE_BLOCKED_MESSAGE.no_session, "error");
+      return;
+    }
+    savingRef.current = true;
+    setSaving(true);
+    const tenantId = session.tenantId;
+    try {
+      // Reconciling a legacy half-save: only the professional is outstanding.
+      if (professionalPending) {
+        const wire = await retryProfessionalOnly(saveDeps(), professionalPending);
+        adoptProfessionalResult(tenantId, professionalPending, wire);
+        setProfessionalPending(null);
+        reloadRoster();
+        emitConfigEvent({ event: "configuration_saved", mode: "legacy", partial: false });
+        flash("Configuração salva — a secretarIA já está atualizada.");
+        return;
       }
+
+      const result = await performSave(saveDeps());
+
+      if (result.status === "blocked") {
+        emitConfigEvent({ event: "config_save_blocked", reason: result.reason });
+        flash(SAVE_BLOCKED_MESSAGE[result.reason], "error");
+        return;
+      }
+
+      if (result.status === "partial") {
+        // Only reachable against a pre-aggregate backend. The tenant IS live,
+        // so adopt it — anything else would leave the form claiming unsaved
+        // changes that are in fact already in effect on WhatsApp.
+        adoptTenantResult(tenantId, result.tenant);
+        setProfessionalPending(result.professionalId);
+        emitConfigEvent({
+          event: "configuration_save_failed",
+          mode: "legacy",
+          status: statusOf(result.cause),
+          scope: "professional",
+        });
+        emitConfigEvent({ event: "configuration_saved", mode: "legacy", partial: true });
+        console.error("secretaria hub: professional half of the save failed", result.cause);
+        flash(PARTIAL_SAVE_MESSAGE, "error");
+        return;
+      }
+
+      adoptTenantResult(tenantId, result.tenant);
+      if (result.professional) {
+        adoptProfessionalResult(tenantId, result.professional.id, result.professional.wire);
+        reloadRoster(); // refresh completeness chips (has_hours/has_services)
+      }
+      emitConfigEvent({ event: "configuration_saved", mode: result.mode, partial: false });
       flash("Configuração salva — a secretarIA já está atualizada.");
     } catch (e) {
-      console.error("secretaria hub: failed to save tenant config", e);
-      flash("Não foi possível salvar agora. Tente novamente.", "error");
+      // Nothing was written: the transactional endpoint rolled back, or the
+      // tenant PUT itself failed on the legacy path.
+      emitConfigEvent({
+        event: "configuration_save_failed",
+        mode: "atomic",
+        status: statusOf(e),
+        scope: "both",
+      });
+      console.error("secretaria hub: failed to save configuration", e);
+      flash("Não foi possível salvar agora. Nada foi alterado. Tente novamente.", "error");
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
     }
   };
 
-  // --- Google Calendar: real OAuth handoff when hubReady, else undefined
-  // (GoogleSection renders a disabled, honestly-labeled "not connected" state). ---
+  // --- Descartar: restores the last confirmed snapshot, with zero requests ---
+  const currentSlices = useMemo(
+    () => ({
+      tenant: { ctx, messages, postConsult, pixDeposit, prefs, gcal },
+      professional: hydration.selectedProfessionalId ? { services, days, profile } : null,
+    }),
+    [
+      ctx,
+      messages,
+      postConsult,
+      pixDeposit,
+      prefs,
+      gcal,
+      services,
+      days,
+      profile,
+      hydration.selectedProfessionalId,
+    ],
+  );
+
+  const handleDiscard = () => {
+    if (!canDiscard || !confirmed.tenant) return;
+
+    const selectedId = hydration.selectedProfessionalId;
+    const baselineProfessionalWire = selectedId
+      ? confirmed.professionalsById[selectedId]
+      : undefined;
+    const baseline = {
+      tenant: tenantSlicesFromWire(confirmed.tenant),
+      professional: baselineProfessionalWire
+        ? professionalSlicesFromWire(baselineProfessionalWire)
+        : null,
+    };
+
+    const sections = dirtySections(currentSlices, baseline);
+
+    applyTenantSlices(baseline.tenant);
+    if (baseline.professional) applyProfessionalSlices(baseline.professional);
+
+    emitConfigEvent({ event: "config_discarded", sections });
+    flash(
+      sections.length > 0
+        ? "Alterações descartadas — a tela voltou ao que está salvo."
+        : "Nada para descartar: a tela já está igual ao que está salvo.",
+    );
+  };
+
+  // --- Google Calendar: real OAuth handoff only once the tenant hydrated ---
   const handleGoogleConnect =
-    hubReady && session
+    tenantEditable && session
       ? async () => {
           const url = await startCalendarOauth(session);
           window.location.assign(url);
@@ -495,7 +653,7 @@ export default function ConfiguracaoPage() {
       : undefined;
 
   const handleGoogleDisconnect =
-    hubReady && session
+    tenantEditable && session
       ? async () => {
           await disconnectCalendar(session);
           // Disconnecting only clears `connected` — `mode` is an independent
@@ -511,16 +669,13 @@ export default function ConfiguracaoPage() {
   // unchanged" per spec). ---
   const selectedProfessionalName =
     roster && roster.length > 1
-      ? roster.find((p) => p.id === selectedProfessionalId)?.name
+      ? roster.find((p) => p.id === hydration.selectedProfessionalId)?.name
       : undefined;
 
   // --- Derived: professional id -> dedicated Google Calendar id, for
-  // ProfessionalsSection's shared_account-mode chip/button (see
-  // ProfessionalRow). Narrowed from hubProfessionalsById (the full
-  // ProfessionalWire per id) so ProfessionalsSection's prop surface only
-  // carries what it actually renders. ---
+  // ProfessionalsSection's shared_account-mode chip/button. ---
   const googleCalendarIdByProfessional: Record<string, string | null> = Object.fromEntries(
-    Object.entries(hubProfessionalsById).map(([id, p]) => [id, p.google_calendar_id]),
+    Object.entries(snapshot.professionalsById).map(([id, p]) => [id, p.google_calendar_id]),
   );
 
   // ---------------------------------------------------------------------------
@@ -537,10 +692,7 @@ export default function ConfiguracaoPage() {
           portal header, not here — this app has no admin surface. */}
       <PortalHeader
         portalLabel="Clínica"
-        userLabel={
-          session?.email ||
-          (hubReady ? ctx.clinicName : "Brain")
-        }
+        userLabel={session?.email || (tenantEditable ? ctx.clinicName : "Brain")}
         onLogout={() => signOut((path) => router.push(path))}
         product="secretaria"
         // The screen below is a height:100vh flex column with its own internal
@@ -548,15 +700,22 @@ export default function ConfiguracaoPage() {
         sticky={false}
       />
 
-      {/* demo-mode / not-entitled / unavailable / not-configured notice —
-          hidden once the real hub is active */}
+      {/* not-logged-in / not-entitled / unavailable / not-configured notice —
+          hidden once the hub token path is active */}
       <HubNotice
         session={session}
         notEntitled={notEntitled}
         ready={hubCheckReady}
         unavailable={hubUnavailable}
         onRetry={retryHub}
+        // This screen shows a logged-in tenant NOTHING it hasn't read back —
+        // so the entitlement banner must not promise demo data here.
+        demoForVisitorsOnly
       />
+
+      {/* the hub answered, but a configuration GET didn't — honest error +
+          retry, with the form held read-only meanwhile */}
+      <LoadStateNotice state={hydration} onRetry={hydrate} />
 
       {/* WhatsApp activation status — hidden once onboarding_state === 'ativo' */}
       <OnboardingBanner session={session} />
@@ -598,35 +757,37 @@ export default function ConfiguracaoPage() {
               </p>
             </div>
 
-            {/* eight config sections stacked vertically. readOnly is now
-                driven by hub reachability, NOT role — every authenticated
-                tenant member (owner or staff) gets full read/write access;
-                see hubUnreachable above and the Task 6 access-widening pass. */}
+            {/* Eight config sections. `readOnly` is driven by the hydration
+                phase of the scope each section belongs to, NOT by role: every
+                authenticated tenant member (owner or staff) gets full
+                read/write access once the data is actually there. */}
             <div style={{ display: "flex", flexDirection: "column", gap: 34 }}>
-              <ContextSection v={ctx} set={setCtxK} readOnly={hubUnreachable} />
-              <MessagesSection v={messages} set={setMessagesK} readOnly={hubUnreachable} />
-              <PostConsultSection v={postConsult} set={setPostConsultK} readOnly={hubUnreachable} />
-              <PixSection v={pixDeposit} set={setPixDepositK} readOnly={hubUnreachable} />
+              <ContextSection v={ctx} set={setCtxK} readOnly={!tenantEditable} />
+              <MessagesSection v={messages} set={setMessagesK} readOnly={!tenantEditable} />
+              <PostConsultSection v={postConsult} set={setPostConsultK} readOnly={!tenantEditable} />
+              <PixSection v={pixDeposit} set={setPixDepositK} readOnly={!tenantEditable} />
               <ProfessionalsSection
                 session={session}
                 // is_owner is the new claim; role === "tenant_owner" is the
                 // legacy fallback during the transition.
                 isOwner={Boolean(session && (session.isOwner || session.role === "tenant_owner"))}
                 roster={roster}
-                rosterError={rosterError}
-                selectedId={selectedProfessionalId}
-                onSelect={setSelectedProfessionalId}
+                rosterError={hydration.roster.phase === "error"}
+                selectedId={hydration.selectedProfessionalId}
+                onSelect={selectProfessional}
                 profile={profile}
                 onProfileChange={setProfileK}
-                onRosterChanged={loadProfessionals}
+                onRosterChanged={reloadRoster}
                 googleCalendarMode={gcal.mode}
                 clinicCalendarConnected={gcal.connected}
                 googleCalendarIdByProfessional={googleCalendarIdByProfessional}
+                readOnly={!professionalEditable}
               />
               <ServicesSection
                 services={services}
                 setServices={setServices}
                 professionalName={selectedProfessionalName}
+                readOnly={!professionalEditable}
               />
               <AvailabilitySection
                 days={days}
@@ -634,6 +795,8 @@ export default function ConfiguracaoPage() {
                 prefs={prefs}
                 setPref={setPrefK}
                 professionalName={selectedProfessionalName}
+                readOnly={!professionalEditable}
+                durationReadOnly={!tenantEditable}
               />
               <GoogleSection
                 gcal={gcal}
@@ -642,10 +805,10 @@ export default function ConfiguracaoPage() {
                 connectHint={
                   !session
                     ? "Conecte-se após entrar na sua conta para ativar a integração."
-                    : "Isso ficará disponível assim que a conexão com sua clínica for restabelecida."
+                    : "Isso ficará disponível assim que a configuração da sua clínica terminar de carregar."
                 }
                 onModeChange={setGcalMode}
-                readOnly={hubUnreachable}
+                readOnly={!tenantEditable}
               />
             </div>
           </div>
@@ -675,11 +838,30 @@ export default function ConfiguracaoPage() {
 
         <div style={{ flex: 1 }} />
 
-        <Btn variant="ghost" onClick={() => flash("Alterações descartadas.")}>
+        <Btn
+          variant="ghost"
+          onClick={handleDiscard}
+          disabled={!canDiscard}
+          title={
+            canDiscard
+              ? "Volta a tela para a última configuração salva"
+              : "Disponível assim que sua configuração salva for carregada"
+          }
+        >
           Descartar
         </Btn>
-        <Btn variant="primary" icon="check" onClick={handleSave}>
-          Salvar configuração
+        <Btn
+          variant="primary"
+          icon="check"
+          onClick={handleSave}
+          disabled={saveBlocked !== null || saving}
+          title={saveBlocked ? SAVE_BLOCKED_MESSAGE[saveBlocked] : undefined}
+        >
+          {saving
+            ? "Salvando…"
+            : professionalPending
+              ? "Salvar dados do profissional"
+              : "Salvar configuração"}
         </Btn>
       </div>
 
