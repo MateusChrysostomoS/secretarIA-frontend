@@ -7,18 +7,24 @@
 // ---------------------------------------------------------------------------
 
 export type ClinicCtx = {
+  // READ-ONLY on this screen. Hydrated from TenantConfigRead.clinic_name and
+  // never part of any PUT body — the clinic's identity is owned by the Brain
+  // portal's registration, not by this form. ContextSection renders it as
+  // static text stating that provenance, so nobody edits a field whose
+  // changes would be silently dropped.
   clinicName: string;
-  // Structured clinic address — fed to the agent for "onde fica?" replies and
-  // booking confirmations. REAL as of the Onboarding & Multi-Professional
-  // contract (secretaria TenantConfigWire.address) — wired via hub-mapping.ts.
+  // Structured clinic address — CADASTRAL DATA ONLY. It round-trips through
+  // TenantConfigWire.address and persists on tenants.address, but nothing in
+  // secretarIA's conversation path reads it today: the only address the agent
+  // ever speaks is Unit.address (a different table, surfaced by the
+  // multi_unit plugin's list_units tool). The UI must not promise that the
+  // bot answers "onde fica?" from these fields until a real consumer exists.
   addressLine: string;       // street + number, e.g. "Av. Paulista, 1000"
   addressComplement: string; // suite/floor, e.g. "Sala 302" (optional)
   neighborhood: string;      // bairro
   city: string;
   state: string;             // UF, e.g. "SP"
   postalCode: string;        // CEP
-  // demo-only: TenantConfigUpdate still has no clinic 'phone' field.
-  phone: string;
   // Accepted health-insurance plan names, comma-separated in the UI. REAL —
   // wired to TenantConfigWire.insurances (string[] on the wire).
   insurances: string;
@@ -26,6 +32,27 @@ export type ClinicCtx = {
   // plan) during booking and which one — patient PII, minimized per LGPD.
   // REAL — wired to TenantConfigWire.collect_insurance.
   collectInsurance: boolean;
+};
+
+// NOTE: there is deliberately no `phone` here anymore. The old field was a
+// demo-only string with no wire counterpart and no consumer: whatever the
+// clinic typed into "WhatsApp de atendimento" was never sent anywhere. The
+// real connected number is owned by the WhatsApp activation flow (see
+// OnboardingBanner), so the form points there instead of pretending to own it.
+
+// The honest starting point for an AUTHENTICATED session: nothing on screen
+// until the tenant GET actually succeeds. Never a demo seed — see
+// lib/demo-seed.ts for why the two live in separate modules.
+export const EMPTY_CLINIC_CTX: ClinicCtx = {
+  clinicName: "",
+  addressLine: "",
+  addressComplement: "",
+  neighborhood: "",
+  city: "",
+  state: "",
+  postalCode: "",
+  insurances: "",
+  collectInsurance: false,
 };
 
 // ---------------------------------------------------------------------------
@@ -45,6 +72,12 @@ export type Messages = {
   language: string;
 };
 
+export const EMPTY_MESSAGES: Messages = {
+  greetingMessage: "",
+  returningGreetingMessage: "",
+  language: "pt-BR",
+};
+
 // ---------------------------------------------------------------------------
 // Section 03 — Post-consult (message sent + knowledge used to answer questions)
 // ---------------------------------------------------------------------------
@@ -60,6 +93,11 @@ export type PostConsult = {
   // after the consult (recovery care, return-visit timing, how exam results
   // are delivered) — never sent verbatim.
   postConsultKnowledge: string;
+};
+
+export const EMPTY_POST_CONSULT: PostConsult = {
+  postConsultMessage: "",
+  postConsultKnowledge: "",
 };
 
 // ---------------------------------------------------------------------------
@@ -155,11 +193,42 @@ export type DayConfig = {
   ranges: TimeRange[];
 };
 
+// [key, label] pairs in ISO week order (Mon → Sun).
+export const WEEKDAYS: [string, string][] = [
+  ["seg", "Segunda"],
+  ["ter", "Terça"],
+  ["qua", "Quarta"],
+  ["qui", "Quinta"],
+  ["sex", "Sexta"],
+  ["sab", "Sábado"],
+  ["dom", "Domingo"],
+];
+
+// A fully-closed week — the canonical empty value for DayConfig[] and the
+// base every professional's hydration starts from, so switching between
+// professionals never leaks one professional's ranges onto another's blank
+// days. Returns a fresh array each call: callers mutate their own copy.
+export function closedWeek(): DayConfig[] {
+  return WEEKDAYS.map(([key, label]) => ({ key, label, on: false, ranges: [] }));
+}
+
+// Scheduling preferences that this screen can actually persist. Exactly one
+// field survives: `defaultDur` (TenantConfigUpdate.appointment_duration_min).
+//
+// The former `gap` (intervalo entre consultas) and `lead` (antecedência
+// mínima) were removed rather than left on screen: TenantConfigUpdate has no
+// counterpart for either, buildConfigUpdatePayload never sent them, and no
+// scheduling code reads them — so every clinic that picked "10 min" or "2h
+// antes" was configuring nothing. Re-introducing them is a separate,
+// end-to-end scope (schema + column + slot resolver + tests), not a control
+// re-enabled on the form.
 export type Prefs = {
-  defaultDur: number; // minutes — stays TENANT-level (appointment_duration_min)
-  gap: number;        // minutes between appointments (demo-only)
-  lead: number;       // hours of minimum advance notice (demo-only)
+  defaultDur: number; // minutes — TENANT-level (appointment_duration_min)
 };
+
+// Mirrors the backend default for appointment_duration_min. Used as the
+// authenticated pre-hydration value; overwritten by the real GET.
+export const EMPTY_PREFS: Prefs = { defaultDur: 50 };
 
 // ---------------------------------------------------------------------------
 // Section 08 — Google Calendar (tenant-level; unchanged single-professional path)
@@ -183,3 +252,5 @@ export type GcalState = {
   connected: boolean;
   mode: GoogleCalendarMode;
 };
+
+export const EMPTY_GCAL: GcalState = { connected: false, mode: "per_professional" };

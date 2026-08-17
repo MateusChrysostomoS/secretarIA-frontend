@@ -14,7 +14,16 @@
 //      attempts total). If every attempt fails, unavailable=true so the page
 //      can show a truthful "couldn't connect, try again" banner instead of
 //      silently sitting in demo mode forever.
-//   4. Session + entitled + a hub base URL is configured -> hubReady=true.
+//   4. Session + entitled + a hub base URL is configured -> hubTokenReady=true.
+//
+// NAMING, deliberately: `hubTokenReady`, not `hubReady`. It means "a token was
+// minted and a base URL exists", which is strictly weaker than "the hub
+// answered". No GET has been attempted at this point, so a screen that treats
+// this as "the data is here" will happily present whatever placeholder it was
+// initialised with. That conflation is exactly what let the Configuração page
+// show demo values to a tenant whose config GET had failed; pages now track
+// their own per-source load phases on top of this flag (see
+// configuracao/lib/hydration.ts).
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getSession, ManageApiError, type Session } from "@/lib/manage-api";
@@ -31,9 +40,10 @@ export type UseSecretariaHubResult = {
   // (network, 5xx, cold start, etc). Distinct from notEntitled: this is a
   // transient condition worth retrying, not a plan limitation.
   unavailable: boolean;
-  // True when it's safe to call the hub client: session + entitled + hub
-  // base URL configured.
-  hubReady: boolean;
+  // True when it's safe to ATTEMPT a hub call: session + entitled + hub base
+  // URL configured. Not a promise that any call has succeeded — see the
+  // naming note at the top of this file.
+  hubTokenReady: boolean;
   // Restarts the mint cycle from attempt 1 (resetting ready/notEntitled/
   // unavailable/entitlement). No-op without a session. Wired to the
   // "Tentar novamente" action in HubNotice.
@@ -137,7 +147,7 @@ export function useSecretariaHub(): UseSecretariaHubResult {
     ready,
     notEntitled,
     unavailable,
-    hubReady: entitled && hubConfigured(),
+    hubTokenReady: entitled && hubConfigured(),
     retry,
   };
 }

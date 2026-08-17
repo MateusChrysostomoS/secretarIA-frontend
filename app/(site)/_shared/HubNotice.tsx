@@ -23,6 +23,13 @@ type HubNoticeProps = {
   unavailable?: boolean;
   // Restarts the hub-token-mint cycle — wired to useSecretariaHub().retry().
   onRetry?: () => void;
+  // Set by screens where the demo showcase is reserved for session-less
+  // visitors and an authenticated tenant is shown nothing it hasn't actually
+  // read back (see configuracao's fail-closed hydration). It only changes the
+  // not-entitled copy: promising "exibindo dados de demonstração" there would
+  // describe a screen that is, correctly, empty. The agenda still shows its
+  // demo week in that state and leaves this unset.
+  demoForVisitorsOnly?: boolean;
 };
 
 const baseStyle: CSSProperties = {
@@ -46,7 +53,14 @@ const warnStyle: CSSProperties = {
 };
 
 // Renders the demo / not-entitled / unavailable / not-configured banner, or null.
-export function HubNotice({ session, notEntitled, ready, unavailable, onRetry }: HubNoticeProps) {
+export function HubNotice({
+  session,
+  notEntitled,
+  ready,
+  unavailable,
+  onRetry,
+  demoForVisitorsOnly,
+}: HubNoticeProps) {
   if (!ready) return null;
 
   if (!session) {
@@ -82,7 +96,9 @@ export function HubNotice({ session, notEntitled, ready, unavailable, onRetry }:
       >
         <Icon name="ban" size={15} style={{ flexShrink: 0 }} />
         <span>
-          Sua clínica não tem a secretarIA habilitada. Exibindo dados de demonstração.
+          {demoForVisitorsOnly
+            ? "Sua clínica não tem a secretarIA habilitada. Nenhuma configuração é exibida nem salva aqui."
+            : "Sua clínica não tem a secretarIA habilitada. Exibindo dados de demonstração."}
         </span>
       </div>
     );
