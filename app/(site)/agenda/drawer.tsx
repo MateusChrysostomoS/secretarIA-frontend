@@ -24,11 +24,23 @@ import type { Appt, ApptStatus } from "../_shared/data";
 type DrawerProps = {
   appt: Appt;
   onClose: () => void;
+  /**
+   * Opens the cancel modal. Absent (or an appt with no `appointmentId`) keeps
+   * the action disabled — see CANCEL_UNAVAILABLE_HINT.
+   */
+  onCancel?: (appt: Appt) => void;
 };
 
-// Shared hint copy for every disabled mutation control below.
+// Shared hint copy for the mutation controls that are still disabled
+// (Remarcar / Editar — they need more than an id from the read model).
 const APPOINTMENT_HINT =
   "Disponível em breve — por enquanto, gerencie pelo WhatsApp ou Google Calendar.";
+
+// Cancel is wired, but only for a slot that carries a local Appointment.id.
+// An event typed straight into Google Calendar has none, and inventing one
+// could delete the wrong consultation — the Google deletion is irreversible.
+const CANCEL_UNAVAILABLE_HINT =
+  "Este evento veio direto do Google Calendar e não tem consulta vinculada — cancele por lá.";
 const BLOCK_HINT = "Gerencie pelo Google Calendar por enquanto.";
 
 // ---------------------------------------------------------------------------
@@ -148,7 +160,9 @@ function StatusPicker({ value }: { value: ApptStatus }) {
  * - For an appointment: shows patient identity, info rows, anamnese status,
  *   a read-only status picker, and disabled remarcar/editar/cancelar actions.
  */
-export function Drawer({ appt, onClose }: DrawerProps) {
+export function Drawer({ appt, onClose, onCancel }: DrawerProps) {
+  // Both halves must hold: a handler from the page AND a local id to send.
+  const canCancel = Boolean(onCancel && appt.appointmentId);
   if (!appt) return null;
 
   const isBlock = appt.status === "bloqueio";
@@ -387,16 +401,19 @@ export function Drawer({ appt, onClose }: DrawerProps) {
               <Btn
                 variant="danger"
                 icon="xCircle"
-                disabled
-                title={APPOINTMENT_HINT}
+                disabled={!canCancel}
+                title={canCancel ? undefined : CANCEL_UNAVAILABLE_HINT}
+                onClick={canCancel ? () => onCancel!(appt) : undefined}
                 style={{ justifyContent: "center", borderRadius: 11 }}
               >
                 Cancelar consulta
               </Btn>
             </div>
 
-            {/* honest limitation notice — replaces the old "we'll notify the
-                patient" disclaimer, which is no longer true for hub items */}
+            {/* Honest limitation notice. Cancel now works, so the blanket
+                "manage it elsewhere" line would be a lie; say what is actually
+                still missing, and why THIS slot cannot be cancelled when it
+                has no local appointment behind it. */}
             <p
               style={{
                 fontSize: 11.5,
@@ -406,7 +423,7 @@ export function Drawer({ appt, onClose }: DrawerProps) {
                 marginTop: 2,
               }}
             >
-              {APPOINTMENT_HINT}
+              {canCancel ? APPOINTMENT_HINT : CANCEL_UNAVAILABLE_HINT}
             </p>
           </div>
         )}

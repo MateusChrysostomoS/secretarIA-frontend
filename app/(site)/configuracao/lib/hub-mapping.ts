@@ -16,6 +16,7 @@ import type {
 import {
   DEFAULT_PIX_DEPOSIT,
   type ClinicCtx,
+  type ConfigInheritance,
   type DayConfig,
   type GcalState,
   type Messages,
@@ -291,14 +292,32 @@ export function buildConfigUpdatePayload(
 // Builds the PUT /tenants/me/professionals/{id}/config payload for the
 // SELECTED professional: their hours, services, and profile fields (Feature
 // C4/E — "their hours/services/specialty/about/context").
+//
+// `hoursSource` / `servicesSource` decide what the two config fields carry, and
+// getting this wrong is what made a clinic's bot go quiet:
+//
+//   "inherit" -> null   the professional keeps NO config of their own; the
+//                       clinic's applies. This screen used to have no way to
+//                       express it, so every save — including one that only
+//                       changed the greeting — sent `{}` and silently converted
+//                       inheritance into an empty override.
+//   "own"     -> values whatever is on screen, INCLUDING `{}` / `[]` when the
+//                       user closed every day or removed every service. That is
+//                       a real decision and the backend now honours it.
+//   "unknown" -> values the backend did not tell us which state this is (it
+//                       predates `*_inherited`). Sending the values preserves
+//                       exactly the pre-flag behaviour; sending `null` would be
+//                       asserting an inheritance we never verified.
 export function buildProfessionalConfigPayload(
   days: DayConfig[],
   services: Service[],
   profile: ProfessionalProfile,
+  hoursSource: ConfigInheritance,
+  servicesSource: ConfigInheritance,
 ): ProfessionalConfigUpdatePayload {
   return {
-    business_hours: toWireBusinessHours(days),
-    appointment_types: toWireAppointmentTypes(services),
+    business_hours: hoursSource === "inherit" ? null : toWireBusinessHours(days),
+    appointment_types: servicesSource === "inherit" ? null : toWireAppointmentTypes(services),
     specialty: profile.specialty || null,
     about: profile.about || null,
     context_doctor_message: profile.contextDoctorMessage || null,

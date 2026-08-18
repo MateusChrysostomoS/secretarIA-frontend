@@ -61,6 +61,7 @@ import {
   EMPTY_PROFESSIONAL_PROFILE,
   closedWeek,
   type ClinicCtx,
+  type ConfigInheritance,
   type DayConfig,
   type GcalState,
   type Messages,
@@ -71,6 +72,8 @@ import {
   type Service,
 } from "./lib/types";
 import {
+  applyWireAppointmentTypes,
+  applyWireBusinessHours,
   buildConfigUpdatePayload,
   buildProfessionalConfigPayload,
 } from "./lib/hub-mapping";
@@ -245,6 +248,12 @@ export default function ConfiguracaoPage() {
 
   const [services, setServices] = useState<Service[]>([]);
   const [days, setDays] = useState<DayConfig[]>(closedWeek);
+  // Whether `days` / `services` above are this professional's OWN config or the
+  // clinic's, inherited. Held as state because the VALUES cannot tell you:
+  // an inheriting professional and one who closed every day both render a
+  // closed week. Starts "unknown" — nothing has been read back yet.
+  const [hoursSource, setHoursSource] = useState<ConfigInheritance>("unknown");
+  const [servicesSource, setServicesSource] = useState<ConfigInheritance>("unknown");
   const [profile, setProfile] = useState<ProfessionalProfile>(EMPTY_PROFESSIONAL_PROFILE);
   const setProfileK = <K extends keyof ProfessionalProfile>(key: K, value: ProfessionalProfile[K]) =>
     setProfile((prev) => ({ ...prev, [key]: value }));
@@ -285,6 +294,8 @@ export default function ConfiguracaoPage() {
     setServices(s.services);
     setDays(s.days);
     setProfile(s.profile);
+    setHoursSource(s.hoursSource);
+    setServicesSource(s.servicesSource);
   }, []);
 
   // --- session resolution: the only place `mode` is decided ---
@@ -307,6 +318,10 @@ export default function ConfiguracaoPage() {
       services: DEMO_SERVICES.forVisitor,
       days: demoWeek(),
       profile: DEMO_PROFILE.forVisitor,
+      // The showcase shows a fully configured professional, so "own" is what a
+      // visitor should see — not an inheritance story the demo cannot explain.
+      hoursSource: "own",
+      servicesSource: "own",
     });
     setRoster(DEMO_ROSTER.forVisitor);
     dispatch({ type: "professional_selected", id: DEMO_PROFESSIONAL_ID });
@@ -487,6 +502,44 @@ export default function ConfiguracaoPage() {
   // never one, which is why visitors get a disabled button.
   const canDiscard = hydration.mode === "authenticated" && confirmed.tenant !== null && !saving;
 
+  // --- What "Herdar da clínica" actually resolves to ------------------------
+  // The clinic's own hours/services, from the tenant config this page already
+  // holds — no extra request. Rendered read-only while a professional inherits,
+  // so "herdando" shows WHAT is being inherited instead of an empty week that
+  // looks indistinguishable from "closed all week".
+  const inheritedDays = useMemo(
+    () =>
+      confirmed.tenant
+        ? applyWireBusinessHours(confirmed.tenant.business_hours, closedWeek())
+        : closedWeek(),
+    [confirmed.tenant],
+  );
+  const inheritedServices = useMemo(
+    () => (confirmed.tenant ? applyWireAppointmentTypes(confirmed.tenant.appointment_types) : []),
+    [confirmed.tenant],
+  );
+
+  // Switching to "own" is the explicit act of creating an override, and it
+  // seeds the form from what was being inherited: the doctor edits the schedule
+  // patients see today rather than starting from a blank week they never chose.
+  // Switching back to "inherit" leaves the local values alone — they are simply
+  // not sent (the payload carries `null`), so a mis-click costs nothing.
+  const chooseHoursSource = useCallback(
+    (next: "inherit" | "own") => {
+      if (next === "own") setDays(inheritedDays.map((d) => ({ ...d, ranges: [...d.ranges] })));
+      setHoursSource(next);
+    },
+    [inheritedDays],
+  );
+
+  const chooseServicesSource = useCallback(
+    (next: "inherit" | "own") => {
+      if (next === "own") setServices(inheritedServices.map((s) => ({ ...s })));
+      setServicesSource(next);
+    },
+    [inheritedServices],
+  );
+
   // --- Save: guarded by lib/save.ts, which refuses without any PUT ---
   // Adopts what the backend actually persisted as the new form state AND the
   // new authoritative snapshot, so a later Descartar returns here.
@@ -519,7 +572,8 @@ export default function ConfiguracaoPage() {
       updateProfessionalConfig(session!, id, patch),
     buildTenantPatch: () =>
       buildConfigUpdatePayload(ctx, messages, postConsult, pixDeposit, prefs.defaultDur, gcal.mode),
-    buildProfessionalPatch: () => buildProfessionalConfigPayload(days, services, profile),
+    buildProfessionalPatch: () =>
+      buildProfessionalConfigPayload(days, services, profile, hoursSource, servicesSource),
     isLegacyBackend,
   });
 
@@ -600,7 +654,9 @@ export default function ConfiguracaoPage() {
   const currentSlices = useMemo(
     () => ({
       tenant: { ctx, messages, postConsult, pixDeposit, prefs, gcal },
-      professional: hydration.selectedProfessionalId ? { services, days, profile } : null,
+      professional: hydration.selectedProfessionalId
+        ? { services, days, profile, hoursSource, servicesSource }
+        : null,
     }),
     [
       ctx,
@@ -612,6 +668,8 @@ export default function ConfiguracaoPage() {
       services,
       days,
       profile,
+      hoursSource,
+      servicesSource,
       hydration.selectedProfessionalId,
     ],
   );
@@ -787,6 +845,9 @@ export default function ConfiguracaoPage() {
                 services={services}
                 setServices={setServices}
                 professionalName={selectedProfessionalName}
+                source={servicesSource}
+                onSourceChange={chooseServicesSource}
+                inheritedServices={inheritedServices}
                 readOnly={!professionalEditable}
               />
               <AvailabilitySection
@@ -795,6 +856,9 @@ export default function ConfiguracaoPage() {
                 prefs={prefs}
                 setPref={setPrefK}
                 professionalName={selectedProfessionalName}
+                source={hoursSource}
+                onSourceChange={chooseHoursSource}
+                inheritedDays={inheritedDays}
                 readOnly={!professionalEditable}
                 durationReadOnly={!tenantEditable}
               />

@@ -39,7 +39,7 @@ import type { Appt } from "../_shared/data";
 
 import { WeekView, DayView, MonthView } from "./calendar";
 import { Drawer }                        from "./drawer";
-import { NewApptModal, BlockModal }      from "./modals";
+import { NewApptModal, BlockModal, CancelModal } from "./modals";
 
 import { HubNotice } from "../_shared/HubNotice";
 import { useSecretariaHub } from "../_shared/useSecretariaHub";
@@ -47,8 +47,11 @@ import {
   listCalendarEvents,
   createAppointment,
   createBlock as createHubBlock,
+  cancelAppointment,
+  getCancelPreview,
   HubApiError,
 } from "@/lib/secretaria-hub";
+import type { CancelPreviewWire } from "@/lib/secretaria-hub";
 import { getMe } from "@/lib/manage-api";
 import {
   currentWeekIsoRange,
@@ -70,6 +73,10 @@ type ViewMode = "semana" | "dia" | "mes";
 type ModalState =
   | { type: "new" }
   | { type: "block" }
+  // Reachable since the read model started returning the local
+  // Appointment.id — the drawer only offers the action for a slot that has
+  // one (see drawer.tsx's canCancel).
+  | { type: "cancel"; appt: Appt; preview: CancelPreviewWire | null }
   | null;
 
 type ToastState = { msg: string; icon?: IconName } | null;
@@ -380,6 +387,85 @@ export default function AgendaPage() {
   // ---------------------------------------------------------------------------
 
   /**
+   * Cancel a real consultation through the hub.
+   *
+   * Only reachable for a slot carrying a local `appointmentId` (the drawer
+   * gates on it), because the endpoint keys on that id and the Google event
+   * deletion it performs is irreversible — cancelling the wrong consultation
+   * is not something a refetch can undo.
+   *
+   * `justification` is the doctor's reason, NOT the message body: secretarIA
+   * renders the standard "O médico X desmarcou a sua consulta!" text and only
+   * appends the quoted justification when there is one. An empty string is a
+   * valid, supported cancellation — the patient is notified either way — so it
+   * is sent as null rather than being treated as a missing field.
+   */
+  /**
+   * Open the cancel modal, having first asked what notifying would cost.
+   *
+   * The preview is fetched HERE rather than inside the modal so the modal
+   * stays a pure render of state it is handed. A failed lookup opens the modal
+   * with `null` — cancelling must not be blocked by a read that is only there
+   * to price the notification, and the modal says outright that it could not
+   * check rather than implying the notice is free.
+   */
+  const openCancel = async (appt: Appt) => {
+    if (!hubTokenReady || !session || !appt.appointmentId) {
+      flash("A agenda real não está disponível agora.", "xCircle");
+      return;
+    }
+    let preview: CancelPreviewWire | null = null;
+    try {
+      preview = await getCancelPreview(session, appt.appointmentId);
+    } catch (e) {
+      console.error("secretaria hub: failed to read cancel preview", e);
+    }
+    setModal({ type: "cancel", appt, preview });
+  };
+
+  const cancelAppt = async (
+    appt: Appt,
+    justification: string,
+    notifyOutsideWindow: boolean,
+  ) => {
+    if (!hubTokenReady || !session || !appt.appointmentId) {
+      // Defensive only — the drawer disables the trigger in each of these cases.
+      flash("A agenda real não está disponível agora.", "xCircle");
+      return;
+    }
+    try {
+      await cancelAppointment(session, appt.appointmentId, {
+        confirm: true,
+        justification: justification || null,
+        notify_outside_window: notifyOutsideWindow,
+      });
+      setModal(null);
+      setSelected(null);
+      await reloadWeek();
+      // Only claim the patient was told when a notice could actually go out:
+      // outside the 24h window with the paid send declined, nothing is sent,
+      // and saying otherwise would be a lie the doctor acts on.
+      const notified = modal?.type === "cancel"
+        ? (modal.preview?.inside_window ?? true) || notifyOutsideWindow
+        : true;
+      flash(
+        notified
+          ? "Consulta cancelada. O paciente foi avisado."
+          : "Consulta cancelada. O paciente NÃO foi avisado.",
+        notified ? "check" : "xCircle",
+      );
+    } catch (e) {
+      console.error("secretaria hub: failed to cancel appointment", e);
+      const notice =
+        e instanceof HubApiError && e.status === 409
+          ? "Esta consulta já estava cancelada."
+          : "Não foi possível cancelar. Tente novamente.";
+      flash(notice, "xCircle");
+      // Keep the modal open on failure — never show a cancelled row that isn't.
+    }
+  };
+
+  /**
    * Persist a newly created appointment. Only reachable when hubTokenReady (the
    * Toolbar's "Nova consulta" trigger is disabled otherwise — see below), so
    * this always creates a REAL Google Calendar event via
@@ -562,13 +648,16 @@ export default function AgendaPage() {
           every item shown here comes from the hub, and the hub only supports
           create so far — see drawer.tsx. */}
       {liveSelected && (
-        <Drawer appt={liveSelected} onClose={() => setSelected(null)} />
+        <Drawer
+          appt={liveSelected}
+          onClose={() => setSelected(null)}
+          onCancel={openCancel}
+        />
       )}
 
-      {/* Modals — one rendered at a time based on modal.type. Edit/Reschedule/
-          Cancel are not rendered here: their only entry point (the Drawer's
-          action buttons) is disabled, so they're unreachable — see
-          drawer.tsx and modals.tsx for the TODO(hub-write) follow-up. */}
+      {/* Modals — one rendered at a time based on modal.type. Edit and
+          Reschedule are still unreachable (their drawer triggers stay
+          disabled); Cancel is wired — see drawer.tsx. */}
       {modal?.type === "new" && (
         <NewApptModal
           presetDay={view === "dia" ? day : undefined}
@@ -582,6 +671,14 @@ export default function AgendaPage() {
           presetDay={view === "dia" ? day : undefined}
           onClose={() => setModal(null)}
           onCreate={createBlock}
+        />
+      )}
+      {modal?.type === "cancel" && (
+        <CancelModal
+          appt={modal.appt}
+          preview={modal.preview}
+          onClose={() => setModal(null)}
+          onConfirm={cancelAppt}
         />
       )}
 

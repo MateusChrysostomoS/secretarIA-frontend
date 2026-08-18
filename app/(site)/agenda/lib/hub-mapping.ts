@@ -9,16 +9,20 @@
 // item: it shows on the grid with its summary as the display name, a generic
 // type, and an "agendado" status.
 //
-// Write status: CREATE (POST .../appointments) and BLOCK (POST .../blocks)
-// are wired for real when hubTokenReady — see page.tsx's createAppt/createBlock,
-// which use slotToIsoRange below to turn the modal's day/start/dur into the
-// same real-world week currentWeekIsoRange anchors the read on.
-// CANCEL, RESCHEDULE, EDIT, and quick status-change stay disabled (no local
-// fake-mutate fallback): GET .../calendar/events (CalendarEventRead) carries
-// only the Google event id, never the DB Appointment.id that
-// POST .../appointments/{id}/cancel|reschedule require, and no hub endpoint
-// maps google_event_id -> Appointment.id. TODO(hub-write): wire these once
-// the read model exposes that id — see agenda/drawer.tsx.
+// Write status: CREATE (POST .../appointments), BLOCK (POST .../blocks) and
+// CANCEL (POST .../appointments/{id}/cancel) are wired for real when
+// hubTokenReady — see page.tsx's createAppt/createBlock/cancelAppt.
+//
+// CANCEL used to be disabled with the rest because CalendarEventRead carried
+// only Google's event id, never the DB Appointment.id the write endpoints key
+// on. The read model now also returns `appointment_id`, so the mapping below
+// threads it onto Appt.appointmentId and the drawer enables the action for any
+// slot that has one. It stays absent for an event that exists only in Google
+// (typed straight into the calendar), and the drawer keeps the button disabled
+// there with an honest hint rather than guessing an id.
+//
+// RESCHEDULE, EDIT and quick status-change remain disabled — they need more
+// than an id (a new slot, a richer read model). TODO(hub-write) for those.
 //
 // Block classification: CalendarEventRead has no boolean/type field to tell a
 // blocked slot apart from a real appointment, so the ONLY signal available is
@@ -142,6 +146,7 @@ function mapHubEventToAppt(e: CalendarEventWire): Appt | null {
       dur: durMin,
       status: "bloqueio",
       reason: blockReasonFromSummary(e.summary ?? ""),
+      appointmentId: e.appointment_id ?? null,
     };
   }
 
@@ -155,6 +160,7 @@ function mapHubEventToAppt(e: CalendarEventWire): Appt | null {
     status: "agendado",
     anamnese: "—",
     notes: "",
+    appointmentId: e.appointment_id ?? null,
   };
 }
 

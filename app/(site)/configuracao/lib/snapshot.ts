@@ -39,7 +39,9 @@ import {
   EMPTY_POST_CONSULT,
   EMPTY_PREFS,
   EMPTY_PROFESSIONAL_PROFILE,
+  inheritanceFromWire,
   type ClinicCtx,
+  type ConfigInheritance,
   type DayConfig,
   type GcalState,
   type Messages,
@@ -102,6 +104,19 @@ export type ProfessionalSlices = {
   services: Service[];
   days: DayConfig[];
   profile: ProfessionalProfile;
+  /**
+   * Whether `days` / `services` are this professional's OWN config or the
+   * clinic's, inherited. Carried as state rather than derived from emptiness,
+   * because emptiness is exactly what cannot tell the two apart: an inheriting
+   * professional and one who closed every day both arrive as a closed week.
+   *
+   * They live here, next to the values they describe, so Descartar restores
+   * them together with the values and a save can send `null` (inherit) instead
+   * of `{}` (empty override) — the difference between "the clinic's hours
+   * apply" and "this doctor is unbookable".
+   */
+  hoursSource: ConfigInheritance;
+  servicesSource: ConfigInheritance;
 };
 
 // ---------------------------------------------------------------------------
@@ -136,12 +151,25 @@ export function professionalSlicesFromWire(p: ProfessionalWire): ProfessionalSli
       p.appointment_types.length > 0 ? applyWireAppointmentTypes(p.appointment_types) : [],
     days: applyWireBusinessHours(p.business_hours, closedWeek()),
     profile: applyWireProfessionalProfile(p),
+    // The flags are read, never inferred from the (identical-looking) values.
+    // A backend that does not send them yields "unknown", which the save path
+    // treats as "do not claim inheritance you cannot verify".
+    hoursSource: inheritanceFromWire(p.business_hours_inherited),
+    servicesSource: inheritanceFromWire(p.appointment_types_inherited),
   };
 }
 
 /** What a professional-scoped form looks like with nothing hydrated. */
 export function emptyProfessionalSlices(): ProfessionalSlices {
-  return { services: [], days: closedWeek(), profile: EMPTY_PROFESSIONAL_PROFILE };
+  return {
+    services: [],
+    days: closedWeek(),
+    profile: EMPTY_PROFESSIONAL_PROFILE,
+    // Nothing has been read back, so the honest answer is "we don't know" —
+    // and the form is read-only in this state anyway (see lib/hydration.ts).
+    hoursSource: "unknown",
+    servicesSource: "unknown",
+  };
 }
 
 /**
@@ -228,15 +256,25 @@ export function dirtySections(
     if (!same(current.professional.profile, baseline.professional.profile)) {
       sections.push("prof");
     }
+    // Switching between "herdar" and "configuração própria" IS a change, even
+    // when the values on screen look identical — it is precisely the case where
+    // they do (an inherited week and an empty own week both render closed).
+    // Leaving it out would let Descartar claim there was nothing to discard.
     if (
       !same(
         comparableServices(current.professional.services),
         comparableServices(baseline.professional.services),
-      )
+      ) ||
+      current.professional.servicesSource !== baseline.professional.servicesSource
     ) {
       sections.push("srv");
     }
-    if (!same(current.professional.days, baseline.professional.days)) sections.push("disp");
+    if (
+      !same(current.professional.days, baseline.professional.days) ||
+      current.professional.hoursSource !== baseline.professional.hoursSource
+    ) {
+      sections.push("disp");
+    }
   }
 
   // `disp` also owns the tenant-level default duration.

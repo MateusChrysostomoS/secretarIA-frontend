@@ -156,6 +156,33 @@ export const EMPTY_PROFESSIONAL_PROFILE: ProfessionalProfile = {
 };
 
 // ---------------------------------------------------------------------------
+// Inheritance — shared by Services (06) and Availability (07)
+// ---------------------------------------------------------------------------
+
+// Where a professional's hours/services come from. This mirrors, on screen, the
+// three states the column actually has in the database:
+//
+//   "inherit" — the professional has NO config of their own; the clinic's
+//               legacy config applies. On the wire this is `null`.
+//   "own"     — the professional has their own config, INCLUDING an empty one
+//               ("closed all week" / "offers nothing"), which inherits nothing.
+//   "unknown" — the backend did not send `*_inherited`, so it predates the
+//               distinction and genuinely cannot tell us which of the two this
+//               is. We say so and change nothing, rather than guessing.
+//
+// "unknown" is not a state anybody designed; it is the honest answer during a
+// deploy where the frontend is newer than the backend. Treating a missing flag
+// as "own" would let a routine save convert a clinic's inheritance into an
+// empty override — the exact failure this distinction exists to stop.
+export type ConfigInheritance = "inherit" | "own" | "unknown";
+
+// Reads a wire flag into the state above. `undefined` -> "unknown"; never false.
+export function inheritanceFromWire(flag: boolean | undefined): ConfigInheritance {
+  if (flag === undefined) return "unknown";
+  return flag ? "inherit" : "own";
+}
+
+// ---------------------------------------------------------------------------
 // Section 06 — Services (appointment types) — now edited per-professional
 // ---------------------------------------------------------------------------
 

@@ -21,7 +21,8 @@ import { Section } from "./Section";
 import { CSelect } from "./CSelect";
 import { CToggle } from "./CToggle";
 import { Icon } from "../../_shared/ui";
-import type { DayConfig, Prefs } from "../lib/types";
+import { InheritanceChoice, InheritedNote } from "./InheritanceChoice";
+import type { ConfigInheritance, DayConfig, Prefs } from "../lib/types";
 import type { Dispatch, SetStateAction } from "react";
 
 // ---------------------------------------------------------------------------
@@ -180,6 +181,15 @@ type AvailabilitySectionProps = {
   prefs: Prefs;
   setPref: (key: keyof Prefs, value: number) => void;
   professionalName?: string;
+  // Whether `days` is this professional's own schedule or the clinic's,
+  // inherited — see lib/types.ts. The values alone cannot say: an inheriting
+  // professional and one who closed every day both arrive as a closed week.
+  source: ConfigInheritance;
+  onSourceChange: (next: "inherit" | "own") => void;
+  // The clinic's own weekly schedule, shown read-only while inheriting so the
+  // section displays WHAT is inherited instead of a blank week that reads as
+  // "nothing configured".
+  inheritedDays: DayConfig[];
   // Weekly hours belong to the selected professional — locked until THAT
   // professional's config has hydrated (see lib/hydration.ts).
   readOnly?: boolean;
@@ -195,11 +205,22 @@ export function AvailabilitySection({
   prefs,
   setPref,
   professionalName,
+  source,
+  onSourceChange,
+  inheritedDays,
   readOnly,
   durationReadOnly,
 }: AvailabilitySectionProps) {
   const updateDay = (i: number, d: DayConfig) =>
     setDays(prev => prev.map((x, j) => (j === i ? d : x)));
+
+  const inheriting = source === "inherit";
+  // While inheriting, the clinic's schedule is what patients actually get, so
+  // that is what the grid shows — locked, because editing it here would be
+  // editing the clinic's hours through a professional's form.
+  const shownDays = inheriting ? inheritedDays : days;
+  const gridReadOnly = readOnly || inheriting;
+  const nothingOpen = shownDays.every(d => !d.on);
 
   return (
     <Section
@@ -209,6 +230,34 @@ export function AvailabilitySection({
       title={"Dias e horários de atendimento" + (professionalName ? " · " + professionalName : "")}
       desc="Quando o médico atende. A secretarIA só oferece horários dentro dessas faixas e sincroniza com o Google Calendar para evitar conflitos."
     >
+      <InheritanceChoice
+        name="disp-source"
+        source={source}
+        onChange={onSourceChange}
+        inheritHint="Usa os horários da clínica. Mudou lá, muda aqui."
+        ownHint="Define horários só deste profissional, independentes da clínica."
+        readOnly={readOnly}
+      />
+
+      {inheriting && (
+        <InheritedNote>
+          Estes são os horários <b>da clínica</b>, aplicados a este profissional. Para alterá-los só
+          para ele, escolha <b>Configuração própria</b> acima — os horários abaixo viram o ponto de
+          partida.
+        </InheritedNote>
+      )}
+
+      {/* An own schedule with every day closed is a real choice, and a costly
+          one: the bot can offer nothing. Say so here rather than letting the
+          clinic discover it from a patient. */}
+      {source === "own" && nothingOpen && (
+        <InheritedNote>
+          Nenhum dia está aberto. Com uma configuração própria, isso significa que a secretarIA{" "}
+          <b>não oferecerá nenhum horário</b> deste profissional — os horários da clínica não
+          entram como reserva.
+        </InheritedNote>
+      )}
+
       <div style={{ display: "flex", flexDirection: "column" }}>
         {/* schedule header label */}
         <div style={{
@@ -222,8 +271,8 @@ export function AvailabilitySection({
         </div>
 
         {/* one row per weekday */}
-        {days.map((d, i) => (
-          <DayRow key={d.key} day={d} onChange={nd => updateDay(i, nd)} readOnly={readOnly} />
+        {shownDays.map((d, i) => (
+          <DayRow key={d.key} day={d} onChange={nd => updateDay(i, nd)} readOnly={gridReadOnly} />
         ))}
       </div>
 

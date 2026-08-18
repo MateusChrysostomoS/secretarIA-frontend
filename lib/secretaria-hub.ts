@@ -322,6 +322,12 @@ export type CalendarEventWire = {
   summary: string | null;
   start: string;
   end: string;
+  /**
+   * Local `Appointment.id`, or null when the Google event has no local row.
+   * `id` is Google's event id and the write endpoints do not accept it — this
+   * is the one the cancel/reschedule calls take.
+   */
+  appointment_id?: string | null;
 };
 
 // AppointmentStatus enum values (models/appointment.py::AppointmentStatus).
@@ -368,7 +374,18 @@ export type BlockCreatePayload = {
 
 export type AppointmentCancelPayload = {
   confirm: boolean;
-  custom_message?: string | null;
+  /**
+   * The doctor's REASON, not the message body. secretarIA renders it into the
+   * standard "O médico X desmarcou a sua consulta!" text; omitted/blank simply
+   * drops the justification line, and the patient is notified either way.
+   */
+  justification?: string | null;
+  /**
+   * Authorises the PAID template when the patient is outside the 24h window.
+   * Defaults false server-side, so a client that does not know about the cost
+   * cannot incur it.
+   */
+  notify_outside_window?: boolean;
 };
 
 export type AppointmentReschedulePayload = {
@@ -486,6 +503,32 @@ export function createBlock(
   });
 }
 
+/**
+ * GET /tenants/me/calendar/appointments/{id}/cancel-preview
+ *
+ * What cancelling would COST, read before the doctor commits. Outside Meta's
+ * 24h window WhatsApp accepts no free-form message and notifying means a
+ * billed template — so the hub asks first instead of charging silently.
+ */
+export type CancelPreviewWire = {
+  inside_window: boolean;
+  professional_name: string | null;
+  /** Empty when unconfigured — do not quote a price the server did not give. */
+  template_cost_brl: string;
+  cost_is_estimate: boolean;
+  whatsapp_link: string | null;
+};
+
+export function getCancelPreview(
+  session: Session,
+  appointmentId: string,
+): Promise<CancelPreviewWire> {
+  return hubFetch<CancelPreviewWire>(
+    session,
+    `/tenants/me/calendar/appointments/${appointmentId}/cancel-preview`,
+  );
+}
+
 // POST /tenants/me/calendar/appointments/{id}/cancel
 export function cancelAppointment(
   session: Session,
@@ -540,27 +583,113 @@ export function disconnectCalendar(
 // and the per-professional Services/Availability/Google forms (Feature C3/C4).
 // ---------------------------------------------------------------------------
 
-// GET /tenants/me/professionals item — mirrors what the hub round-trips for
-// PUT .../config, plus its own calendar-connected flag. Completeness booleans
-// mirror the internal config-status shape (contract §4.3); kept optional here
-// since the hub list endpoint's exact completeness fields aren't in the
-// contract's wire-shape detail — code defensively against their absence.
+// GET /tenants/me/professionals item — a key-for-key mirror of the backend's
+// `ProfessionalListItem` (secretarIA/src/secretaria/schemas/professional.py),
+// whose exact key set is pinned by `test_list_shape_is_whitelisted` over there.
+//
+// IT USED TO DECLARE `calendar_connected: boolean` AS REQUIRED, and the backend
+// has never sent a key by that name — the honest one is `has_calendar`. Because
+// TypeScript checks the declaration and not the payload, every read of it
+// type-checked and evaluated to `undefined`, so /doctor/perfil showed "Agenda
+// não conectada" (and offered to connect) for doctors whose agenda the backend
+// considered available. That is why this type is now a literal mirror: invent a
+// property here and nothing fails until a user sees it.
+//
+// The three-state config fields need care. `business_hours` /
+// `appointment_types` are the professional's OWN stored value, flattened to
+// `{}` / `[]` when they have none — which cannot, on its own, distinguish
+// "inherits the clinic's config" from "has an empty config of their own".
+// `*_inherited` answers that, and is OPTIONAL on purpose: it is absent when
+// talking to a backend that predates it, and `undefined` must be handled as
+// "this backend cannot tell me" rather than silently read as `false`.
 export type ProfessionalWire = {
   id: string;
   name: string;
+  google_calendar_id: string | null;
   is_active: boolean;
+  created_at: string;
   specialty: string | null;
   about: string | null;
   context_doctor_message: string | null;
   business_hours: Record<string, TimeWindowWire[]>;
   appointment_types: AppointmentTypeWire[];
-  google_calendar_id: string | null;
-  calendar_connected: boolean;
-  has_calendar?: boolean;
-  has_hours?: boolean;
-  has_services?: boolean;
-  complete?: boolean;
+  has_calendar: boolean;
+  // Whose Google credential covers this professional. Additive next to
+  // `has_calendar` (invariant, enforced backend-side: has_calendar ===
+  // calendar_source !== "none"), because "an agenda is available" and "THIS
+  // doctor connected one" are different facts and one boolean cannot carry
+  // both. Optional for the same deploy-order reason as the flags below.
+  calendar_source?: ProfessionalCalendarSource;
+  has_hours: boolean;
+  has_services: boolean;
+  complete: boolean;
+  // Absent against an older backend — see the note above. `undefined` means
+  // unknown, never `false`.
+  business_hours_inherited?: boolean;
+  appointment_types_inherited?: boolean;
 };
+
+// "professional" = this doctor's own connection; "tenant" = covered by the
+// clinic's; "none" = nothing connected.
+export type ProfessionalCalendarSource = "professional" | "tenant" | "none";
+
+// THE runtime image of the type above, and the reason it exists: a TypeScript
+// type is erased, so nothing at runtime — and nothing in a test — could ever
+// notice that `calendar_connected` was declared here and never sent by the
+// backend. `Record<keyof Required<ProfessionalWire>, true>` makes the compiler
+// reject both halves of that drift: a key declared on the type but missing
+// here, and a key here that the type does not declare.
+//
+// lib/__tests__/secretaria-hub.test.ts then checks this list against the
+// backend's `ProfessionalListItem` key set (itself pinned by
+// `test_list_shape_is_whitelisted` in secretarIA). Between the two, inventing a
+// property fails at build or in CI instead of in front of a doctor.
+const PROFESSIONAL_WIRE_KEY_MAP: Record<keyof Required<ProfessionalWire>, true> = {
+  id: true,
+  name: true,
+  google_calendar_id: true,
+  is_active: true,
+  created_at: true,
+  specialty: true,
+  about: true,
+  context_doctor_message: true,
+  business_hours: true,
+  appointment_types: true,
+  has_calendar: true,
+  calendar_source: true,
+  has_hours: true,
+  has_services: true,
+  complete: true,
+  business_hours_inherited: true,
+  appointment_types_inherited: true,
+};
+
+export const PROFESSIONAL_WIRE_KEYS = Object.keys(
+  PROFESSIONAL_WIRE_KEY_MAP,
+) as (keyof Required<ProfessionalWire>)[];
+
+/**
+ * Light runtime check of one professional row against the contract above.
+ * Returns the keys the payload is missing and the ones it carries that this
+ * client does not know about — categorical output only, never a value, so the
+ * result is safe to log.
+ *
+ * `missing` is not automatically a bug: the optional keys are absent on purpose
+ * against a backend that predates them (see ProfessionalWire). It is the
+ * REQUIRED ones going missing that means the two sides have drifted.
+ */
+export function inspectProfessionalWire(raw: unknown): {
+  missing: string[];
+  unexpected: string[];
+} {
+  const keys = new Set(Object.keys((raw ?? {}) as Record<string, unknown>));
+  return {
+    missing: PROFESSIONAL_WIRE_KEYS.filter((key) => !keys.has(key)),
+    unexpected: [...keys].filter(
+      (key) => !PROFESSIONAL_WIRE_KEYS.includes(key as keyof Required<ProfessionalWire>),
+    ),
+  };
+}
 
 // GET /tenants/me/professionals — list with per-professional completeness/
 // calendar status, used to populate the Profissionais section and the
@@ -571,9 +700,18 @@ export function getProfessionals(session: Session): Promise<ProfessionalWire[]> 
 
 // PUT /tenants/me/professionals/{id}/config body — every field optional,
 // partial update (mirrors TenantConfigUpdatePayload's exclude_unset semantics).
+//
+// `business_hours` / `appointment_types` are THREE-STATE, and all three are
+// reachable from here on purpose (backend: ProfessionalConfigUpdate):
+//   omitted -> leave the stored value alone
+//   null    -> stop having an own value; inherit the clinic's again
+//   {} / [] -> an own override that is empty; inherit nothing
+// `null` is spelled out in the type because omitting it is what forced this
+// screen to send `{}` for an inheriting professional — which now means
+// something entirely different from what it used to.
 export type ProfessionalConfigUpdatePayload = Partial<{
-  business_hours: Record<string, TimeWindowWire[]>;
-  appointment_types: AppointmentTypeWire[];
+  business_hours: Record<string, TimeWindowWire[]> | null;
+  appointment_types: AppointmentTypeWire[] | null;
   specialty: string | null;
   about: string | null;
   context_doctor_message: string | null;

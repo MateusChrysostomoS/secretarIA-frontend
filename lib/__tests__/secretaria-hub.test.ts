@@ -73,6 +73,105 @@ beforeEach(async () => {
 });
 
 // ---------------------------------------------------------------------------
+// ProfessionalWire — the contract that was silently broken
+// ---------------------------------------------------------------------------
+//
+// `ProfessionalWire` used to declare `calendar_connected` as required. The
+// backend has never sent that key; the honest one is `has_calendar`. Because a
+// TS type is erased at runtime, every read type-checked and evaluated to
+// `undefined`, and /doctor/perfil told doctors their agenda was not connected
+// while the backend considered it available.
+//
+// So this block compares the client's declared key set against the backend
+// response model, written out below exactly as `ProfessionalListItem` declares
+// it (secretarIA/src/secretaria/schemas/professional.py, itself pinned by
+// `test_list_shape_is_whitelisted`). Drift on either side fails here.
+
+// Mirror of ProfessionalListItem. Update ONLY together with the backend model.
+const BACKEND_PROFESSIONAL_LIST_ITEM_KEYS = [
+  "id",
+  "name",
+  "google_calendar_id",
+  "is_active",
+  "created_at",
+  "specialty",
+  "about",
+  "context_doctor_message",
+  "business_hours",
+  "business_hours_inherited",
+  "appointment_types",
+  "appointment_types_inherited",
+  "has_calendar",
+  "calendar_source",
+  "has_hours",
+  "has_services",
+  "complete",
+];
+
+describe("ProfessionalWire contract", () => {
+  it("declares exactly the keys the backend response model sends", () => {
+    expect([...hub.PROFESSIONAL_WIRE_KEYS].sort()).toEqual(
+      [...BACKEND_PROFESSIONAL_LIST_ITEM_KEYS].sort(),
+    );
+  });
+
+  it("does not resurrect the phantom calendar_connected property", () => {
+    expect(hub.PROFESSIONAL_WIRE_KEYS).not.toContain("calendar_connected");
+    expect(BACKEND_PROFESSIONAL_LIST_ITEM_KEYS).not.toContain("calendar_connected");
+  });
+
+  it("reports a payload that is missing a key this client depends on", () => {
+    const { missing, unexpected } = hub.inspectProfessionalWire({ id: "p1", name: "Dra. Ana" });
+
+    expect(missing).toContain("has_calendar");
+    expect(unexpected).toEqual([]);
+  });
+
+  it("reports a key the backend sends that this client does not know", () => {
+    const { unexpected } = hub.inspectProfessionalWire({ surprise_field: true });
+
+    expect(unexpected).toEqual(["surprise_field"]);
+  });
+
+  it("an older backend is missing only the additive keys, never a required one", () => {
+    // What a pre-flag deploy returns. The absences are expected and handled
+    // ("unknown"), which is different from a required key having vanished.
+    const legacy = {
+      id: "p1",
+      name: "Dra. Ana",
+      google_calendar_id: null,
+      is_active: true,
+      created_at: "2026-01-01T00:00:00Z",
+      specialty: null,
+      about: null,
+      context_doctor_message: null,
+      business_hours: {},
+      appointment_types: [],
+      has_calendar: false,
+      has_hours: false,
+      has_services: false,
+      complete: false,
+    };
+
+    const { missing, unexpected } = hub.inspectProfessionalWire(legacy);
+
+    expect(missing.sort()).toEqual(
+      ["appointment_types_inherited", "business_hours_inherited", "calendar_source"].sort(),
+    );
+    expect(unexpected).toEqual([]);
+  });
+
+  it("says nothing about a payload's values — only its keys", () => {
+    // The inspector is safe to log: no config value, no id, no token can ride
+    // out of it, by construction.
+    const result = hub.inspectProfessionalWire({ id: "p1", business_hours: { monday: [] } });
+
+    expect(JSON.stringify(result)).not.toContain("monday");
+    expect(JSON.stringify(result)).not.toContain("p1");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // HubApiError / parseHubResponse — detail: string | {code, message}
 // ---------------------------------------------------------------------------
 

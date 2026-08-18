@@ -42,6 +42,16 @@ export type Appt = {
   anamnese?: Anamnese;
   notes?: string;
   reason?: string; // used by bloqueio blocks
+  /**
+   * Local `Appointment.id` from secretarIA, when this slot has one.
+   *
+   * `id` above is a display key ("hub-<google event id>") and is NOT accepted
+   * by the hub's write endpoints, which key on this. `null`/absent means the
+   * slot exists only in Google Calendar (typed straight into the calendar, or
+   * a demo row), so the write actions must stay disabled for it rather than
+   * guess an id — cancelling deletes the Google event irreversibly.
+   */
+  appointmentId?: string | null;
 };
 
 /** One column in the weekly calendar header. */

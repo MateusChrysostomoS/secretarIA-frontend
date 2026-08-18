@@ -20,7 +20,16 @@ import {
   type AuthoritativeSnapshot,
 } from "../snapshot";
 import { buildConfigUpdatePayload, buildProfessionalConfigPayload } from "../hub-mapping";
-import { PROF_A, PROF_B, TENANT_ID, professionalWire, tenantWire } from "./fixtures";
+import {
+  PROF_A,
+  PROF_B,
+  TENANT_ID,
+  emptiedProfessionalWire,
+  inheritingProfessionalWire,
+  legacyBackendProfessionalWire,
+  professionalWire,
+  tenantWire,
+} from "./fixtures";
 
 describe("wire → form state", () => {
   it("maps every tenant-level field the form owns", () => {
@@ -208,9 +217,159 @@ describe("payload honesty — no visible control is silently dropped", () => {
 
   it("sends a professional's hours and services under their own scope", () => {
     const slices = professionalSlicesFromWire(professionalWire(PROF_A));
-    const body = buildProfessionalConfigPayload(slices.days, slices.services, slices.profile);
+    const body = buildProfessionalConfigPayload(
+      slices.days,
+      slices.services,
+      slices.profile,
+      slices.hoursSource,
+      slices.servicesSource,
+    );
     expect(body.business_hours).toEqual({ monday: [{ start: "08:00", end: "12:00" }] });
     expect(body.appointment_types?.map((t) => t.name)).toEqual(["Consulta prof-a"]);
     expect(body.specialty).toBe("Especialidade prof-a");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Inheritance — null vs empty, the distinction the payload has to carry
+// ---------------------------------------------------------------------------
+//
+// The failure this pins down: a professional inheriting the clinic's config
+// hydrated as an empty form, every save sent `{}` / `[]`, and the backend now
+// reads that as "an own config that offers nothing". So changing the greeting
+// silently took a doctor off the clinic's hours and the bot went quiet.
+
+describe("inheritance state", () => {
+  it("reads inheritance from the flags, not from the values being empty", () => {
+    const inheriting = professionalSlicesFromWire(inheritingProfessionalWire(PROF_A));
+    const emptied = professionalSlicesFromWire(emptiedProfessionalWire(PROF_B));
+
+    // The two wires carry the SAME empty hours and services...
+    expect(inheriting.days.some((d) => d.on)).toBe(false);
+    expect(emptied.days.some((d) => d.on)).toBe(false);
+    expect(inheriting.services).toEqual([]);
+    expect(emptied.services).toEqual([]);
+    // ...and are still not the same state.
+    expect(inheriting.hoursSource).toBe("inherit");
+    expect(inheriting.servicesSource).toBe("inherit");
+    expect(emptied.hoursSource).toBe("own");
+    expect(emptied.servicesSource).toBe("own");
+  });
+
+  it("sends null — not {} — for a professional who inherits", () => {
+    const slices = professionalSlicesFromWire(inheritingProfessionalWire(PROF_A));
+    const body = buildProfessionalConfigPayload(
+      slices.days,
+      slices.services,
+      slices.profile,
+      slices.hoursSource,
+      slices.servicesSource,
+    );
+
+    // null is "go on inheriting". `{}` would mean "own config, offers nothing".
+    expect(body.business_hours).toBeNull();
+    expect(body.appointment_types).toBeNull();
+  });
+
+  it("a save that only changes the greeting leaves inheritance intact", () => {
+    // The regression, at the payload level: nothing about the professional was
+    // touched, so nothing about the professional may change.
+    const slices = professionalSlicesFromWire(inheritingProfessionalWire(PROF_A));
+    const body = buildProfessionalConfigPayload(
+      slices.days,
+      slices.services,
+      { ...slices.profile },
+      slices.hoursSource,
+      slices.servicesSource,
+    );
+
+    expect(body.business_hours).toBeNull();
+    expect(body.appointment_types).toBeNull();
+  });
+
+  it("sends an explicitly emptied own config as {} / [], and means it", () => {
+    const slices = professionalSlicesFromWire(emptiedProfessionalWire(PROF_A));
+    const body = buildProfessionalConfigPayload(
+      slices.days,
+      slices.services,
+      slices.profile,
+      slices.hoursSource,
+      slices.servicesSource,
+    );
+
+    expect(body.business_hours).toEqual({});
+    expect(body.appointment_types).toEqual([]);
+  });
+
+  it("closing every day of an OWN schedule stays empty — it does not become inheritance", () => {
+    const slices = professionalSlicesFromWire(professionalWire(PROF_A));
+    const allClosed = slices.days.map((d) => ({ ...d, on: false, ranges: [] }));
+    const body = buildProfessionalConfigPayload(
+      allClosed,
+      slices.services,
+      slices.profile,
+      slices.hoursSource,
+      slices.servicesSource,
+    );
+
+    expect(body.business_hours).toEqual({});
+  });
+
+  it("degrades to 'unknown' against a backend that does not send the flags", () => {
+    const slices = professionalSlicesFromWire(legacyBackendProfessionalWire(PROF_A));
+
+    // Not "own" — we were never told, and guessing is what breaks a clinic.
+    expect(slices.hoursSource).toBe("unknown");
+    expect(slices.servicesSource).toBe("unknown");
+  });
+
+  it("an unknown state sends values, never a null it cannot justify", () => {
+    const slices = professionalSlicesFromWire(legacyBackendProfessionalWire(PROF_A));
+    const body = buildProfessionalConfigPayload(
+      slices.days,
+      slices.services,
+      slices.profile,
+      slices.hoursSource,
+      slices.servicesSource,
+    );
+
+    // Exactly the pre-flag behaviour: send what is on screen. Sending null
+    // would assert an inheritance this backend never confirmed.
+    expect(body.business_hours).not.toBeNull();
+    expect(body.appointment_types).not.toBeNull();
+  });
+
+  it("switching to 'configuração própria' is a change Descartar can see", () => {
+    // Values identical on both sides — only the source differs. Without this,
+    // Descartar would say "nada para descartar" over a real pending change.
+    const baselineProfessional = professionalSlicesFromWire(inheritingProfessionalWire(PROF_A));
+    const currentProfessional = { ...baselineProfessional, hoursSource: "own" as const };
+    const tenant = tenantSlicesFromWire(tenantWire());
+
+    const sections = dirtySections(
+      { tenant, professional: currentProfessional },
+      { tenant, professional: baselineProfessional },
+    );
+
+    expect(sections).toContain("disp");
+  });
+
+  it("switching the services scope is a change too", () => {
+    const baselineProfessional = professionalSlicesFromWire(inheritingProfessionalWire(PROF_A));
+    const currentProfessional = { ...baselineProfessional, servicesSource: "own" as const };
+    const tenant = tenantSlicesFromWire(tenantWire());
+
+    const sections = dirtySections(
+      { tenant, professional: currentProfessional },
+      { tenant, professional: baselineProfessional },
+    );
+
+    expect(sections).toContain("srv");
+  });
+
+  it("an unhydrated professional form claims nothing about inheritance", () => {
+    const empty = emptyProfessionalSlices();
+    expect(empty.hoursSource).toBe("unknown");
+    expect(empty.servicesSource).toBe("unknown");
   });
 });

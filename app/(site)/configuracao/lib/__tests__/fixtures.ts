@@ -42,6 +42,15 @@ export function tenantWire(overrides: Partial<TenantConfigWire> = {}): TenantCon
   };
 }
 
+// Key-for-key what GET /tenants/me/professionals returns (backend:
+// ProfessionalListItem, whose key set is pinned by
+// test_list_shape_is_whitelisted). Keeping the fixture complete is deliberate:
+// the `calendar_connected` bug survived because a fixture invented a key the
+// backend never sends, so the tests agreed with the type instead of the server.
+//
+// Defaults describe a professional with their OWN config — the flags say so —
+// because that is the state most tests reason about. Inheritance is opted into
+// per test via the factories below, never implied by emptiness.
 export function professionalWire(
   id: string,
   overrides: Partial<ProfessionalWire> = {},
@@ -49,7 +58,9 @@ export function professionalWire(
   return {
     id,
     name: `Profissional ${id}`,
+    google_calendar_id: null,
     is_active: true,
+    created_at: "2026-01-01T00:00:00Z",
     specialty: "Especialidade " + id,
     about: null,
     context_doctor_message: null,
@@ -66,8 +77,63 @@ export function professionalWire(
         requirements: [],
       },
     ],
-    google_calendar_id: null,
-    calendar_connected: false,
+    has_calendar: false,
+    calendar_source: "none",
+    has_hours: true,
+    has_services: true,
+    complete: false,
+    business_hours_inherited: false,
+    appointment_types_inherited: false,
     ...overrides,
   };
+}
+
+/** A professional with NO config of their own — the clinic's applies. */
+export function inheritingProfessionalWire(
+  id: string,
+  overrides: Partial<ProfessionalWire> = {},
+): ProfessionalWire {
+  return professionalWire(id, {
+    business_hours: {},
+    appointment_types: [],
+    business_hours_inherited: true,
+    appointment_types_inherited: true,
+    ...overrides,
+  });
+}
+
+/**
+ * The SAME empty payload as `inheritingProfessionalWire`, but as an own,
+ * deliberately empty override. Byte-identical except for the two flags — which
+ * is exactly why the flags had to exist.
+ */
+export function emptiedProfessionalWire(
+  id: string,
+  overrides: Partial<ProfessionalWire> = {},
+): ProfessionalWire {
+  return professionalWire(id, {
+    business_hours: {},
+    appointment_types: [],
+    business_hours_inherited: false,
+    appointment_types_inherited: false,
+    has_hours: false,
+    has_services: false,
+    ...overrides,
+  });
+}
+
+/**
+ * What an OLDER backend returns: no `*_inherited`, no `calendar_source`. Used
+ * to prove this bundle degrades explicitly instead of reading the missing flags
+ * as `false` and converting somebody's inheritance into an empty override.
+ */
+export function legacyBackendProfessionalWire(
+  id: string,
+  overrides: Partial<ProfessionalWire> = {},
+): ProfessionalWire {
+  const wire = professionalWire(id, { business_hours: {}, appointment_types: [], ...overrides });
+  delete wire.business_hours_inherited;
+  delete wire.appointment_types_inherited;
+  delete wire.calendar_source;
+  return wire;
 }

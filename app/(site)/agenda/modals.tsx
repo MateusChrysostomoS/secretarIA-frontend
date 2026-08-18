@@ -25,6 +25,7 @@ import {
   firstName,
 } from "../_shared/data";
 import type { Appt } from "../_shared/data";
+import type { CancelPreviewWire } from "@/lib/secretaria-hub";
 
 // ---------------------------------------------------------------------------
 // clinicDisplay — strips a leading "Consultório " so a real clinic_name reads
@@ -854,26 +855,43 @@ export function CancelModal({
   appt,
   onClose,
   onConfirm,
-  clinicName,
+  preview,
 }: {
   appt: Appt;
   onClose: () => void;
-  onConfirm: (appt: Appt, reason: string, message: string) => void;
-  // See NewApptModal's clinicName doc — same real-name-or-omit contract.
-  // Currently unreachable from page.tsx (see agenda/drawer.tsx's disabled
-  // "Cancelar consulta" action) — kept wired so this component has no fake
-  // clinic name left in it for whenever a follow-up re-enables it.
-  clinicName: string;
+  /**
+   * Whether the patient is still inside Meta's 24h window, and what notifying
+   * costs if not. `null` = the lookup failed; the modal then says so instead
+   * of guessing, because guessing "free" could silently bill the clinic and
+   * guessing "paid" would scare them off telling the patient at all.
+   */
+  preview: CancelPreviewWire | null;
+  /**
+   * `justification` is the doctor's REASON, not the message body. secretarIA
+   * renders the standard "O médico X desmarcou a sua consulta!" text and only
+   * appends the quoted justification when there is one, so an empty string is
+   * a supported outcome rather than a validation failure.
+   *
+   * `clinicName` is gone with the old body-composing behaviour: the patient's
+   * message is now built server-side, where the doctor's name actually lives.
+   */
+  onConfirm: (appt: Appt, justification: string, notifyOutsideWindow: boolean) => void;
 }) {
-  const [reason, setReason] = useState<string>(CANCEL_REASONS[0]);
+  // Nothing pre-selected and an empty field on open, deliberately: cancelling
+  // WITHOUT a justification is a first-class path (the patient is told either
+  // way), so the modal must not manufacture a reason the doctor never picked.
+  const [reason, setReason] = useState<string>("");
+  const [justification, setJustification] = useState("");
+  // Only meaningful outside the window. Starts false so the billed send is
+  // always a deliberate act, never the default.
+  const [payToNotify, setPayToNotify] = useState(false);
+  const [costOpen, setCostOpen] = useState(false);
 
-  // Message body — reason is not currently interpolated in the source; kept faithful
-  const build = () => {
-    const intro = clinicName ? `Aqui é do ${clinicDisplay(clinicName)}.` : "Aqui é da secretaria.";
-    return `Olá, ${firstName(appt.patient)}! ${intro} Precisamos cancelar sua consulta de ${appt.type} marcada para ${dayFull(appt.day)} às ${fmtTime(appt.start)}. Desculpe o imprevisto. Quer que a gente já reagende um novo horário? É só responder por aqui. 🙏`;
-  };
-
-  const [text, setText] = useState(build());
+  const outsideWindow = preview !== null && !preview.inside_window;
+  const cost = preview?.template_cost_brl?.trim() ?? "";
+  const costLabel = cost
+    ? `custa ${preview?.cost_is_estimate ? "~" : ""}${cost}`
+    : "tem custo por conversa";
 
   return (
     <Modal
@@ -888,21 +906,28 @@ export function CancelModal({
           <Btn
             variant="wa"
             icon="send"
-            onClick={() => onConfirm(appt, reason, text)}
+            onClick={() => onConfirm(appt, justification.trim(), payToNotify)}
           >
-            Cancelar e avisar
+            {outsideWindow && !payToNotify ? "Cancelar sem avisar" : "Cancelar e avisar"}
           </Btn>
         </>
       }
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        {/* reason chips */}
+        {/* Reason chips. They used to be decorative — picked, then never
+            interpolated into anything. Now they PRE-FILL the justification
+            below, which the doctor can edit or clear; what reaches the patient
+            is always the final free text, never the chip itself. "Outro"
+            clears the field so they type their own instead of deleting ours. */}
         <Field label="Motivo do cancelamento">
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {CANCEL_REASONS.map((r) => (
               <button
                 key={r}
-                onClick={() => setReason(r)}
+                onClick={() => {
+                  setReason(r);
+                  setJustification(r === "Outro" ? "" : r);
+                }}
                 style={{
                   padding: "8px 14px",
                   borderRadius: 999,
@@ -922,12 +947,148 @@ export function CancelModal({
           </div>
         </Field>
 
-        <MessagePreview
-          patient={appt.patient ?? ""}
-          phone={appt.phone ?? ""}
-          value={text}
-          onChange={setText}
-        />
+        <Field label="Justificativa para o paciente (opcional)">
+          <textarea
+            value={justification}
+            onChange={(e) => setJustification(e.target.value)}
+            rows={3}
+            maxLength={4000}
+            placeholder="Ex.: Imprevisto do médico. Deixe em branco para não enviar justificativa."
+            style={{
+              width: "100%",
+              resize: "vertical",
+              padding: "10px 12px",
+              borderRadius: 10,
+              fontSize: 13.5,
+              lineHeight: 1.5,
+              color: "var(--ink)",
+              background: "var(--surface-2)",
+              border: "1px solid var(--line)",
+            }}
+          />
+        </Field>
+
+        {/* What the patient actually receives, in the same shape secretarIA
+            builds server-side, so the doctor is never surprised by the
+            wording. Their own name is the one slot filled in by the backend
+            (it comes off the appointment's professional), hence the marker. */}
+        <Field label="O paciente vai receber">
+          <div
+            style={{
+              padding: "12px 14px",
+              borderRadius: 10,
+              background: "var(--surface-2)",
+              border: "1px solid var(--line)",
+              fontSize: 13.5,
+              lineHeight: 1.6,
+              color: "var(--ink-soft)",
+              whiteSpace: "pre-wrap",
+            }}
+          >
+            {"O médico "}
+            <span style={{ color: "var(--ink-faint)", fontStyle: "italic" }}>[seu nome]</span>
+            {" desmarcou a sua consulta!"}
+            {justification.trim()
+              ? `
+
+Justificativa do médico: "${justification.trim()}"`
+              : ""}
+          </div>
+          <p style={{ fontSize: 11.5, color: "var(--ink-faint)", marginTop: 6, lineHeight: 1.5 }}>
+            O paciente é avisado com ou sem justificativa, e recebe botões para
+            remarcar com você ou com outro profissional.
+          </p>
+        </Field>
+
+        {/* Outside Meta's 24h window there is no free way to reach the patient
+            through the API, so the doctor picks: pay for one template send, or
+            write from their own phone for nothing. Never decided for them —
+            one option costs the clinic money, the other costs them a minute. */}
+        {outsideWindow && (
+          <Field label="Este paciente não escreve há mais de 24 horas">
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 9,
+                  fontSize: 13,
+                  color: "var(--ink-soft)",
+                  cursor: "pointer",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={payToNotify}
+                  onChange={(e) => setPayToNotify(e.target.checked)}
+                  style={{ marginTop: 2 }}
+                />
+                <span>
+                  Avisar por aqui ({costLabel})
+                  <button
+                    type="button"
+                    aria-label="Por que tem custo?"
+                    onClick={() => setCostOpen((v) => !v)}
+                    style={{
+                      marginLeft: 6,
+                      width: 16,
+                      height: 16,
+                      borderRadius: 999,
+                      fontSize: 10.5,
+                      fontWeight: 700,
+                      lineHeight: "16px",
+                      textAlign: "center",
+                      color: "var(--ink-soft)",
+                      background: "var(--surface-2)",
+                      border: "1px solid var(--line)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    ?
+                  </button>
+                </span>
+              </label>
+
+              {costOpen && (
+                <p
+                  style={{
+                    fontSize: 11.5,
+                    lineHeight: 1.55,
+                    color: "var(--ink-faint)",
+                    background: "var(--surface-2)",
+                    border: "1px solid var(--line)",
+                    borderRadius: 9,
+                    padding: "9px 11px",
+                    margin: 0,
+                  }}
+                >
+                  Quando o paciente escreveu nas últimas 24 horas, responder é
+                  gratuito. Passado esse prazo o WhatsApp só entrega uma mensagem
+                  pré-aprovada e cobra por ela — por isso este aviso tem custo.
+                  {preview?.cost_is_estimate ? " O valor mostrado é uma estimativa." : ""}
+                </p>
+              )}
+
+              {preview?.whatsapp_link && (
+                <a
+                  href={preview.whatsapp_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: 13, color: "var(--brand-ink)", textDecoration: "none" }}
+                >
+                  Ou abra a conversa no seu WhatsApp e avise você mesmo — sem custo →
+                </a>
+              )}
+            </div>
+          </Field>
+        )}
+
+        {preview === null && (
+          <p style={{ fontSize: 11.5, color: "var(--ink-faint)", lineHeight: 1.5 }}>
+            Não foi possível verificar se o aviso ao paciente tem custo. A
+            consulta será cancelada e o aviso só sai se for gratuito.
+          </p>
+        )}
       </div>
     </Modal>
   );

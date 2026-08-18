@@ -474,7 +474,16 @@ function ProfessionalRow({
           <div style={{ fontSize: 11.5, color: "var(--ink-faint)", marginTop: 4 }}>
             {professional.linked_user_email}
           </div>
-        ) : null}
+        ) : (
+          // No linked user, so no address anywhere: the email lives on the
+          // brain-api user created by an invite, and this professional was
+          // added without one. Said out loud because the consequence is
+          // invisible otherwise — they silently never get the "nova consulta
+          // marcada" email (secretarIA plugins/professional_notification.py).
+          <div style={{ fontSize: 11.5, color: "var(--st-pending-ink, #9a6b00)", marginTop: 4 }}>
+            Sem e-mail vinculado — não recebe aviso de nova consulta
+          </div>
+        )}
       </div>
 
       {sharedAccount ? (
