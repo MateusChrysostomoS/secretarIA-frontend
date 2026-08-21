@@ -14,6 +14,12 @@
 // Both return a copyable `invite_link` and send the same (team-generic)
 // `professional_invite` email, fail-soft — the link is shown either way.
 //
+// The "professional" flavour additionally caps the name at
+// MAX_LIST_ROW_TITLE_CHARS (lib/whatsapp-limits.ts): that name becomes a
+// WhatsApp interactive-list row when a patient chooses a doctor, and Meta cuts
+// the row title at 24 characters. The secretary flavour is NOT capped — a
+// secretary has no professionals row and never appears in that list.
+//
 // Open to any authenticated tenant member, including another secretary; the
 // backend is the real authority on who may invite.
 // Reuses the shared portal Modal (app/(site)/_components/Modal.tsx) and its
@@ -29,6 +35,13 @@ import {
   ManageApiError,
   type Session,
 } from "@/lib/manage-api";
+import {
+  isProfessionalNameAtLimit,
+  MAX_LIST_ROW_TITLE_CHARS,
+  PROFESSIONAL_NAME_LIMIT_MESSAGE,
+  PROFESSIONAL_NAME_TIP,
+  professionalNameError,
+} from "@/lib/whatsapp-limits";
 import "../../_components/PortalShell.css";
 
 export type InviteKind = "professional" | "secretary";
@@ -67,6 +80,15 @@ export function InviteTeamMemberModal({ session, kind, open, onClose, onInvited 
 
   const copy = COPY[kind];
   const isSecretary = kind === "secretary";
+
+  // Only a professional's name lands in a WhatsApp list row, so only that
+  // flavour is capped. `nameError` blocks the submit (over the cap); the
+  // at-limit notice does not — 24 characters is a perfectly valid name, the
+  // message is there so the field going quiet under the next keystroke reads as
+  // a rule rather than a bug.
+  const nameError = isSecretary ? null : professionalNameError(name);
+  const nameAtLimit = !isSecretary && !nameError && isProfessionalNameAtLimit(name);
+  const nameNotice = nameError ?? (nameAtLimit ? PROFESSIONAL_NAME_LIMIT_MESSAGE : null);
 
   function reset() {
     setName("");
@@ -150,13 +172,20 @@ export function InviteTeamMemberModal({ session, kind, open, onClose, onInvited 
               anamneses.
             </p>
           )}
-          <Field label="Nome">
+          <Field label="Nome" tip={isSecretary ? undefined : PROFESSIONAL_NAME_TIP}>
             <TextInput
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={copy.namePlaceholder}
+              maxLength={isSecretary ? undefined : MAX_LIST_ROW_TITLE_CHARS}
+              aria-invalid={nameError ? true : undefined}
               autoFocus
             />
+            {nameNotice && (
+              <span role="alert" style={{ fontSize: 12, color: "var(--danger, #c0392b)" }}>
+                {nameNotice}
+              </span>
+            )}
           </Field>
           <div style={{ marginTop: 14 }}>
             <Field label="E-mail">
@@ -195,7 +224,7 @@ export function InviteTeamMemberModal({ session, kind, open, onClose, onInvited 
               className="btn btn--primary"
               style={{ flex: 1 }}
               onClick={handleSubmit}
-              disabled={submitting || !name.trim() || !email.trim()}
+              disabled={submitting || !name.trim() || !email.trim() || nameError !== null}
             >
               {submitting ? "Enviando…" : "Enviar convite"}
             </button>

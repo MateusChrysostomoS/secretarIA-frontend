@@ -8,6 +8,13 @@ pushed** (commits locais na `main`; nada empurrado para o `origin`).
 rodada original tinha deixado de fora, foi portado — ver "O que foi portado" e a nota em
 "Lacunas conhecidas". Rotas subiram de 11 para 14; testes de 120 para 128.
 
+**Atualização 2026-08-21 (UNCOMMITTED):** o campo "Nome" do `InviteTeamMemberModal`
+(variante `professional` apenas) ganhou `maxLength={24}` + erro `role="alert"` + tooltip
+"?" — o novo `lib/whatsapp-limits.ts` espelha o cap de linha de lista do WhatsApp que a
+secretarIA aplica no backend. Nenhum componente novo: o `Field` do design system já
+renderizava o `HelpTip` via a prop `tip`. Testes: 225 verdes. A história completa, os dois
+lados, está em `secretarIA/docs/CHECKPOINT_whatsapp_text_limits.md`.
+
 ---
 
 ## O que é este repo
@@ -215,6 +222,13 @@ Gates locais rodados: `tsc.cmd --noEmit` limpo, **120 testes verdes**, `npm run 
       aqui vai parar em `/agenda`. Não é bug, é uma decisão de deploy que ainda não foi tomada.
 - [ ] **Token da WABA expira em 60 dias e nada renova** (pendência antiga, de plataforma, não
       deste repo) — não bloqueia teste, bloqueia lançamento.
+- [ ] **O nome do profissional tem uma segunda porta de entrada, ainda sem cap.**
+      `InviteTeamMemberModal` agora limita a 24 caracteres, mas
+      `POST /doctor/professionals/self` (chamado por `ProfessionalsSection` com payload
+      vazio) deriva o nome do usuário da brain-api — que vem do `/cadastro` daqui e do
+      "Meu Perfil" no `brain-frontend`, nenhum dos dois com limite. Esse caminho só é
+      coberto pela rede de segurança do backend. Mesma coisa para o nome de serviço em
+      `ServiceCard.tsx`. Ver `secretarIA/docs/CHECKPOINT_whatsapp_text_limits.md`.
 - [ ] Sem deploy no EasyPanel e sem `git push` — nada foi empurrado para o `origin`.
 
 ## Deploy no EasyPanel (guia — nada disto foi executado)
