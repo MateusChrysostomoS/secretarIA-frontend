@@ -3,12 +3,28 @@
 // Holds the type's name/duration/price/active flag plus an expandable editor
 // for its pre-visit requirements (fasting, prior exams, documents) that
 // SecretarIA surfaces to the patient when this type is being booked.
+//
+// The name is capped at MAX_LIST_ROW_TITLE_CHARS (lib/whatsapp-limits.ts): it
+// becomes the title of a `svc|` WhatsApp list row when the patient picks what
+// to book. Unlike the invite modal, the message here does NOT block saving —
+// this screen has one Save for the whole configuration, so a legacy long name
+// would hold eight unrelated sections hostage. See that file's header.
+//
+// The card is a compact inline row with no visible label, so the "?" sits
+// directly after the name input rather than in a `Field` label.
 
 import { useState } from "react";
-import { Icon, TextInput } from "../../_shared/ui";
+import { HelpTip, Icon, TextInput } from "../../_shared/ui";
 import { CSelect } from "./CSelect";
 import { CToggle } from "./CToggle";
 import type { Service, Requirement } from "../lib/types";
+import {
+  isServiceNameAtLimit,
+  MAX_LIST_ROW_TITLE_CHARS,
+  SERVICE_NAME_LIMIT_MESSAGE,
+  SERVICE_NAME_TIP,
+  serviceNameError,
+} from "@/lib/whatsapp-limits";
 
 // Duration options in minutes — matches the original ServicesSection source.
 const DURATION_OPTIONS = [15, 20, 30, 40, 50, 60, 90];
@@ -109,6 +125,14 @@ export function ServiceCard({
   // state and the DOM disabled attribute can never disagree.
   const removable = canRemove && !readOnly;
 
+  // `nameError` is over the cap (only reachable for a name stored before this
+  // cap existed, since maxLength blocks typing past it); at-limit is the
+  // heads-up that explains why the field just went quiet. Both render the same
+  // line — from the clinic's side it is one problem, "the name does not fit".
+  const nameError = serviceNameError(service.name);
+  const nameNotice =
+    nameError ?? (isServiceNameAtLimit(service.name) ? SERVICE_NAME_LIMIT_MESSAGE : null);
+
   return (
     <div style={{
       background: "var(--surface-2)",
@@ -131,9 +155,12 @@ export function ServiceCard({
             onChange={e => onChange({ ...service, name: e.target.value })}
             placeholder="Nome do serviço"
             aria-label="Nome do serviço"
+            maxLength={MAX_LIST_ROW_TITLE_CHARS}
+            aria-invalid={nameError ? true : undefined}
             style={{ flex: 1, minWidth: 160 }}
             disabled={readOnly}
           />
+          <HelpTip text={SERVICE_NAME_TIP} />
           <CSelect
             value={service.dur}
             onChange={e => onChange({ ...service, dur: +e.target.value })}
@@ -189,6 +216,18 @@ export function ServiceCard({
           </button>
         </div>
       </div>
+
+      {/* Own line under the whole row, not beside the input: the row already
+          wraps on a narrow viewport, and a message squeezed between the name
+          and the duration would be the first thing to wrap into nonsense. */}
+      {nameNotice && (
+        <p role="alert" style={{
+          margin: "8px 0 0", fontSize: 12, lineHeight: 1.45,
+          color: "var(--danger, #c0392b)",
+        }}>
+          {nameNotice}
+        </p>
+      )}
 
       {/* --- expander: pre-visit requirements --- */}
       <button

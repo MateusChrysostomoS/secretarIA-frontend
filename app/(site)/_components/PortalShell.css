@@ -557,6 +557,10 @@
   width: 40px;
   height: 40px;
 }
+/* h2 and h3 both: /inicio uses h2 so the card titles sit one level under its
+   page-head h1 without skipping, while brain-frontend's doctor dashboard still
+   ships h3. Same declarations for both, so the two portals stay pixel-identical. */
+.portal-link-card h2,
 .portal-link-card h3 {
   font-family: var(--font-serif);
   font-weight: 600;

@@ -36,6 +36,7 @@ import { HubNotice } from "../_shared/HubNotice";
 import { OnboardingBanner } from "../_components/OnboardingBanner";
 import { PortalHeader } from "../_components/PortalHeader";
 import { SecretariaWordmark } from "../_components/SecretariaWordmark";
+import { canManageClinic } from "@/lib/portal-routes";
 import { signOut } from "@/lib/sign-out";
 import { useSecretariaHub } from "../_shared/useSecretariaHub";
 
@@ -92,6 +93,7 @@ import {
   canEditTenantFields,
   emitConfigEvent,
   hydrationReducer,
+  isHydrating,
   saveBlockedReason,
   statusOf,
 } from "./lib/hydration";
@@ -147,9 +149,7 @@ function pickProfessional(
   current: string | null,
 ): string | null {
   if (current && roster.some((p) => p.id === current)) return current;
-  // is_owner is the new claim; role === "tenant_owner" is the legacy fallback.
-  const isOwner = session.isOwner || session.role === "tenant_owner";
-  if (!isOwner && session.professionalId) return session.professionalId;
+  if (!canManageClinic(session) && session.professionalId) return session.professionalId;
   return roster[0]?.id ?? null;
 }
 
@@ -212,6 +212,47 @@ export default function ConfiguracaoPage() {
 
   // --- hydration state machine (lib/hydration.ts) ---
   const [hydration, dispatch] = useReducer(hydrationReducer, INITIAL_HYDRATION_STATE);
+
+  // --- deep link: /configuracao?secao=<NavId> ---
+  // Opens the page already scrolled to one section. /inicio's owner-only
+  // "Convidar equipe" card uses ?secao=prof so the shortcut actually lands on the
+  // invite UI instead of the top of an eight-section page.
+  //
+  // Read from window.location rather than useSearchParams(): under `output:
+  // "export"` that hook forces a Suspense boundary around the whole screen, which
+  // is a lot of surgery on this file for one optional query param. This component
+  // is "use client" and the effect runs after mount, so there is no prerender to
+  // bail out of.
+  //
+  // Fires at most once (the ref), so a later re-render never yanks the page back —
+  // but WHEN it fires is the whole difference between working and silently landing
+  // short. `scrollTo` clamps to `scrollHeight - clientHeight`, and every section
+  // below `prof` is roster/professional-scoped: right after the tenant lands they
+  // are still a "Carregando profissionais…" line, no services and a closed week. On
+  // a tall viewport that clamp stops above the target, and nothing retries. So the
+  // ref is claimed only once the target is genuinely reachable — or once nothing
+  // else is coming, in which case scrolling as far as the page allows IS the answer.
+  const deepLinkedRef = useRef(false);
+  useEffect(() => {
+    if (deepLinkedRef.current) return;
+    const target = new URLSearchParams(window.location.search).get("secao");
+    // Validated against NAV_IDS: an unknown value is ignored, never handed to
+    // getElementById to match some unrelated element.
+    if (!target || !(NAV_IDS as readonly string[]).includes(target)) {
+      deepLinkedRef.current = true; // no deep link on this URL — nothing to retry
+      return;
+    }
+    const el = document.getElementById(target);
+    const sc = scrollRef.current;
+    if (!el || !sc) return;
+    const reachable = el.offsetTop - 16 <= sc.scrollHeight - sc.clientHeight;
+    // `tenant.phase !== "idle"` keeps a session-less visitor out: hydrate() bails
+    // before dispatching for them, so every scope stays idle and this stays inert.
+    const settled = hydration.tenant.phase !== "idle" && !isHydrating(hydration);
+    if (!reachable && !settled) return; // more content still landing — try again
+    deepLinkedRef.current = true;
+    jump(target);
+  }, [hydration, jump]);
 
   // Cycle counters live in refs because async callbacks need the value that
   // was current when THEY were issued, not whatever a later render holds.
@@ -826,9 +867,7 @@ export default function ConfiguracaoPage() {
               <PixSection v={pixDeposit} set={setPixDepositK} readOnly={!tenantEditable} />
               <ProfessionalsSection
                 session={session}
-                // is_owner is the new claim; role === "tenant_owner" is the
-                // legacy fallback during the transition.
-                isOwner={Boolean(session && (session.isOwner || session.role === "tenant_owner"))}
+                isOwner={canManageClinic(session)}
                 roster={roster}
                 rosterError={hydration.roster.phase === "error"}
                 selectedId={hydration.selectedProfessionalId}

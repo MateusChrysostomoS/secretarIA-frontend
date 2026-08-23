@@ -8,12 +8,20 @@
 // role); this only shapes navigation so a user never sees a screen they cannot use.
 //
 // DIFFERENCE FROM brain-frontend: that portal hosts several role homes
-// (/admin/dashboard, /doctor/dashboard) and can always bounce a user somewhere
-// useful. This domain is secretarIA only. It has exactly one home — /agenda —
-// and no admin surface at all, so a platform admin cannot be redirected
-// anywhere sensible here. Redirecting them to / would bounce them straight back
-// (they hold a valid session), so instead the hook reports `accessDenied` and the
-// screen renders that inline via <PortalAccessNotice>.
+// (/admin/dashboard, /doctor/dashboard) and picks between them by role. This
+// domain has ONE home — /inicio (PORTAL_HOME) — not because there is only one
+// screen, but because every clinic role here can open every screen: the roles
+// differ in what a screen OFFERS them (see canManageClinic in lib/portal-routes),
+// never in which screen they land on. So resolvePostLogin has a single navigable
+// answer, and this hook only ever redirects to that one.
+//
+// What survives from the single-screen era is the admin dead end, for the same
+// reason as before: this domain has no admin surface at all, so a platform admin
+// cannot be redirected anywhere sensible. Sending them to / would bounce them
+// straight back (they hold a valid session), so instead the hook reports
+// `accessDenied` and the screen renders that inline via <PortalAccessNotice>.
+// The same applies to the one-destination case below — /inicio guards on exactly
+// PORTAL_ROLES, so any role it turns away has nowhere left to be sent.
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";

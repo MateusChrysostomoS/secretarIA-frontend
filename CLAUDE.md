@@ -44,6 +44,21 @@ de repos e **substitui** a skill genérica `frontend` aqui. Em resumo:
 - Gates reais: `.\node_modules\.bin\tsc.cmd --noEmit` + `npm test` + `npm run build`
   (não existe config de ESLint; `npx tsc` é um pacote errado nesta máquina).
 
+## Prompts prontos para rodar
+
+Prompts de feature já roteirizados (contexto investigado, decisões de escopo já confirmadas
+com o usuário) ficam em `TECH/BRAIN/z_prompts/` — convenção compartilhada entre os repos da
+Brain, não uma pasta deste repo. Cole o conteúdo inteiro numa sessão nova quando for a hora
+de executar:
+
+- `z_prompts/PROMPT_FABLE_secretaria_frontend_home_inicio.md` — cria a rota `/inicio` como
+  nova home única do app (troca `/agenda` no papel de `PORTAL_HOME`), com cards de navegação
+  pro resto do site (Agenda, Configuração) e ao menos um elemento de conteúdo liberado por
+  `isOwner`. Resolve a lacuna: hoje não existe navegação persistente entre `/agenda` e
+  `/configuracao` — um usuário só alcança a segunda digitando a URL. Reverte deliberadamente
+  a decisão de "uma home só" tomada na separação de 2026-08-14 (decisão nº2 do CHECKPOINT) —
+  use quando quiser essa reversão.
+
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.

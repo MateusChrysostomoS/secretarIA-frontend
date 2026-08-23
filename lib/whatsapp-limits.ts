@@ -4,10 +4,15 @@
 //
 // WHY THIS EXISTS
 // ---------------
-// When a patient picks a doctor on WhatsApp, the bot sends an *interactive
-// list* and each doctor is one row. Meta caps a list-row title at 24
-// characters — no wrapping, no scrolling, no ellipsis of its own. A clinic that
-// invites "Dra. Maria Fernanda Albuquerque" gets a row that reads
+// Three things the clinic types in this hub become the TITLE of a WhatsApp
+// interactive-list row, and Meta caps that title at 24 characters — no
+// wrapping, no scrolling, no ellipsis of its own:
+//
+//   professional name -> `prof|` rows  (InviteTeamMemberModal)
+//   service name      -> `svc|`  rows  (ServiceCard)
+//   insurance plan    -> `ins|`  rows  (ContextSection, "Convênios aceitos")
+//
+// A clinic that invites "Dra. Maria Fernanda Albuquerque" gets a row that reads
 // "Dra. Maria Fernanda Alb…", and nobody in the hub is told why.
 //
 // The backend has always truncated (so the send never fails), but truncating is
@@ -21,6 +26,14 @@
 // through this form. Those paths keep landing on the backend truncation. This
 // file is UX — it stops the clinic from *choosing* a name that will look
 // broken.
+//
+// SERVICE AND INSURANCE ARE WARNINGS, NOT BLOCKS. The invite modal submits one
+// thing, so refusing it costs the clinic nothing. /configuracao saves eight
+// unrelated sections behind ONE "Salvar configuração", so blocking that on a
+// long name — very likely one stored before this cap existed, possibly one the
+// clinic never typed — would hold the greeting, the hours and the Pix policy
+// hostage to it. Those two fields therefore show the message and stay saveable;
+// the backend's marked truncation keeps the row readable meanwhile.
 //
 // DELIBERATELY NOT applied to the secretary half of InviteTeamMemberModal: a
 // secretary has no `professionals` row and never appears in a WhatsApp list
@@ -72,4 +85,69 @@ export function professionalNameError(name: string): string | null {
  */
 export function isProfessionalNameAtLimit(name: string): boolean {
   return name.trim().length === MAX_LIST_ROW_TITLE_CHARS;
+}
+
+// ---------------------------------------------------------------------------
+// Service name — ServiceCard, Section 06 "Serviços oferecidos"
+// ---------------------------------------------------------------------------
+
+export const SERVICE_NAME_TIP =
+  `O WhatsApp mostra no máximo ${MAX_LIST_ROW_TITLE_CHARS} caracteres no nome de cada ` +
+  "serviço quando o paciente escolhe o que quer agendar. Nomes maiores aparecem " +
+  "cortados. Na lista de consultas já marcadas sobra ainda menos, porque a data " +
+  "divide o mesmo espaço — nomes curtos leem melhor nas duas.";
+
+export const SERVICE_NAME_LIMIT_MESSAGE =
+  `Máximo de ${MAX_LIST_ROW_TITLE_CHARS} caracteres — o WhatsApp corta nomes maiores ` +
+  "na lista de serviços.";
+
+/**
+ * Non-null when the service name is over the cap.
+ *
+ * Unlike `professionalNameError`, the caller does NOT block saving on this —
+ * see the note at the top of this file. It is a visible warning on the card
+ * that owns the offending name.
+ */
+export function serviceNameError(name: string): string | null {
+  return name.trim().length > MAX_LIST_ROW_TITLE_CHARS ? SERVICE_NAME_LIMIT_MESSAGE : null;
+}
+
+/** True exactly ON the cap — where `maxLength` starts swallowing keystrokes. */
+export function isServiceNameAtLimit(name: string): boolean {
+  return name.trim().length === MAX_LIST_ROW_TITLE_CHARS;
+}
+
+// ---------------------------------------------------------------------------
+// Insurance plans — ContextSection, "Convênios aceitos"
+// ---------------------------------------------------------------------------
+
+export const INSURANCES_TIP =
+  "Liste os convênios separados por vírgula. O bot informa o paciente e evita " +
+  "agendamentos indevidos. Deixe em branco se for só particular. " +
+  `Cada convênio vira uma opção na lista do WhatsApp, então precisa caber em ` +
+  `${MAX_LIST_ROW_TITLE_CHARS} caracteres — nomes maiores aparecem cortados.`;
+
+/**
+ * Non-null when ANY plan is over the cap, naming the offenders.
+ *
+ * `maxLength` is useless here: the input holds N plans in one comma-separated
+ * string, so a cap on the whole field would forbid a perfectly legal list of
+ * three short plans. The rule is per ITEM, which is why this takes the already
+ * split list rather than the raw text — callers pass
+ * `toWireInsurances(csv) ?? []`, the very array the PUT sends, so the check and
+ * the payload can never disagree about what counts as one plan.
+ */
+export function insurancesError(plans: string[]): string | null {
+  const tooLong = plans.filter(p => p.trim().length > MAX_LIST_ROW_TITLE_CHARS);
+  if (tooLong.length === 0) return null;
+  const quoted = tooLong.map(p => `"${p.trim()}"`).join(", ");
+  const subject =
+    tooLong.length === 1
+      ? `O convênio ${quoted} passa de`
+      : `Estes convênios passam de`;
+  return (
+    `${subject} ${MAX_LIST_ROW_TITLE_CHARS} caracteres` +
+    (tooLong.length === 1 ? "" : `: ${quoted}`) +
+    " — o WhatsApp corta na lista que o paciente vê."
+  );
 }

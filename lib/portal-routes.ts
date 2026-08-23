@@ -7,9 +7,15 @@
 // the vitest setup here is node-environment only, so anything worth testing has
 // to live outside the React tree.
 
-// The single home of this app. brain-frontend has several role homes
-// (/admin/dashboard, /doctor/dashboard); this domain is secretarIA only.
-export const PORTAL_HOME = "/agenda";
+// The home of this app: the screen every clinic role lands on after login, and
+// the one a guard bounces someone back to.
+//
+// Was /agenda until 2026-08-23. The split (2026-08-14) gave this domain a single
+// screen-as-home because there was only ever one product here, but that left the
+// two real screens unreachable from each other — a doctor who landed on /agenda
+// could only get to /configuracao by typing the URL. /inicio is a real home: it
+// names the clinic and links onward, so "one product" stopped meaning "one door".
+export const PORTAL_HOME = "/inicio";
 
 // Where the "contratar" path starts. `resolvePlan` in app/(site)/cadastro/lib/plans.ts
 // falls back to `[planId]` when no `?catalog=` list is supplied, so the plan id
@@ -52,9 +58,31 @@ export function resolvePostLogin(role: string): PostLoginDecision {
   return { kind: "denied", message: UNKNOWN_ROLE_MESSAGE };
 }
 
+// "Does this session administer the clinic?" — the ONE authorization boundary the
+// clinic portal actually has. Every PORTAL_ROLES member can open every screen
+// here; owner-only affordances (team invites, subscription, onboarding pause) are
+// the exception, and this is the predicate that hides them.
+//
+// `is_owner` is the role-taxonomy claim; the `tenant_owner` role string is the
+// legacy fallback for a token minted before migration 0012, which carries no
+// claim at all. Both spellings must be accepted until those tokens expire.
+//
+// Typed structurally rather than against `Session` on purpose: keeping this module
+// free of a lib/manage-api import is what lets it stay pure logic the
+// node-environment vitest setup can exercise without a DOM.
+//
+// This gates what a screen OFFERS, never what the backend permits — brain-api
+// re-checks with `require_owner` on every owner-only route.
+export function canManageClinic(
+  session: { isOwner?: boolean; role: string } | null | undefined,
+): boolean {
+  if (!session) return false;
+  return Boolean(session.isOwner) || session.role === "tenant_owner";
+}
+
 // Compares a browser pathname against a route constant. `trailingSlash: true` in
-// next.config.mjs means the live URL is "/agenda/" while the constant is
-// "/agenda" — without normalising, a guard that redirects to PORTAL_HOME while
+// next.config.mjs means the live URL is "/inicio/" while the constant is
+// "/inicio" — without normalising, a guard that redirects to PORTAL_HOME while
 // already on PORTAL_HOME would loop forever.
 export function isSamePath(pathname: string, route: string): boolean {
   const strip = (p: string) => (p.length > 1 ? p.replace(/\/+$/, "") : p);

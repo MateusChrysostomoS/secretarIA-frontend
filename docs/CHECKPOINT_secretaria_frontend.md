@@ -8,7 +8,15 @@ pushed** (commits locais na `main`; nada empurrado para o `origin`).
 rodada original tinha deixado de fora, foi portado — ver "O que foi portado" e a nota em
 "Lacunas conhecidas". Rotas subiram de 11 para 14; testes de 120 para 128.
 
-**Atualização 2026-08-21 (UNCOMMITTED):** o campo "Nome" do `InviteTeamMemberModal`
+**Atualização 2026-08-22 (UNCOMMITTED):** os outros dois campos que viram linha de lista
+no WhatsApp ganharam o mesmo tratamento — **nome de serviço** (`ServiceCard.tsx`, com o
+`HelpTip` logo após o input já que o card não tem label visível) e **convênio**
+(`ContextSection.tsx`, validado **por item** sobre `toWireInsurances`, porque um
+`maxLength` no campo proibiria três planos curtos legais). Ao contrário do modal, os dois
+**avisam sem bloquear o Save**: esta tela salva oito seções atrás de um botão só. Testes:
+242 verdes. Detalhe em `secretarIA/docs/CHECKPOINT_whatsapp_text_limits.md` §4.
+
+**Atualização 2026-08-21 (commit `00f343d`):** o campo "Nome" do `InviteTeamMemberModal`
 (variante `professional` apenas) ganhou `maxLength={24}` + erro `role="alert"` + tooltip
 "?" — o novo `lib/whatsapp-limits.ts` espelha o cap de linha de lista do WhatsApp que a
 secretarIA aplica no backend. Nenhum componente novo: o `Field` do design system já
@@ -36,11 +44,12 @@ da rodada do papel `secretary` (ver `brain-frontend/docs/CHECKPOINT_secretary_ro
 Isso foi deliberado — aquele prompt rodou primeiro, como recomendado, então o clone já
 nasce com `InviteTeamMemberModal`, a lista de secretárias e o `Role` de 4 valores.
 
-## Mapa de rotas (14, todas estáticas)
+## Mapa de rotas (14 + `_not-found`, todas estáticas)
 
 | Rota | O que é | Origem no brain-frontend |
 |---|---|---|
 | `/` | **login + contratar** — única porta de entrada, sem landing | composição NOVA (ver abaixo) |
+| `/inicio` | **home do portal** (`PORTAL_HOME`) — nome da clínica + cards pro resto do app | modelada em `(site)/doctor/dashboard`, adicionada em 2026-08-23 (ver decisão nº7) |
 | `/cadastro` | wizard de signup de 9 passos | `(site)/cadastro/*` |
 | `/checkout/sucesso`, `/checkout/cancelado` | retorno do Stripe | `(site)/checkout/*` |
 | `/agenda` | agenda da clínica | `(site)/secretaria/agenda/*` |
@@ -124,7 +133,8 @@ em `environment: "node"`, sem jsdom, então o que vale testar precisa viver fora
 | `app/(SignIn)/*` (dashboard, inbound, metrics, summary, users) | painel legado standalone do PreCheck; autentica por `localStorage["precheck_token"]` direto no PreCheck, sem passar pela brain-api |
 | `lib/api.ts`, `lib/auth.ts`, `lib/types.ts` | cliente da API do **PreCheck** (`NEXT_PUBLIC_API_URL`) — não portado; o único consumidor que existia (`esqueci_senha/*`) foi reapontado para `lib/manage-api.ts`, ver "O que foi portado" |
 | `lib/useAuthGuard.ts` | superseded pelo `usePortalGuard` |
-| `(site)/admin/*`, `(site)/doctor/*`, `(site)/app/page.tsx`, `(site)/app/billing/*` | domínio Brain |
+| `(site)/admin/*`, `(site)/app/page.tsx`, `(site)/app/billing/*` | domínio Brain |
+| `(site)/doctor/*` | domínio Brain — **parcialmente revertido em 2026-08-23**: nenhum arquivo foi portado, mas `doctor/dashboard` era a única tela de "home que aponta pro resto do app" e a falta dela deixou `/agenda` e `/configuracao` sem ligação. `/inicio` reconstrói esse *formato* (`.portal-links`/`.portal-link-card`, `getDoctorMe`) sem trazer o *conteúdo* do domínio Brain: nada de anamneses, PreCheck ou billing. O resto de `doctor/*` (`anamneses`, `perfil`) segue de fora. Ver decisão nº7 |
 | `(site)/page.tsx`, `(site)/secretaria/page.tsx`, `app/precheck/page.tsx`, `components/landing/*`, `app/landing.css` | landing/marketing — "sem landing page por enquanto" |
 | `BackToAdminButton`, `useImpersonation` | o "Modo médico" começa e termina no portal Brain; este app não tem superfície de admin |
 | `PreCheckWordmark` (+ css) | `ProductLockup` só monta a marca da secretarIA aqui |
@@ -149,6 +159,14 @@ exclusões deliberadas acima.
    volta, porque a sessão dele é válida. Agora o hook devolve a mensagem e a tela renderiza
    `PortalAccessNotice` (mesmo padrão de alerta inline que o `PlanCheckoutCta` usa lá para a
    mesma situação). `isSamePath` fecha o mesmo laço para qualquer papel desconhecido.
+
+   > **Atualizado em 2026-08-23.** A premissa "aqui só existe `/agenda`" caiu — `PORTAL_HOME`
+   > agora é `/inicio` (decisão nº7). O `accessDenied` **continua**, e pelo mesmo motivo de
+   > fundo: este domínio não tem superfície de admin nenhuma, então um admin de plataforma
+   > segue sem destino aqui. O que mudou é a razão de haver uma home só: não é mais "existe
+   > uma tela só", é "todo papel de clínica pode abrir toda tela — o que muda entre eles é o
+   > que a tela *oferece*, nunca em qual tela pousam". `resolvePostLogin` continua com uma
+   > única resposta navegável.
 3. **`/agenda` e `/configuracao` seguem SEM `usePortalGuard`**, como no brain-frontend: elas
    caem no modo demo do `HubNotice` quando não há sessão/hub. É comportamento intencional
    herdado, não uma lacuna — não foi alterado.
@@ -161,6 +179,48 @@ exclusões deliberadas acima.
    andar juntos.
 6. **Checkbox "Lembrar de mim" removido** do login: no brain-frontend ele guarda estado que
    nada lê. UI que promete o que não entrega é pior que UI ausente.
+
+7. **`PORTAL_HOME` virou `/inicio` (2026-08-23) — reverte a decisão de "uma tela é a home".**
+   A separação elegeu `/agenda` como home porque este domínio vende um produto só. Uma semana
+   depois o custo apareceu: `/agenda` e `/configuracao` não tinham ligação nenhuma entre si —
+   os únicos `Link href="/configuracao"` do repo eram CTAs de fluxo (`app/reativar`,
+   `app/onboarding`, `calendar/connected`), nunca um menu — então quem logava chegava em
+   `/agenda` e só alcançava a configuração digitando a URL. "Um produto só" nunca implicou
+   "uma porta só". `/inicio` é uma home de verdade: nome da clínica + `.portal-links` com
+   Agenda, Configurações e Convidar equipe, guardada em exatamente `PORTAL_ROLES`.
+   Detalhes que valem a pena não redescobrir:
+   - **O link da marca no `PortalHeader` apontava para `/`** — que aqui é a tela de LOGIN, e
+     que **não** redireciona uma sessão existente (o `resolvePostLogin` da tela `/` roda
+     dentro do `handleSubmit`, não no mount). Ou seja: clicar na marca dentro de `/agenda`
+     largava um usuário logado no formulário de login. Agora aponta para `PORTAL_HOME`. É o
+     único caminho de volta — nada de breadcrumb ou menu redundante em cima.
+   - **`canManageClinic(session)` em `lib/portal-routes.ts`** passou a ser a grafia única de
+     "é o titular?" (`is_owner` OU o legado `role === "tenant_owner"`), consumida por
+     `/inicio` e pelos dois pontos de `configuracao/page.tsx` que repetiam a expressão
+     inline. Módulo puro de propósito: é o que o deixa testável no vitest node-only.
+   - **O card "Convidar equipe" NÃO é owner-gated**, e isso foi verificado, não suposto:
+     `invite_professional`/`invite_secretary` no brain-api usam `require_doctor`, e a
+     docstring registra que eram `require_owner` até a rodada de correções de 2026-07-22;
+     `ProfessionalsSection` renderiza os dois botões atrás de um `session &&` simples pelo
+     mesmo motivo. Em todo o brain-api só `pause_onboarding` é owner-only (e ainda aceita
+     `secretary`). O elemento que depende de permissão de gestão é o selo "Titular da
+     clínica" + a copy do subtítulo — afirmação de fato, não bloqueio inventado.
+   - **`/agenda` e `/configuracao` seguem SEM guard** (decisão nº3 intacta) e o modo demo do
+     `HubNotice` continua valendo. Consequência aceita: um visitante sem sessão que clique na
+     marca faz um salto a mais (`/inicio` → guard → `/`) e chega no mesmo lugar de antes.
+   - **`/configuracao` aprendeu `?secao=<NavId>`** para o card cair direto na seção
+     Profissionais. Lê `window.location.search` num efeito, e não `useSearchParams()`, que
+     sob `output: "export"` exigiria um `Suspense` em volta da tela inteira. O pulo só é
+     dado quando a seção está de fato alcançável (`scrollTo` satura em
+     `scrollHeight - clientHeight`, e as seções abaixo de `prof` ainda estão vazias logo após
+     o tenant chegar) ou quando nada mais está carregando.
+   - **Teste que fecha o buraco:** `portal-routes.test.ts` fixa o literal `/inicio` **e**
+     confere com `existsSync` que a rota existe em disco. Sem isso as asserções comparavam
+     `PORTAL_HOME` contra `PORTAL_HOME` e passariam com qualquer valor, inclusive com typo —
+     e um typo aqui é um 404 em produção para 100% dos logins.
+
+   O padrão genérico saiu deste repo e virou a skill `portal-role-home` em
+   `TECH/.claude/skills/`, para brain-frontend e para qualquer app nova da família.
 
 ## Papel `secretary` — verificação da TAREFA 4 neste repo (2026-08-14)
 
@@ -223,12 +283,16 @@ Gates locais rodados: `tsc.cmd --noEmit` limpo, **120 testes verdes**, `npm run 
 - [ ] **Token da WABA expira em 60 dias e nada renova** (pendência antiga, de plataforma, não
       deste repo) — não bloqueia teste, bloqueia lançamento.
 - [ ] **O nome do profissional tem uma segunda porta de entrada, ainda sem cap.**
-      `InviteTeamMemberModal` agora limita a 24 caracteres, mas
-      `POST /doctor/professionals/self` (chamado por `ProfessionalsSection` com payload
+      Os três campos digitados NESTE hub estão cobertos (profissional, serviço, convênio),
+      mas `POST /doctor/professionals/self` (chamado por `ProfessionalsSection` com payload
       vazio) deriva o nome do usuário da brain-api — que vem do `/cadastro` daqui e do
       "Meu Perfil" no `brain-frontend`, nenhum dos dois com limite. Esse caminho só é
-      coberto pela rede de segurança do backend. Mesma coisa para o nome de serviço em
-      `ServiceCard.tsx`. Ver `secretarIA/docs/CHECKPOINT_whatsapp_text_limits.md`.
+      coberto pela rede de segurança do backend, e fechá-lo é trabalho no `brain-frontend`.
+      Ver `secretarIA/docs/CHECKPOINT_whatsapp_text_limits.md`.
+- [ ] **O `ServiceCard` novo não foi visto rodando.** Coberto por teste e o `HelpTip` tem
+      precedente idêntico em `AvailabilitySection` ("Horário semanal"), mas offline o botão
+      "Adicionar serviço" fica desabilitado pela guarda fail-closed de hidratação, então
+      nenhum card renderiza — falta um olhar num hub com backend de verdade.
 - [ ] Sem deploy no EasyPanel e sem `git push` — nada foi empurrado para o `origin`.
 
 ## Deploy no EasyPanel (guia — nada disto foi executado)
