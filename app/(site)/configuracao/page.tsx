@@ -29,7 +29,7 @@ import "../product-tokens.css";
 import "../app-shell.css";
 
 import { useState, useEffect, useRef, useCallback, useReducer, useMemo } from "react";
-import type { MutableRefObject } from "react";
+import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { useRouter } from "next/navigation";
 import { Icon, Btn } from "../_shared/ui";
 import { HubNotice } from "../_shared/HubNotice";
@@ -75,12 +75,11 @@ import {
   type Service,
 } from "./lib/types";
 import {
-  applyWireBusinessHours,
   applyWireServices,
   buildConfigUpdatePayload,
   buildProfessionalConfigPayload,
 } from "./lib/hub-mapping";
-import { catalogRows, alsoAffected, pendingLinks, unpublished } from "./lib/catalog";
+import { catalogRows, alsoAffected, offerService, pendingLinks, unpublished } from "./lib/catalog";
 import {
   DEMO_CATALOG,
   DEMO_CTX,
@@ -137,6 +136,7 @@ import {
   HubApiError,
   HUB_ERROR_SERVICE_ALREADY_EXISTS,
   type HubConfigurationUpdatePayload,
+  type ProfessionalCalendarSource,
   type ProfessionalConfigUpdatePayload,
   type ProfessionalWire,
   type TenantConfigUpdatePayload,
@@ -348,6 +348,10 @@ export default function ConfiguracaoPage() {
 
   const [services, setServices] = useState<Service[]>([]);
   const [days, setDays] = useState<DayConfig[]>(closedWeek);
+  // The CLINIC's own weekly schedule (tenants.business_hours). Tenant-level,
+  // so it rides the tenant slices, not the professional ones — and it is what
+  // an inheriting professional's grid displays.
+  const [clinicDays, setClinicDays] = useState<DayConfig[]>(closedWeek);
   // Whether `days` / `services` above are this professional's OWN config or the
   // clinic's, inherited. Held as state because the VALUES cannot tell you:
   // an inheriting professional and one who closed every day both render a
@@ -399,6 +403,7 @@ export default function ConfiguracaoPage() {
     setPixDeposit(s.pixDeposit);
     setPrefs(s.prefs);
     setGcal(s.gcal);
+    setClinicDays(s.clinicDays);
   }, []);
 
   const applyProfessionalSlices = useCallback((s: ProfessionalSlices) => {
@@ -423,7 +428,11 @@ export default function ConfiguracaoPage() {
   // --- visitor showcase: the ONE place demo values may be applied ---
   useEffect(() => {
     if (hydration.mode !== "visitor") return;
-    applyTenantSlices({ ...emptyTenantSlices(), ctx: DEMO_CTX.forVisitor });
+    applyTenantSlices({
+      ...emptyTenantSlices(),
+      ctx: DEMO_CTX.forVisitor,
+      clinicDays: demoWeek(),
+    });
     applyProfessionalSlices({
       services: DEMO_SERVICES.forVisitor,
       days: demoWeek(),
@@ -644,35 +653,24 @@ export default function ConfiguracaoPage() {
   // never one, which is why visitors get a disabled button.
   const canDiscard = hydration.mode === "authenticated" && confirmed.tenant !== null && !saving;
 
-  // --- What "Herdar da clínica" actually resolves to, for HOURS -------------
-  // The clinic's own hours, from the tenant config this page already holds — no
-  // extra request. Rendered read-only while a professional inherits, so
-  // "herdando" shows WHAT is being inherited instead of an empty week that
-  // looks indistinguishable from "closed all week".
+  // --- Taking over the schedule -------------------------------------------
+  // A professional with no hours of their own follows the clinic's, live. That
+  // is still a real state on the wire (`business_hours: null`), but it is no
+  // longer a mode the user picks: Section 07 shows the clinic's week in their
+  // grid and lets them edit it directly.
   //
-  // Services have no inherited counterpart any more: Section 06 asks which of
-  // the clinic's catalog services this professional offers, which is a
-  // per-professional answer by construction.
-  const inheritedDays = useMemo(
-    () =>
-      confirmed.tenant
-        ? applyWireBusinessHours(confirmed.tenant.business_hours, closedWeek())
-        : closedWeek(),
-    [confirmed.tenant],
-  );
-
-  // Switching to "own" is the explicit act of creating an override, and it
-  // seeds the form from what was being inherited: the doctor edits the schedule
-  // patients see today rather than starting from a blank week they never chose.
-  // Switching back to "inherit" leaves the local values alone — they are simply
-  // not sent (the payload carries `null`), so a mis-click costs nothing.
-  const chooseHoursSource = useCallback(
-    (next: "inherit" | "own") => {
-      if (next === "own") setDays(inheritedDays.map((d) => ({ ...d, ranges: [...d.ranges] })));
-      setHoursSource(next);
-    },
-    [inheritedDays],
-  );
+  // Writing to the grid IS the act of taking over, so it flips the flag here,
+  // once, in the same setter. Only from "inherit": "unknown" means the backend
+  // never told us which state this is, and asserting "own" on its behalf would
+  // be exactly the guess ConfigInheritance exists to refuse (see lib/types.ts).
+  //
+  // AvailabilitySection always passes a WHOLE week rather than a functional
+  // update, precisely because `days` is empty while inheriting — an updater
+  // relative to it would drop the other six days on the first edit.
+  const setProfessionalDays: Dispatch<SetStateAction<DayConfig[]>> = useCallback((next) => {
+    setHoursSource((prev) => (prev === "inherit" ? "own" : prev));
+    setDays(next);
+  }, []);
 
   // --- Save: guarded by lib/save.ts, which refuses without any PUT ---
   // Adopts what the backend actually persisted as the new form state AND the
@@ -768,7 +766,15 @@ export default function ConfiguracaoPage() {
     putProfessional: (id: string, patch: ProfessionalConfigUpdatePayload) =>
       updateProfessionalConfig(session!, id, patch),
     buildTenantPatch: () =>
-      buildConfigUpdatePayload(ctx, messages, postConsult, pixDeposit, prefs.defaultDur, gcal.mode),
+      buildConfigUpdatePayload(
+        ctx,
+        messages,
+        postConsult,
+        pixDeposit,
+        prefs.defaultDur,
+        gcal.mode,
+        clinicDays,
+      ),
     buildProfessionalPatch: (linked?: Map<number, string>) =>
       buildProfessionalConfigPayload(days, services, profile, hoursSource, linked),
     publishServices,
@@ -894,9 +900,25 @@ export default function ConfiguracaoPage() {
             : [...rows, applyWireServices([saved])[0]];
           return next;
         });
-        // A NEW service is one the clinic can offer, not one this professional
-        // automatically does — they still tick it. What they do get is the row,
-        // right where they were looking.
+        // A service the doctor just typed out is one they offer. Making them
+        // then hunt for the row and tick it was busywork with a real cost:
+        // people closed the dialog, saw the service listed, and left without
+        // the box ticked — so the professional offered nothing new and the bot
+        // never mentioned it.
+        //
+        // Only on CREATE, and only for a professional whose config has actually
+        // hydrated: ticking into a not-yet-loaded (therefore empty) list would
+        // build a payload that wipes whatever the hub holds for them — see
+        // lib/hydration.ts. Editing an existing catalog row still changes
+        // nothing about who offers it.
+        if (!existing && professionalEditable) {
+          const row = applyWireServices([saved])[0];
+          setServices((prev) =>
+            prev.some((svc) => svc.serviceId === row.id)
+              ? prev
+              : [...prev, offerService(row, prefs.defaultDur, Date.now())],
+          );
+        }
         setEditingService(null);
       } catch (e) {
         console.error("secretaria configuracao: failed to save the catalog service", e);
@@ -909,13 +931,13 @@ export default function ConfiguracaoPage() {
         setSavingService(false);
       }
     },
-    [session, editingService],
+    [session, editingService, professionalEditable, prefs.defaultDur],
   );
 
   // --- Descartar: restores the last confirmed snapshot, with zero requests ---
   const currentSlices = useMemo(
     () => ({
-      tenant: { ctx, messages, postConsult, pixDeposit, prefs, gcal },
+      tenant: { ctx, messages, postConsult, pixDeposit, prefs, gcal, clinicDays },
       professional: hydration.selectedProfessionalId
         ? { services, days, profile, hoursSource }
         : null,
@@ -927,6 +949,7 @@ export default function ConfiguracaoPage() {
       pixDeposit,
       prefs,
       gcal,
+      clinicDays,
       services,
       days,
       profile,
@@ -997,11 +1020,22 @@ export default function ConfiguracaoPage() {
       ? roster.find((p) => p.id === hydration.selectedProfessionalId)?.name
       : undefined;
 
-  // --- Derived: professional id -> dedicated Google Calendar id, for
-  // ProfessionalsSection's shared_account-mode chip/button. ---
+  // --- Derived: professional id -> dedicated Google Calendar id, for the
+  // "Agenda" completeness chip in shared_account mode. ---
   const googleCalendarIdByProfessional: Record<string, string | null> = Object.fromEntries(
     Object.entries(snapshot.professionalsById).map(([id, p]) => [id, p.google_calendar_id]),
   );
+
+  // --- Derived: professional id -> WHOSE Google credential covers them.
+  // `has_calendar` alone cannot answer that: it is equally true for a doctor
+  // who connected their own account and for one merely riding the clinic's
+  // fallback. Only the first of those may be shown as "Conectado" in
+  // per_professional mode — see ProfessionalRow. `undefined` is a backend that
+  // predates the field and is handled as "cannot tell", never as "none".
+  const calendarSourceByProfessional: Record<string, ProfessionalCalendarSource | undefined> =
+    Object.fromEntries(
+      Object.entries(snapshot.professionalsById).map(([id, p]) => [id, p.calendar_source]),
+    );
 
   // ---------------------------------------------------------------------------
   // Render
@@ -1104,8 +1138,8 @@ export default function ConfiguracaoPage() {
                 onProfileChange={setProfileK}
                 onRosterChanged={reloadRoster}
                 googleCalendarMode={gcal.mode}
-                clinicCalendarConnected={gcal.connected}
                 googleCalendarIdByProfessional={googleCalendarIdByProfessional}
+                calendarSourceByProfessional={calendarSourceByProfessional}
                 readOnly={!professionalEditable}
               />
               <ServicesSection
@@ -1126,15 +1160,15 @@ export default function ConfiguracaoPage() {
               />
               <AvailabilitySection
                 days={days}
-                setDays={setDays}
+                setDays={setProfessionalDays}
                 prefs={prefs}
                 setPref={setPrefK}
                 professionalName={selectedProfessionalName}
-                source={hoursSource}
-                onSourceChange={chooseHoursSource}
-                inheritedDays={inheritedDays}
+                clinicDays={clinicDays}
+                setClinicDays={setClinicDays}
+                inheritingHours={hoursSource === "inherit"}
                 readOnly={!professionalEditable}
-                durationReadOnly={!tenantEditable}
+                tenantReadOnly={!tenantEditable}
               />
               <GoogleSection
                 gcal={gcal}
@@ -1162,7 +1196,11 @@ export default function ConfiguracaoPage() {
         borderTop: "1px solid var(--line-strong)",
         zIndex: 20,
       }}>
-        {/* Google Calendar status indicator */}
+        {/* Google Calendar status indicator. This reports the CLINIC's
+            connection, which is the whole story only in "conta única". In
+            "por profissional" each doctor connects their own (Section 05), so
+            a clinic-wide "conecte o Google Calendar" here nagged about a
+            connection that mode does not use. */}
         <div style={{
           display: "flex", alignItems: "center", gap: 9,
           fontSize: 13,
@@ -1171,7 +1209,9 @@ export default function ConfiguracaoPage() {
           <Icon name={gcal.connected ? "checkCircle" : "clock"} size={16} />
           {gcal.connected
             ? "Google Calendar conectado"
-            : "Conecte o Google Calendar para ativar a sincronização"}
+            : gcal.mode === "per_professional"
+              ? "Cada profissional conecta a própria agenda em Profissionais"
+              : "Conecte o Google Calendar para ativar a sincronização"}
         </div>
 
         <div style={{ flex: 1 }} />

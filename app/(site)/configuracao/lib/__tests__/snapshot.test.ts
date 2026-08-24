@@ -136,6 +136,22 @@ describe("dirtySections (what Descartar reports)", () => {
     expect(dirtySections(current, baseline)).toEqual([]);
   });
 
+  // The clinic's own opening hours are tenant-level but edited inside Section
+  // 07, so they must dirty `disp` — otherwise Descartar would report nothing
+  // to discard right after someone typed the clinic's week.
+  it("marks disp dirty when only the clinic's opening hours changed", () => {
+    const current = {
+      tenant: {
+        ...baseline.tenant,
+        clinicDays: baseline.tenant.clinicDays.map((d, i) =>
+          i === 0 ? { ...d, on: true, ranges: [{ start: 540, end: 720 }] } : d,
+        ),
+      },
+      professional: baseline.professional,
+    };
+    expect(dirtySections(current, baseline)).toEqual(["disp"]);
+  });
+
   it("names each edited section, and only section ids", () => {
     const current = {
       tenant: {
@@ -164,7 +180,9 @@ describe("dirtySections (what Descartar reports)", () => {
 });
 
 describe("payload honesty — no visible control is silently dropped", () => {
-  const { ctx, messages, postConsult, pixDeposit } = tenantSlicesFromWire(tenantWire());
+  const { ctx, messages, postConsult, pixDeposit, clinicDays } = tenantSlicesFromWire(
+    tenantWire({ business_hours: { monday: [{ start: "09:00", end: "12:00" }] } }),
+  );
 
   const payload = buildConfigUpdatePayload(
     ctx,
@@ -173,6 +191,7 @@ describe("payload honesty — no visible control is silently dropped", () => {
     pixDeposit,
     45,
     "per_professional",
+    clinicDays,
   );
 
   it("sends every field the form still lets you edit", () => {
@@ -189,6 +208,12 @@ describe("payload honesty — no visible control is silently dropped", () => {
     expect(payload.greeting_message).toBe("Olá! Como posso ajudar?");
     expect(payload.appointment_duration_min).toBe(45);
     expect(payload.google_calendar_mode).toBe("per_professional");
+    // The clinic's own opening hours. They were always on the wire and always
+    // had consumers (the human-backup plugin, the agent's prompt), but no
+    // field on this screen ever set them — Section 07 does now.
+    expect(payload.business_hours).toEqual({
+      monday: [{ start: "09:00", end: "12:00" }],
+    });
   });
 
   // The FIX 12 regression guards. Each of these WAS a visible, editable

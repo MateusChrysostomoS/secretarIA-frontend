@@ -101,6 +101,16 @@ export type TenantSlices = {
   pixDeposit: PixDeposit;
   prefs: Prefs;
   gcal: GcalState;
+  /**
+   * The CLINIC's own weekly schedule (`tenants.business_hours`).
+   *
+   * It was always on the wire and always had consumers — the human-backup
+   * plugin decides "fora do horário" from it, and the agent's prompt states it
+   * to patients — but this screen had no field for it. The only way to reach
+   * it was sideways, as the thing a professional "inherited", so a clinic
+   * could never state its own opening hours; it could only be read back.
+   */
+  clinicDays: DayConfig[];
 };
 
 /** Professional-scoped form state, exactly as the page holds it. */
@@ -145,6 +155,7 @@ export function tenantSlicesFromWire(cfg: TenantConfigWire): TenantSlices {
     pixDeposit: applyWirePixDeposit(cfg),
     prefs: { defaultDur: cfg.appointment_duration_min },
     gcal: applyWireGcal(cfg),
+    clinicDays: applyWireBusinessHours(cfg.business_hours, closedWeek()),
   };
 }
 
@@ -212,6 +223,7 @@ export function emptyTenantSlices(): TenantSlices {
     pixDeposit: DEFAULT_PIX_DEPOSIT,
     prefs: EMPTY_PREFS,
     gcal: EMPTY_GCAL,
+    clinicDays: closedWeek(),
   };
 }
 
@@ -310,9 +322,11 @@ export function dirtySections(
     }
   }
 
-  // `disp` also owns the tenant-level default duration.
+  // `disp` also owns the two tenant-level fields the hours section edits: the
+  // default duration and the clinic's own weekly schedule.
   if (
-    current.tenant.prefs.defaultDur !== baseline.tenant.prefs.defaultDur &&
+    (current.tenant.prefs.defaultDur !== baseline.tenant.prefs.defaultDur ||
+      !same(current.tenant.clinicDays, baseline.tenant.clinicDays)) &&
     !sections.includes("disp")
   ) {
     sections.push("disp");

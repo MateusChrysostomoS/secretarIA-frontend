@@ -169,6 +169,34 @@ main.login-page .login-brand {
   text-decoration: none;
   color: var(--ink);
 }
+/* "Brain │ secretarIA" — the same lockup the portal header shows. This group
+   runs on the ported PreCheck stylesheet and never loads (site)/brand-ds.css,
+   so the glyph's classes are re-bound here to this group's own tokens. */
+main.login-page .login-brand .brain-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+}
+main.login-page .login-brand .brand-glyph {
+  flex-shrink: 0;
+  display: block;
+}
+main.login-page .login-brand .brand-glyph .gs { stroke: var(--teal); }
+main.login-page .login-brand .brand-glyph .gf { fill: var(--teal); }
+main.login-page .login-brand .brand-glyph .gt { fill: var(--teal); stroke: var(--teal); }
+main.login-page .login-brand .brain-lockup-word {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--ink);
+}
+main.login-page .login-brand .brain-lockup-rule {
+  width: 1px;
+  height: 30px;
+  flex-shrink: 0;
+  background: var(--border-2);
+}
 main.login-page .login-brand .wordmark {
   font-family: var(--font-serif);
   font-size: 32px;
@@ -511,7 +539,10 @@ main.login-page .step-indicator .step-dot {
 
 @media (max-width: 480px) {
   main.login-page .login-card { padding: 24px 22px; }
-  main.login-page .login-brand .wordmark { font-size: 28px; }
+  main.login-page .login-brand .wordmark,
+  main.login-page .login-brand .brain-lockup-word { font-size: 28px; }
+  main.login-page .login-brand .brain-lockup-rule { height: 26px; }
+  main.login-page .login-brand .brain-lockup { gap: 9px; }
 }
 
 /* Respect reduced-motion: hold the dots still and show the ECG fully drawn */

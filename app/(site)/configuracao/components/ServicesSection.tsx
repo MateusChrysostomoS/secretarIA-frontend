@@ -28,7 +28,7 @@ import type { Dispatch, SetStateAction } from "react";
 import { Btn, HelpTip, Icon } from "../../_shared/ui";
 import { Section } from "./Section";
 import { CSelect } from "./CSelect";
-import { InheritedNote } from "./InheritanceChoice";
+import { InlineNote } from "./InlineNote";
 import { catalogRows, offerService, type CatalogRow } from "../lib/catalog";
 import type { CatalogService, Service } from "../lib/types";
 
@@ -124,16 +124,16 @@ export function ServicesSection({
       ) : (
         <>
           {rows.length === 0 ? (
-            <InheritedNote>
+            <InlineNote>
               A clínica ainda não tem nenhum serviço cadastrado. Crie o primeiro abaixo — ele entra
               no catálogo da clínica, e os outros profissionais poderão marcar que também o
               oferecem.
-            </InheritedNote>
+            </InlineNote>
           ) : offeredCount === 0 ? (
-            <InheritedNote>
+            <InlineNote>
               Este profissional não oferece <b>nenhum</b> serviço no momento, então a secretarIA{" "}
               <b>não vai agendar nada</b> com ele. Marque ao menos um serviço abaixo.
-            </InheritedNote>
+            </InlineNote>
           ) : null}
 
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>

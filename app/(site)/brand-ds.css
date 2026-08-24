@@ -420,13 +420,17 @@ img,svg{display:block}
 .reveal-d2{transition-delay:.16s}
 .reveal-d3{transition-delay:.24s}
 
-/* ============ BRAIN GLYPH (neural-node / circuit motif) ============ */
-.brand-glyph .gbg{fill:var(--brand-tint);stroke:var(--brand)}
+/* ============ BRAIN GLYPH (brain silhouette + speech-bubble tail) ============
+   .gs = stroked silhouette and cortical folds; .gt = the SOLID tail, filled
+   AND stroked so it carries the same optical weight as the outline it hangs
+   from; .gf = the neural nodes. `.gbg` is gone with the old rounded-square
+   backdrop — the mark is the brain itself now, with no container. */
 .brand-glyph .gs{stroke:var(--brand)}
 .brand-glyph .gf{fill:var(--brand)}
-.brand-glyph.on-dark .gbg{fill:rgba(43,182,170,.16);stroke:#5bccc0}
+.brand-glyph .gt{fill:var(--brand);stroke:var(--brand)}
 .brand-glyph.on-dark .gs{stroke:#5bccc0}
 .brand-glyph.on-dark .gf{fill:#5bccc0}
+.brand-glyph.on-dark .gt{fill:#5bccc0;stroke:#5bccc0}
 
 /* ============ MISC ============ */
 .divider-soft{height:1px;background:var(--line)}

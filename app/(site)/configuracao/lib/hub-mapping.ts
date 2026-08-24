@@ -290,10 +290,11 @@ export function applyWireProfessionalProfile(p: ProfessionalWire): ProfessionalP
 // post_consult_knowledge), Sinal via Pix (pix_deposit_*/pix_refund_*/
 // pix_retention_policy/pix_reschedule_limit — asaas_connected excluded, it is
 // READ-ONLY), address/insurances/collect_insurance (Feature 1/3), and
-// appointment_duration_min (the one scheduling preference that stayed
-// tenant-level; business_hours/appointment_types moved to the per-professional
-// PUT below). `gap`/`lead` (Prefs) have no wire counterpart at all and are NOT
-// sent — see the comment on Prefs in lib/types.ts.
+// appointment_duration_min, and business_hours — the CLINIC's own opening
+// hours, which Section 07 now edits directly instead of only reading them back
+// as the thing a professional inherits. `appointment_types` stays on the
+// per-professional PUT below. `gap`/`lead` (Prefs) have no wire counterpart at
+// all and are NOT sent — see the comment on Prefs in lib/types.ts.
 export function buildConfigUpdatePayload(
   ctx: ClinicCtx,
   messages: Messages,
@@ -301,9 +302,11 @@ export function buildConfigUpdatePayload(
   pixDeposit: PixDeposit,
   defaultDurationMin: number,
   gcalMode: GcalState["mode"],
+  clinicDays: DayConfig[],
 ): TenantConfigUpdatePayload {
   return {
     appointment_duration_min: defaultDurationMin,
+    business_hours: toWireBusinessHours(clinicDays),
     address: toWireAddress(ctx),
     insurances: toWireInsurances(ctx.insurances),
     collect_insurance: ctx.collectInsurance,

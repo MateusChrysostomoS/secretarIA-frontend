@@ -1,13 +1,31 @@
 "use client";
 // AvailabilitySection — Section 07 "Dias e horários de atendimento".
-// A DayRow per weekday (toggle + time-range pickers) plus the one scheduling
-// preference this screen can actually persist. DayRow is internal.
+// Two weekly grids — the CLINIC's opening hours and the SELECTED professional's
+// own — plus the one scheduling preference this screen can persist. DayRow and
+// WeekGrid are internal.
 //
-// `days` belongs to the SELECTED professional (business_hours); `defaultDur`
-// (appointment_duration_min) stays tenant-level — see
-// buildConfigUpdatePayload/buildProfessionalConfigPayload in lib/hub-mapping.ts.
-// The two therefore gate on DIFFERENT hydration scopes, which is why there are
-// two read-only flags below rather than one.
+// `days` belongs to the professional (professionals.business_hours);
+// `clinicDays` (tenants.business_hours) and `defaultDur`
+// (appointment_duration_min) are tenant-level — see buildConfigUpdatePayload /
+// buildProfessionalConfigPayload in lib/hub-mapping.ts. They gate on DIFFERENT
+// hydration scopes, which is why there are two read-only flags below.
+//
+// WHY THERE IS NO "HERDAR DA CLÍNICA / CONFIGURAÇÃO PRÓPRIA" SWITCH ANY MORE
+// -------------------------------------------------------------------------
+// There used to be one, and it made the doctor answer a question about data
+// modelling ("is your schedule an override?") before they could type an
+// opening time. Worse, the clinic's own hours had no field anywhere on this
+// screen: they existed only as the thing the "herdar" branch displayed,
+// read-only, so a clinic could never actually SET them.
+//
+// Now the clinic states its hours in its own grid, and a professional's grid is
+// always directly editable with a "Preencher com o horário da clínica" button
+// that copies them in as a starting point. Inheritance is still real underneath
+// — a professional who has never touched their grid keeps `business_hours:
+// null` and follows the clinic live — but it is now a CONSEQUENCE of not having
+// typed anything rather than a mode to pick. Touching the grid (or pressing the
+// fill button) is what takes over, and page.tsx's `setProfessionalDays` is
+// where that flip happens.
 //
 // HONESTY PASS (FIX 12): the "Intervalo entre consultas" and "Antecedência
 // mínima" selects are gone. TenantConfigUpdate has no field for either,
@@ -21,8 +39,8 @@ import { Section } from "./Section";
 import { CSelect } from "./CSelect";
 import { CToggle } from "./CToggle";
 import { Icon } from "../../_shared/ui";
-import { InheritanceChoice, InheritedNote } from "./InheritanceChoice";
-import type { ConfigInheritance, DayConfig, Prefs } from "../lib/types";
+import { InlineNote } from "./InlineNote";
+import type { DayConfig, Prefs } from "../lib/types";
 import type { Dispatch, SetStateAction } from "react";
 
 // ---------------------------------------------------------------------------
@@ -172,109 +190,195 @@ function DayRow({ day, onChange, readOnly }: DayRowProps) {
 }
 
 // ---------------------------------------------------------------------------
+// WeekGrid — internal: the seven DayRows plus their heading.
+// ---------------------------------------------------------------------------
+
+function WeekGrid({
+  days,
+  onChange,
+  label,
+  tip,
+  readOnly,
+}: {
+  days: DayConfig[];
+  // Takes the WHOLE next week, not a functional update: the caller may be
+  // showing the clinic's grid in place of a professional's empty one, so an
+  // updater relative to the professional's own state would edit the wrong
+  // array. See `shownDays` below.
+  onChange: (next: DayConfig[]) => void;
+  label: string;
+  tip: string;
+  readOnly?: boolean;
+}) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <div style={{
+        display: "flex", alignItems: "center", gap: 7,
+        fontSize: 11.5, fontWeight: 700,
+        color: "var(--ink-faint)", letterSpacing: ".04em",
+        textTransform: "uppercase", paddingBottom: 4,
+      }}>
+        {label}
+        <HelpTip text={tip} />
+      </div>
+
+      {days.map((d, i) => (
+        <DayRow
+          key={d.key}
+          day={d}
+          onChange={nd => onChange(days.map((x, j) => (j === i ? nd : x)))}
+          readOnly={readOnly}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // AvailabilitySection
 // ---------------------------------------------------------------------------
 
 type AvailabilitySectionProps = {
   days: DayConfig[];
+  // Setting this is what takes a professional off the clinic's schedule — see
+  // page.tsx's `setProfessionalDays`, which flips the inheritance flag.
   setDays: Dispatch<SetStateAction<DayConfig[]>>;
   prefs: Prefs;
   setPref: (key: keyof Prefs, value: number) => void;
   professionalName?: string;
-  // Whether `days` is this professional's own schedule or the clinic's,
-  // inherited — see lib/types.ts. The values alone cannot say: an inheriting
-  // professional and one who closed every day both arrive as a closed week.
-  source: ConfigInheritance;
-  onSourceChange: (next: "inherit" | "own") => void;
-  // The clinic's own weekly schedule, shown read-only while inheriting so the
-  // section displays WHAT is inherited instead of a blank week that reads as
-  // "nothing configured".
-  inheritedDays: DayConfig[];
+  // The CLINIC's own weekly schedule (tenants.business_hours) — editable here,
+  // and the source the fill button copies from.
+  clinicDays: DayConfig[];
+  setClinicDays: Dispatch<SetStateAction<DayConfig[]>>;
+  // True while this professional still has NO schedule of their own, so the
+  // clinic's applies to them live. Display-only: it decides which week the
+  // grid shows and whether the "following the clinic" note appears — it is
+  // never a control the user sets.
+  inheritingHours: boolean;
   // Weekly hours belong to the selected professional — locked until THAT
   // professional's config has hydrated (see lib/hydration.ts).
   readOnly?: boolean;
-  // Default duration is tenant-level, so it unlocks with the tenant config
-  // instead. Separate flag because the two scopes fail independently.
-  durationReadOnly?: boolean;
+  // The clinic schedule and the default duration are tenant-level, so they
+  // unlock with the tenant config instead. Separate flag because the two
+  // scopes fail independently.
+  tenantReadOnly?: boolean;
 };
 
-// Section 07 — weekly schedule grid + default appointment duration.
+// Section 07 — clinic opening hours, the professional's own week, default duration.
 export function AvailabilitySection({
   days,
   setDays,
   prefs,
   setPref,
   professionalName,
-  source,
-  onSourceChange,
-  inheritedDays,
+  clinicDays,
+  setClinicDays,
+  inheritingHours,
   readOnly,
-  durationReadOnly,
+  tenantReadOnly,
 }: AvailabilitySectionProps) {
-  const updateDay = (i: number, d: DayConfig) =>
-    setDays(prev => prev.map((x, j) => (j === i ? d : x)));
-
-  const inheriting = source === "inherit";
-  // While inheriting, the clinic's schedule is what patients actually get, so
-  // that is what the grid shows — locked, because editing it here would be
-  // editing the clinic's hours through a professional's form.
-  const shownDays = inheriting ? inheritedDays : days;
-  const gridReadOnly = readOnly || inheriting;
+  // While a professional has no schedule of their own, what patients actually
+  // get is the clinic's — so that is what the grid shows. Editing it there is
+  // exactly the act of taking over, and `setDays` writes the WHOLE week, so
+  // the first edit carries the other six days with it instead of landing on a
+  // blank one.
+  const shownDays = inheritingHours ? clinicDays : days;
   const nothingOpen = shownDays.every(d => !d.on);
+  const clinicIsEmpty = clinicDays.every(d => !d.on);
+
+  // Copies the clinic's week in as a starting point. Deep-copies the ranges:
+  // sharing them would make editing the professional's Tuesday silently edit
+  // the clinic's Tuesday too.
+  const fillFromClinic = () =>
+    setDays(clinicDays.map(d => ({ ...d, ranges: d.ranges.map(r => ({ ...r })) })));
+
+  const fillBlocked = readOnly || clinicIsEmpty;
 
   return (
     <Section
       id="disp"
       num="07"
       icon="clock"
-      title={"Dias e horários de atendimento" + (professionalName ? " · " + professionalName : "")}
-      desc="Quando o médico atende. A secretarIA só oferece horários dentro dessas faixas e sincroniza com o Google Calendar para evitar conflitos."
+      title="Dias e horários de atendimento"
+      desc="Quando a clínica abre e quando cada profissional atende. A secretarIA só oferece horários dentro dessas faixas e sincroniza com o Google Calendar para evitar conflitos."
     >
-      <InheritanceChoice
-        name="disp-source"
-        source={source}
-        onChange={onSourceChange}
-        inheritHint="Usa os horários da clínica. Mudou lá, muda aqui."
-        ownHint="Define horários só deste profissional, independentes da clínica."
-        readOnly={readOnly}
-      />
+      {/* ---------- the clinic's own opening hours ---------- */}
+      <div style={{ marginBottom: 30 }}>
+        <InlineNote>
+          Este é o horário <b>da clínica</b>, e vale para toda ela: é o que a secretarIA usa para
+          saber se está dentro do expediente, e o ponto de partida sugerido para cada profissional.
+        </InlineNote>
 
-      {inheriting && (
-        <InheritedNote>
-          Estes são os horários <b>da clínica</b>, aplicados a este profissional. Para alterá-los só
-          para ele, escolha <b>Configuração própria</b> acima — os horários abaixo viram o ponto de
-          partida.
-        </InheritedNote>
+        <WeekGrid
+          days={clinicDays}
+          onChange={setClinicDays}
+          label="Horário de funcionamento da clínica"
+          tip="Ative os dias em que a clínica abre e defina uma ou mais faixas por dia (ex.: manhã e tarde, com intervalo de almoço entre elas)."
+          readOnly={tenantReadOnly}
+        />
+      </div>
+
+      {/* ---------- the selected professional's own week ---------- */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        gap: 14, flexWrap: "wrap", marginBottom: 10,
+      }}>
+        <span style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)" }}>
+          Horário de atendimento{professionalName ? " · " + professionalName : ""}
+        </span>
+
+        {/* The whole point of the clinic grid above: fill this one from it and
+            then change only what differs, instead of retyping a week. */}
+        <button
+          type="button"
+          onClick={fillFromClinic}
+          disabled={fillBlocked}
+          title={
+            clinicIsEmpty
+              ? "Defina primeiro o horário de funcionamento da clínica, acima"
+              : "Copia o horário da clínica para este profissional. Depois é só ajustar o que for diferente."
+          }
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 7,
+            padding: "8px 14px", borderRadius: 10,
+            fontSize: 13, fontWeight: 600,
+            color: "var(--brand)", background: "var(--brand-tint)",
+            border: "1px dashed var(--brand)",
+            opacity: fillBlocked ? 0.5 : 1,
+            cursor: fillBlocked ? "not-allowed" : "pointer",
+          }}
+        >
+          <Icon name="swap" size={15} />
+          Preencher horários padrão da clínica
+        </button>
+      </div>
+
+      {inheritingHours && !clinicIsEmpty && (
+        <InlineNote>
+          Este profissional ainda não tem horário próprio, então segue o da clínica — inclusive se
+          ele mudar depois. Ao alterar qualquer coisa abaixo, ele passa a ter o próprio horário e
+          para de acompanhar o da clínica.
+        </InlineNote>
       )}
 
       {/* An own schedule with every day closed is a real choice, and a costly
           one: the bot can offer nothing. Say so here rather than letting the
           clinic discover it from a patient. */}
-      {source === "own" && nothingOpen && (
-        <InheritedNote>
-          Nenhum dia está aberto. Com uma configuração própria, isso significa que a secretarIA{" "}
-          <b>não oferecerá nenhum horário</b> deste profissional — os horários da clínica não
-          entram como reserva.
-        </InheritedNote>
+      {!inheritingHours && nothingOpen && (
+        <InlineNote>
+          Nenhum dia está aberto. Com um horário próprio, isso significa que a secretarIA{" "}
+          <b>não oferecerá nenhum horário</b> deste profissional — o horário da clínica não entra
+          como reserva.
+        </InlineNote>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        {/* schedule header label */}
-        <div style={{
-          display: "flex", alignItems: "center", gap: 7,
-          fontSize: 11.5, fontWeight: 700,
-          color: "var(--ink-faint)", letterSpacing: ".04em",
-          textTransform: "uppercase", paddingBottom: 4,
-        }}>
-          Horário semanal
-          <HelpTip text="Ative os dias de atendimento e defina uma ou mais faixas por dia (ex.: manhã e tarde, com intervalo de almoço entre elas)." />
-        </div>
-
-        {/* one row per weekday */}
-        {shownDays.map((d, i) => (
-          <DayRow key={d.key} day={d} onChange={nd => updateDay(i, nd)} readOnly={gridReadOnly} />
-        ))}
-      </div>
+      <WeekGrid
+        days={shownDays}
+        onChange={setDays}
+        label="Horário semanal do profissional"
+        tip="Ative os dias de atendimento e defina uma ou mais faixas por dia (ex.: manhã e tarde, com intervalo de almoço entre elas)."
+        readOnly={readOnly}
+      />
 
       {/* the one scheduling preference with a real wire field behind it */}
       <div style={{ marginTop: 22, maxWidth: 260 }}>
@@ -285,7 +389,7 @@ export function AvailabilitySection({
           <CSelect
             value={prefs.defaultDur}
             onChange={e => setPref("defaultDur", +e.target.value)}
-            disabled={durationReadOnly}
+            disabled={tenantReadOnly}
           >
             {[20, 30, 40, 50, 60].map(d => (
               <option key={d} value={d}>{d} min</option>

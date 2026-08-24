@@ -337,3 +337,10 @@ Gotchas desta máquina, herdados do brain-frontend:
 - `next dev`/`next build` só funcionam com o path do projeto em **`C:` maiúsculo**.
 - `npx tsc` é um pacote errado aqui — use `.\node_modules\.bin\tsc.cmd --noEmit`.
 - Não existe config de ESLint; os gates reais são `tsc --noEmit` + `npm test` + `npm run build`.
+
+---
+
+> **2026-08-24 — marca e UX da Configuração:** o glifo Brain foi redesenhado, o login passou a
+> mostrar o lockup "Brain │ secretarIA", e a Seção 07 ganhou o horário da clínica + o botão
+> "Preencher horários padrão da clínica" no lugar do seletor "Herdar da clínica / Configuração
+> própria". Detalhes, armadilhas e pendências em `CHECKPOINT_marca_e_ux_configuracao.md`.

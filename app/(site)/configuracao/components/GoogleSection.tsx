@@ -14,18 +14,20 @@
 // here — inventing values for them would be exactly the kind of fake data
 // on an authenticated surface this pass removes.
 //
-// Onboarding & Multi-Professional pass: this stays the TENANT-level connect
-// (unchanged single-professional path, per spec) — multi-professional clinics
-// additionally get a per-professional "Conectar Google Calendar" button in
-// ProfessionalsSection (Section 05), whose exact meaning now depends on
-// `gcal.mode` (see the mode selector below and ProfessionalsSection).
+// Google Calendar modes: `mode` (google_calendar_mode) is a tenant-wide,
+// non-destructive choice of HOW professionals get a Google Calendar. Read/write
+// follows the exact same batched-save path as every other field on this page
+// (see page.tsx's handleSave/buildConfigUpdatePayload) — the selector only
+// updates local state; `onModeChange` is a plain setter, not its own save
+// action.
 //
-// Google Calendar modes round (2026-08): added `mode` (google_calendar_mode)
-// — a tenant-wide, non-destructive choice of HOW professionals get a Google
-// Calendar. Read/write follows the exact same batched-save path as every
-// other field on this page (see page.tsx's handleSave/buildConfigUpdatePayload)
-// — the selector only updates local state; `onModeChange` is a plain setter,
-// not its own save action.
+// The mode also decides whether the CLINIC-level connect below is offered at
+// all. In "per_professional" every doctor connects their own account in
+// Section 05, so a second "Conectar com Google" here answered a question
+// nobody in that mode is asking, and reading it as the thing to do left
+// clinics with a tenant credential they never wanted. It is therefore hidden
+// while that mode is selected — EXCEPT when a connection already exists, which
+// is real state a clinic must still be able to see and undo.
 
 import { useState } from "react";
 import { Icon, Btn } from "../../_shared/ui";
@@ -67,6 +69,15 @@ export function GoogleSection({
   onModeChange,
   readOnly,
 }: GoogleSectionProps) {
+  // Whether each doctor brings their own Google account (see the header note).
+  const perProfessional = gcal.mode === "per_professional";
+
+  // Scrolls to ProfessionalsSection (Section 05, id="prof") on this same page —
+  // where the per-doctor connect actually lives.
+  const scrollToProfessionals = () => {
+    document.getElementById("prof")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   // Local loading state for the connect flow
   const [connecting, setConnecting] = useState(false);
   // Inline error shown when the real hub OAuth handoff fails
@@ -151,7 +162,34 @@ export function GoogleSection({
           </div>
         </div>
 
-      {!gcal.connected ? (
+      {perProfessional && !gcal.connected ? (
+        // --- per_professional, nothing connected: there is nothing to do HERE.
+        // Point at the place that owns the action instead of offering a
+        // clinic-wide connect that this mode never uses. ---
+        <div style={{
+          display: "flex", alignItems: "flex-start", gap: 10,
+          padding: "14px 16px", borderRadius: 12,
+          background: "var(--surface-2)", border: "1px solid var(--line)",
+          fontSize: 13, color: "var(--ink-soft)", lineHeight: 1.5,
+        }}>
+          <Icon name="user" size={16} style={{ marginTop: 1, flexShrink: 0 }} />
+          <span>
+            Neste modo, cada profissional conecta a própria conta do Google — o botão fica na
+            linha de cada um, em <b>Profissionais</b>. A clínica não precisa conectar nada aqui.{" "}
+            <button
+              type="button"
+              onClick={scrollToProfessionals}
+              style={{
+                background: "none", border: "none", padding: 0,
+                font: "inherit", fontWeight: 600, color: "var(--brand)",
+                cursor: "pointer", textDecoration: "underline",
+              }}
+            >
+              Ir para Profissionais
+            </button>
+          </span>
+        </div>
+      ) : !gcal.connected ? (
         // --- disconnected state ---
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
           {/* connect card */}
@@ -242,6 +280,14 @@ export function GoogleSection({
                 </span>
                 <Icon name="checkCircle" size={16} style={{ color: "var(--st-attend-ink)" }} />
               </div>
+              {/* Kept visible in per_professional too: the connection is real
+                  state. Said out loud, because in this mode it is only a
+                  fallback for doctors who have not linked their own account. */}
+              {perProfessional && (
+                <div style={{ fontSize: 12.5, color: "var(--ink-soft)", marginTop: 3 }}>
+                  Serve de reserva para quem ainda não conectou a própria conta.
+                </div>
+              )}
             </div>
             <Btn variant="outline" size="sm" onClick={disconnect} disabled={!onDisconnect}>
               Desconectar

@@ -11,6 +11,8 @@
 // steps), same as it did in brain-frontend.
 
 import Link from "next/link";
+
+import { BrandGlyph } from "@/app/(site)/_components/BrandGlyph";
 import type { ReactNode } from "react";
 import "./auth-shell.css";
 
@@ -19,7 +21,11 @@ const ECG_PATH =
   "M0,100 L180,100 L210,100 L226,60 L242,150 L260,72 L278,118 L296,100 L500,100 L530,100 L548,40 L566,170 L586,52 L606,140 L624,100 L820,100 L850,100 L868,60 L884,150 L902,72 L920,118 L938,100 L1140,100 L1170,100 L1188,40 L1206,170 L1226,52 L1246,140 L1264,100 L1460,100 L1490,100 L1508,60 L1524,150 L1542,72 L1560,118 L1578,100 L1800,100";
 
 type AuthShellProps = {
-  /** Small uppercase label under the wordmark. */
+  /**
+   * Small uppercase label under the lockup. Defaults to what the screen IS,
+   * not to who makes it: the lockup right above already reads "Brain │
+   * secretarIA", so a "por Brain" line under it said Brain twice.
+   */
   role?: string;
   /** Where the brand wordmark links to. Defaults to the marketing site. */
   brandHref?: string;
@@ -46,7 +52,7 @@ type AuthShellProps = {
 const DEFAULT_FOOTER = <span>secretarIA é um produto Brain.</span>;
 
 export function AuthShell({
-  role = "por Brain",
+  role = "Portal da clínica",
   brandHref = "/",
   title,
   subtitle,
@@ -79,13 +85,17 @@ export function AuthShell({
 
       <div className="login-shell">
         {/* Product mark. The chrome is inherited from the ported PreCheck auth
-            screen, but the brand is not: this domain is secretarIA, so the
-            wordmark reads secretarIA and the role line credits Brain — matching
-            the "Brain │ secretarIA" lockup the portal header shows once the
-            user is in. */}
+            screen, but the brand is not: this is the SAME "Brain │ secretarIA"
+            lockup the portal header shows once the user is in, so the identity
+            does not change between signing in and being in. */}
         <Link href={brandHref} className="login-brand" aria-label="secretarIA por Brain">
-          <span className="wordmark">
-            secretar<em>IA</em>
+          <span className="brain-lockup">
+            <BrandGlyph size={38} />
+            <span className="brain-lockup-word">Brain</span>
+            <span className="brain-lockup-rule" aria-hidden="true" />
+            <span className="wordmark">
+              secretar<em>IA</em>
+            </span>
           </span>
           <span className="role">{role}</span>
         </Link>
