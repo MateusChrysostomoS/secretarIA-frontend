@@ -7,6 +7,7 @@
 import type {
   AddressWire,
   AppointmentTypeWire,
+  ServiceWire,
   ProfessionalConfigUpdatePayload,
   ProfessionalWire,
   TenantConfigUpdatePayload,
@@ -22,6 +23,7 @@ import {
   type Messages,
   type PixDeposit,
   type PostConsult,
+  type CatalogService,
   type ProfessionalProfile,
   type Service,
   type TimeRange,
@@ -99,6 +101,7 @@ export function toWireBusinessHours(
 export function applyWireAppointmentTypes(wire: AppointmentTypeWire[]): Service[] {
   return wire.map((t, i) => ({
     id: i + 1,
+    serviceId: t.service_id ?? null,
     name: t.name,
     dur: t.duration_min,
     price: t.price ?? "",
@@ -107,18 +110,48 @@ export function applyWireAppointmentTypes(wire: AppointmentTypeWire[]): Service[
   }));
 }
 
-// Local Service[] -> wire appointment_types, for a config PUT body. Blank
+// Wire catalog rows -> local CatalogService[]. Sorted the way the clinic reads
+// its own list; the backend already orders by (sort_order, name), so this only
+// reshapes, never re-sorts — reordering here would make the picker jump around
+// relative to what the clinic configured.
+export function applyWireServices(wire: ServiceWire[]): CatalogService[] {
+  return wire.map((s) => ({
+    id: s.id,
+    name: s.name,
+    description: s.description ?? "",
+    longDescription: s.long_description ?? "",
+    requirements: (s.requirements ?? []).map((text, i) => ({ id: i + 1, text })),
+    active: s.is_active,
+    sortOrder: s.sort_order,
+    professionalIds: s.professional_ids ?? [],
+  }));
+}
+
+// Local Service[] -> wire appointment_types, for a config PUT body.
+//
+// `service_id` is the payload's most important field: it is the link to the
+// clinic's canonical row, and without it the backend falls back to matching by
+// name — which is the pre-catalog world this whole round exists to leave.
+//
+// The descriptive fields are sent as `null` DELIBERATELY for a linked entry:
+// the catalog owns `description`/`long_description`/`requirements`, and
+// re-sending a professional's stale copy is how they used to get blanked
+// (secretarIA FIX_08). An UNLINKED entry still carries its own requirements,
+// because for it there is no catalog row to read them from yet. Blank
 // requirement rows (empty after trim) are dropped rather than sent as "".
 export function toWireAppointmentTypes(services: Service[]): AppointmentTypeWire[] {
   return services.map((s, i) => ({
     name: s.name,
+    service_id: s.serviceId,
     description: null,
     duration_min: s.dur,
     is_active: s.active,
     sort_order: i,
     price: s.price || null,
     long_description: null,
-    requirements: s.requirements.map((r) => r.text.trim()).filter(Boolean),
+    requirements: s.serviceId
+      ? []
+      : s.requirements.map((r) => r.text.trim()).filter(Boolean),
   }));
 }
 
@@ -313,13 +346,27 @@ export function buildProfessionalConfigPayload(
   services: Service[],
   profile: ProfessionalProfile,
   hoursSource: ConfigInheritance,
-  servicesSource: ConfigInheritance,
+  linked?: Map<number, string>,
 ): ProfessionalConfigUpdatePayload {
   return {
     business_hours: hoursSource === "inherit" ? null : toWireBusinessHours(days),
-    appointment_types: servicesSource === "inherit" ? null : toWireAppointmentTypes(services),
+    // ALWAYS an array now, never `null`. `null` means "inherit the clinic's
+    // legacy list", and Section 06 no longer offers that: the professional
+    // explicitly picks which of the clinic's services they offer, so what they
+    // picked is what gets written. An empty array is a real answer ("offers
+    // nothing"), which is why the section says so out loud before a save.
+    appointment_types: toWireAppointmentTypes(
+      linked ? services.map((s) => applyLink(s, linked)) : services,
+    ),
     specialty: profile.specialty || null,
     about: profile.about || null,
     context_doctor_message: profile.contextDoctorMessage || null,
   };
+}
+
+/** Stamps a just-published catalog id onto an entry that had none. */
+function applyLink(service: Service, linked: Map<number, string>): Service {
+  if (service.serviceId) return service;
+  const id = linked.get(service.id);
+  return id ? { ...service, serviceId: id } : service;
 }

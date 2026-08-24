@@ -194,14 +194,57 @@ export type Requirement = {
   text: string;
 };
 
+// One service THIS professional offers. Since the catalog round, `name` and
+// the descriptive copy are no longer edited here — they belong to the clinic's
+// canonical `services` row and are edited once, for everybody (see
+// CatalogService below). What stays per professional is the part that
+// legitimately differs between doctors: price, duration, and whether they
+// offer it at all.
 export type Service = {
   id: number;
+  // The clinic's canonical service this IS. `null` only for an entry that
+  // predates the catalog and has not been published into it yet; saving
+  // publishes it, and from then on two doctors' "Limpeza" are provably the
+  // same object — which is what lets the backend find a replacement doctor
+  // when a consult is cancelled.
+  serviceId: string | null;
   name: string;
   dur: number;    // duration in minutes
   price: string;  // free-text, e.g. "R$ 450" or ""
   active: boolean; // when false, SecretarIA won't offer this appointment type
   // Pre-visit requirements SecretarIA surfaces when this type is being booked.
+  // Clinic-owned once linked: the preparation for an exam is a property of the
+  // SERVICE, not of who performs it.
   requirements: Requirement[];
+};
+
+// One row of the clinic's canonical catalog (GET /tenants/me/services).
+// The list every professional picks from — including services a COLLEAGUE
+// added, which is the whole point: a doctor says "I do that one too" instead
+// of typing the name again and creating a second, unrelated service.
+export type CatalogService = {
+  id: string;
+  name: string;
+  description: string;
+  longDescription: string;
+  requirements: Requirement[];
+  active: boolean;   // whether the CLINIC still offers it at all
+  sortOrder: number;
+  // Ids of the active professionals who currently offer it. Renaming or
+  // retiring the row changes what all of them offer, so this is what the
+  // confirmation dialog names before letting that through.
+  professionalIds: string[];
+};
+
+export const EMPTY_CATALOG_SERVICE: CatalogService = {
+  id: "",
+  name: "",
+  description: "",
+  longDescription: "",
+  requirements: [],
+  active: true,
+  sortOrder: 0,
+  professionalIds: [],
 };
 
 // ---------------------------------------------------------------------------

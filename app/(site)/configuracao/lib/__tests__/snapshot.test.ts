@@ -222,7 +222,6 @@ describe("payload honesty — no visible control is silently dropped", () => {
       slices.services,
       slices.profile,
       slices.hoursSource,
-      slices.servicesSource,
     );
     expect(body.business_hours).toEqual({ monday: [{ start: "08:00", end: "12:00" }] });
     expect(body.appointment_types?.map((t) => t.name)).toEqual(["Consulta prof-a"]);
@@ -239,6 +238,20 @@ describe("payload honesty — no visible control is silently dropped", () => {
 // reads that as "an own config that offers nothing". So changing the greeting
 // silently took a doctor off the clinic's hours and the bot went quiet.
 
+const CLINIC_TYPES = [
+  {
+    name: "Limpeza",
+    service_id: null,
+    description: null,
+    duration_min: 30,
+    is_active: true,
+    sort_order: 0,
+    price: null,
+    long_description: null,
+    requirements: [],
+  },
+];
+
 describe("inheritance state", () => {
   it("reads inheritance from the flags, not from the values being empty", () => {
     const inheriting = professionalSlicesFromWire(inheritingProfessionalWire(PROF_A));
@@ -251,9 +264,29 @@ describe("inheritance state", () => {
     expect(emptied.services).toEqual([]);
     // ...and are still not the same state.
     expect(inheriting.hoursSource).toBe("inherit");
-    expect(inheriting.servicesSource).toBe("inherit");
     expect(emptied.hoursSource).toBe("own");
-    expect(emptied.servicesSource).toBe("own");
+  });
+
+  it("seeds an inheriting professional's services from the clinic list", () => {
+    // Section 06 has no inherit/own switch any more, so an inheriting
+    // professional MUST open with what they actually offer today ticked.
+    // Reading their (empty) own list would show nothing, and the next save
+    // would persist "offers nothing" - silently taking a working doctor off
+    // the bot.
+    const clinic = CLINIC_TYPES;
+    const slices = professionalSlicesFromWire(inheritingProfessionalWire(PROF_A), clinic);
+
+    expect(slices.services.map((x) => x.name)).toEqual(clinic.map((t) => t.name));
+  });
+
+  it("does NOT seed a professional with an own, deliberately empty list", () => {
+    // An own empty list is a real answer ("this doctor offers nothing right
+    // now"). Seeding it from the clinic would silently re-enable services
+    // someone removed on purpose.
+    const clinic = CLINIC_TYPES;
+    const slices = professionalSlicesFromWire(emptiedProfessionalWire(PROF_A), clinic);
+
+    expect(slices.services).toEqual([]);
   });
 
   it("sends null — not {} — for a professional who inherits", () => {
@@ -263,12 +296,27 @@ describe("inheritance state", () => {
       slices.services,
       slices.profile,
       slices.hoursSource,
-      slices.servicesSource,
     );
 
-    // null is "go on inheriting". `{}` would mean "own config, offers nothing".
+    // null is "go on inheriting". `{}` would mean "own config, closed always".
     expect(body.business_hours).toBeNull();
-    expect(body.appointment_types).toBeNull();
+  });
+
+  it("always sends services as an ARRAY, never null", () => {
+    // Services stopped being inheritable: the professional picks from the
+    // clinic catalog, so what they picked is what gets written. A null would
+    // reinstate a wholesale inheritance the screen no longer offers.
+    const clinic = CLINIC_TYPES;
+    const slices = professionalSlicesFromWire(inheritingProfessionalWire(PROF_A), clinic);
+    const body = buildProfessionalConfigPayload(
+      slices.days,
+      slices.services,
+      slices.profile,
+      slices.hoursSource,
+    );
+
+    expect(Array.isArray(body.appointment_types)).toBe(true);
+    expect(body.appointment_types?.map((t) => t.name)).toEqual(clinic.map((t) => t.name));
   });
 
   it("a save that only changes the greeting leaves inheritance intact", () => {
@@ -280,11 +328,24 @@ describe("inheritance state", () => {
       slices.services,
       { ...slices.profile },
       slices.hoursSource,
-      slices.servicesSource,
     );
 
     expect(body.business_hours).toBeNull();
-    expect(body.appointment_types).toBeNull();
+  });
+
+  it("a greeting-only save does not empty the services of an inheriting doctor", () => {
+    // The services counterpart of the regression above, under the new model:
+    // the clinic-list seed is what keeps this honest.
+    const clinic = CLINIC_TYPES;
+    const slices = professionalSlicesFromWire(inheritingProfessionalWire(PROF_A), clinic);
+    const body = buildProfessionalConfigPayload(
+      slices.days,
+      slices.services,
+      { ...slices.profile },
+      slices.hoursSource,
+    );
+
+    expect(body.appointment_types).not.toEqual([]);
   });
 
   it("sends an explicitly emptied own config as {} / [], and means it", () => {
@@ -294,7 +355,6 @@ describe("inheritance state", () => {
       slices.services,
       slices.profile,
       slices.hoursSource,
-      slices.servicesSource,
     );
 
     expect(body.business_hours).toEqual({});
@@ -309,7 +369,6 @@ describe("inheritance state", () => {
       slices.services,
       slices.profile,
       slices.hoursSource,
-      slices.servicesSource,
     );
 
     expect(body.business_hours).toEqual({});
@@ -320,7 +379,6 @@ describe("inheritance state", () => {
 
     // Not "own" — we were never told, and guessing is what breaks a clinic.
     expect(slices.hoursSource).toBe("unknown");
-    expect(slices.servicesSource).toBe("unknown");
   });
 
   it("an unknown state sends values, never a null it cannot justify", () => {
@@ -330,7 +388,6 @@ describe("inheritance state", () => {
       slices.services,
       slices.profile,
       slices.hoursSource,
-      slices.servicesSource,
     );
 
     // Exactly the pre-flag behaviour: send what is on screen. Sending null
@@ -354,9 +411,23 @@ describe("inheritance state", () => {
     expect(sections).toContain("disp");
   });
 
-  it("switching the services scope is a change too", () => {
-    const baselineProfessional = professionalSlicesFromWire(inheritingProfessionalWire(PROF_A));
-    const currentProfessional = { ...baselineProfessional, servicesSource: "own" as const };
+  it("ticking a catalog service is a change Descartar can see", () => {
+    const baselineProfessional = professionalSlicesFromWire(professionalWire(PROF_A));
+    const currentProfessional = {
+      ...baselineProfessional,
+      services: [
+        ...baselineProfessional.services,
+        {
+          id: 99,
+          serviceId: "11111111-1111-4111-8111-111111111111",
+          name: "Limpeza",
+          dur: 30,
+          price: "",
+          active: true,
+          requirements: [],
+        },
+      ],
+    };
     const tenant = tenantSlicesFromWire(tenantWire());
 
     const sections = dirtySections(
@@ -367,9 +438,29 @@ describe("inheritance state", () => {
     expect(sections).toContain("srv");
   });
 
+  it("same name, different catalog id, is NOT the same service", () => {
+    // The whole point of the catalog: identity is the id, not the string.
+    const baselineProfessional = professionalSlicesFromWire(professionalWire(PROF_A));
+    const relinked = {
+      ...baselineProfessional,
+      services: baselineProfessional.services.map((x) => ({
+        ...x,
+        serviceId: "22222222-2222-4222-8222-222222222222",
+      })),
+    };
+    const tenant = tenantSlicesFromWire(tenantWire());
+
+    expect(
+      dirtySections(
+        { tenant, professional: relinked },
+        { tenant, professional: baselineProfessional },
+      ),
+    ).toContain("srv");
+  });
+
   it("an unhydrated professional form claims nothing about inheritance", () => {
     const empty = emptyProfessionalSlices();
     expect(empty.hoursSource).toBe("unknown");
-    expect(empty.servicesSource).toBe("unknown");
+    expect(empty.services).toEqual([]);
   });
 });

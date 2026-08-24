@@ -112,7 +112,7 @@ describe("copy", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Service name — ServiceCard. Same cap, but a WARNING: /configuracao saves the
+// Service name — ServiceEditorModal. Same cap, but a WARNING: /configuracao saves the
 // whole clinic behind one button, so a long legacy name must not block it.
 // ---------------------------------------------------------------------------
 

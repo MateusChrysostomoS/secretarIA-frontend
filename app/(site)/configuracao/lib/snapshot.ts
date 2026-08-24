@@ -18,7 +18,11 @@
 // A snapshot is only ever written from a real 2xx (GET on hydration, or the
 // body a PUT echoed back). Demo seeds and local form state never become one.
 
-import type { ProfessionalWire, TenantConfigWire } from "@/lib/secretaria-hub";
+import type {
+  AppointmentTypeWire,
+  ProfessionalWire,
+  TenantConfigWire,
+} from "@/lib/secretaria-hub";
 import {
   applyWireAddress,
   applyWireAppointmentTypes,
@@ -116,7 +120,7 @@ export type ProfessionalSlices = {
    * apply" and "this doctor is unbookable".
    */
   hoursSource: ConfigInheritance;
-  servicesSource: ConfigInheritance;
+
 };
 
 // ---------------------------------------------------------------------------
@@ -144,18 +148,42 @@ export function tenantSlicesFromWire(cfg: TenantConfigWire): TenantSlices {
   };
 }
 
-/** The single place a ProfessionalWire becomes form state. */
-export function professionalSlicesFromWire(p: ProfessionalWire): ProfessionalSlices {
+/** The single place a ProfessionalWire becomes form state.
+ *
+ * `clinicTypes` is the clinic's legacy `appointment_types` column, and it is
+ * load-bearing for one case: a professional who still INHERITS services sends
+ * `appointment_types: []` on the wire (the field carries their own value,
+ * flattened to empty when they have none). Section 06 no longer offers
+ * inheritance — it asks which services this professional offers — so seeding
+ * from `[]` would open the screen showing nothing ticked and turn "offers
+ * everything the clinic does" into "offers nothing" on the next save.
+ *
+ * Seeding from the clinic's list instead means the screen opens showing what
+ * this professional ACTUALLY offers today, and saving preserves it. The one
+ * real change is that the list stops tracking the clinic's automatically,
+ * which is the point of the redesign: from here on a service is a shared
+ * object each professional opts into, not a list inherited wholesale.
+ */
+export function professionalSlicesFromWire(
+  p: ProfessionalWire,
+  clinicTypes: AppointmentTypeWire[] = [],
+): ProfessionalSlices {
+  const inheritsServices = inheritanceFromWire(p.appointment_types_inherited) === "inherit";
+  const effectiveTypes =
+    p.appointment_types.length > 0
+      ? p.appointment_types
+      : inheritsServices
+        ? clinicTypes
+        : [];
   return {
-    services:
-      p.appointment_types.length > 0 ? applyWireAppointmentTypes(p.appointment_types) : [],
+    services: applyWireAppointmentTypes(effectiveTypes),
     days: applyWireBusinessHours(p.business_hours, closedWeek()),
     profile: applyWireProfessionalProfile(p),
-    // The flags are read, never inferred from the (identical-looking) values.
-    // A backend that does not send them yields "unknown", which the save path
-    // treats as "do not claim inheritance you cannot verify".
+    // The flag is read, never inferred from the (identical-looking) values.
+    // A backend that does not send it yields "unknown", which the save path
+    // treats as "do not claim inheritance you cannot verify". Hours still have
+    // the inherit/own choice; services no longer do.
     hoursSource: inheritanceFromWire(p.business_hours_inherited),
-    servicesSource: inheritanceFromWire(p.appointment_types_inherited),
   };
 }
 
@@ -168,7 +196,6 @@ export function emptyProfessionalSlices(): ProfessionalSlices {
     // Nothing has been read back, so the honest answer is "we don't know" —
     // and the form is read-only in this state anyway (see lib/hydration.ts).
     hoursSource: "unknown",
-    servicesSource: "unknown",
   };
 }
 
@@ -205,6 +232,10 @@ export type SectionId = "ctx" | "msg" | "pos" | "pix" | "prof" | "srv" | "disp" 
 
 function comparableServices(services: Service[]): unknown {
   return services.map((s) => ({
+    // The catalog link is compared: two entries with the same name but
+    // different `serviceId` are different services, and that difference is the
+    // whole point of the catalog.
+    serviceId: s.serviceId,
     name: s.name,
     dur: s.dur,
     price: s.price,
@@ -256,19 +287,21 @@ export function dirtySections(
     if (!same(current.professional.profile, baseline.professional.profile)) {
       sections.push("prof");
     }
-    // Switching between "herdar" and "configuração própria" IS a change, even
-    // when the values on screen look identical — it is precisely the case where
-    // they do (an inherited week and an empty own week both render closed).
-    // Leaving it out would let Descartar claim there was nothing to discard.
+    // Services are a plain list comparison now: Section 06 no longer has an
+    // inherit/own switch whose position could differ while the values match.
+    // Hours still do, which is why the block below compares both.
     if (
       !same(
         comparableServices(current.professional.services),
         comparableServices(baseline.professional.services),
-      ) ||
-      current.professional.servicesSource !== baseline.professional.servicesSource
+      )
     ) {
       sections.push("srv");
     }
+    // Switching between "herdar" and "configuração própria" IS a change, even
+    // when the values on screen look identical — it is precisely the case where
+    // they do (an inherited week and an empty own week both render closed).
+    // Leaving it out would let Descartar claim there was nothing to discard.
     if (
       !same(current.professional.days, baseline.professional.days) ||
       current.professional.hoursSource !== baseline.professional.hoursSource

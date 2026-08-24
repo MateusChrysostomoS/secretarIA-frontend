@@ -68,6 +68,7 @@ export function professionalWire(
     appointment_types: [
       {
         name: "Consulta " + id,
+        service_id: null,
         description: null,
         duration_min: 30,
         is_active: true,

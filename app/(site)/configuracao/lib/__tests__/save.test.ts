@@ -381,3 +381,144 @@ describe("legacy fallback", () => {
     expect(s.calls.configuration).toEqual([]);
   });
 });
+
+
+// ---------------------------------------------------------------------------
+// Publishing services into the clinic catalog, and the calendar run.
+//
+// The order matters and is asserted: the catalog write has to happen BEFORE
+// the config write, because the payload carries the ids it produces. Get that
+// backwards and every save writes unlinked entries, which is exactly the
+// pre-catalog state the round exists to leave.
+// ---------------------------------------------------------------------------
+
+describe("publishing services before the config write", () => {
+  it("publishes first, then sends the ids it got back", async () => {
+    const order: string[] = [];
+    const s = spies({
+      publishServices: async () => {
+        order.push("publish");
+        return { linked: new Map([[7, "svc-7"]]), failed: 0 };
+      },
+      buildProfessionalPatch: (linked?: Map<number, string>) => {
+        order.push("build:" + (linked?.get(7) ?? "none"));
+        return PROFESSIONAL_PATCH;
+      },
+      putConfiguration: async (body: unknown) => {
+        order.push("put");
+        return { tenant: tenantWire(), professional: professionalWire(PROF_A) };
+      },
+    });
+
+    await performSave({ state: LOADED_WITH_A, ...s.deps });
+
+    expect(order).toEqual(["publish", "build:svc-7", "put"]);
+  });
+
+  it("does not publish when no professional is selected", async () => {
+    let published = 0;
+    const s = spies({
+      publishServices: async () => {
+        published += 1;
+        return { linked: new Map(), failed: 0 };
+      },
+    });
+
+    await performSave({ state: LOADED_NO_PROFESSIONAL, ...s.deps });
+
+    expect(published).toBe(0);
+  });
+
+  it("saves anyway when a publish fails, and reports how many", async () => {
+    // One Save covers eight sections. A catalog hiccup must not hold the other
+    // seven hostage - the leftovers stay off-catalog and the next save retries.
+    const s = spies({
+      publishServices: async () => ({ linked: new Map(), failed: 2 }),
+    });
+
+    const result = await performSave({ state: LOADED_WITH_A, ...s.deps });
+
+    expect(result.status).toBe("saved");
+    expect(s.calls.configuration).toHaveLength(1);
+    if (result.status === "saved") expect(result.servicesNotPublished).toBe(2);
+  });
+
+  it("reports zero leftovers on the clean path", async () => {
+    const s = spies();
+    const result = await performSave({ state: LOADED_WITH_A, ...s.deps });
+    if (result.status === "saved") expect(result.servicesNotPublished).toBe(0);
+  });
+});
+
+describe("the shared_account calendar run", () => {
+  it("creates the missing calendars after a successful save", async () => {
+    const order: string[] = [];
+    const s = spies({
+      putConfiguration: async () => {
+        order.push("put");
+        return { tenant: tenantWire(), professional: professionalWire(PROF_A) };
+      },
+      shouldEnsureCalendars: true,
+      ensureCalendars: async () => {
+        order.push("calendars");
+        return { created: 3, already: 1, failed: 0 };
+      },
+    });
+
+    const result = await performSave({ state: LOADED_WITH_A, ...s.deps });
+
+    // AFTER the config is persisted: creating agendas for a mode the server
+    // rejected would leave the clinic's Google account holding calendars for a
+    // setting that never took effect.
+    expect(order).toEqual(["put", "calendars"]);
+    if (result.status === "saved") expect(result.calendars?.created).toBe(3);
+  });
+
+  it("does not run in per_professional mode", async () => {
+    let ran = 0;
+    const s = spies({
+      shouldEnsureCalendars: false,
+      ensureCalendars: async () => {
+        ran += 1;
+        return { created: 0, already: 0, failed: 0 };
+      },
+    });
+
+    const result = await performSave({ state: LOADED_WITH_A, ...s.deps });
+
+    expect(ran).toBe(0);
+    if (result.status === "saved") expect(result.calendars).toBeNull();
+  });
+
+  it("a Google failure never turns a successful save into an error", async () => {
+    // The configuration IS saved by the time this runs. Reporting a failure
+    // would send the user back to re-save something already live.
+    const s = spies({
+      shouldEnsureCalendars: true,
+      ensureCalendars: async () => {
+        throw new HubApiError(503, "Google indisponível");
+      },
+    });
+
+    const result = await performSave({ state: LOADED_WITH_A, ...s.deps });
+
+    expect(result.status).toBe("saved");
+    if (result.status === "saved") expect(result.calendars).toBeNull();
+  });
+
+  it("never runs when the save itself was refused", async () => {
+    let ran = 0;
+    const s = spies({
+      shouldEnsureCalendars: true,
+      ensureCalendars: async () => {
+        ran += 1;
+        return { created: 0, already: 0, failed: 0 };
+      },
+    });
+
+    const result = await performSave({ state: INITIAL_HYDRATION_STATE, ...s.deps });
+
+    expect(result.status).toBe("blocked");
+    expect(ran).toBe(0);
+  });
+});

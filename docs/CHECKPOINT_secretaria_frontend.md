@@ -25,6 +25,12 @@ lados, está em `secretarIA/docs/CHECKPOINT_whatsapp_text_limits.md`.
 
 ---
 
+> **2026-08-24** — A Seção 06 de `/configuracao` deixou de ter herança e virou o
+> catálogo de serviços da clínica (checkbox por serviço, preço/duração por
+> profissional), e as telas da secretarIA saíram do `brain-frontend`. Ver
+> `docs/CHECKPOINT_catalogo_servicos_ui.md` — inclui a variável de build nova
+> `NEXT_PUBLIC_SECRETARIA_APP_BASE_URL`, que o brain-frontend precisa.
+
 ## O que é este repo
 
 O frontend dedicado da **secretarIA**, um dos 3 domínios da Brain desde 2026-08-14:

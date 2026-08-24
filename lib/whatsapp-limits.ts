@@ -9,7 +9,7 @@
 // wrapping, no scrolling, no ellipsis of its own:
 //
 //   professional name -> `prof|` rows  (InviteTeamMemberModal)
-//   service name      -> `svc|`  rows  (ServiceCard)
+//   service name      -> `svc|`  rows  (ServiceEditorModal)
 //   insurance plan    -> `ins|`  rows  (ContextSection, "Convênios aceitos")
 //
 // A clinic that invites "Dra. Maria Fernanda Albuquerque" gets a row that reads
@@ -88,7 +88,9 @@ export function isProfessionalNameAtLimit(name: string): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Service name — ServiceCard, Section 06 "Serviços oferecidos"
+// Service name — ServiceEditorModal, Section 06 "Serviços oferecidos".
+// Edited on the CLINIC's catalog row now, not per professional, so one
+// correction fixes the row every doctor shows.
 // ---------------------------------------------------------------------------
 
 export const SERVICE_NAME_TIP =

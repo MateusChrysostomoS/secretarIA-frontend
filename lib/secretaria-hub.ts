@@ -111,11 +111,19 @@ function invalidateHubToken(session: Session): void {
 export class HubApiError extends Error {
   status: number;
   code?: string;
-  constructor(status: number, message: string, code?: string) {
+  // The raw structured `detail` object, when the endpoint sent one. Some
+  // errors carry more than a code and a sentence: the catalog's 409s attach
+  // the clashing `service` (or the `similar` names) so the UI can offer "use
+  // the existing one" instead of only saying no. Kept as the parsed object
+  // rather than re-fetching, because the server already decided which row it
+  // meant. `undefined` for the plain-string errors, which is most of them.
+  detail?: Record<string, unknown>;
+  constructor(status: number, message: string, code?: string, detail?: Record<string, unknown>) {
     super(message);
     this.name = "HubApiError";
     this.status = status;
     this.code = code;
+    this.detail = detail;
   }
 }
 
@@ -124,6 +132,17 @@ export class HubApiError extends Error {
 // on HubApiError.code without hardcoding the string twice.
 export const HUB_ERROR_CLINIC_CALENDAR_NOT_CONNECTED = "clinic_calendar_not_connected";
 export const HUB_ERROR_GOOGLE_RECONNECT_REQUIRED = "google_reconnect_required";
+
+// Service catalog (POST/PATCH /tenants/me/services, and every config save).
+// `service_already_exists` carries the clashing row under `detail.service`;
+// `similar_service_exists` carries the near-miss names under `detail.similar`
+// and is the ONLY one `?force=true` can override — an exact duplicate is
+// forbidden by a database constraint, not by a policy.
+export const HUB_ERROR_SERVICE_ALREADY_EXISTS = "service_already_exists";
+export const HUB_ERROR_SIMILAR_SERVICE_EXISTS = "similar_service_exists";
+// A save referenced a catalog id this clinic no longer has (someone retired
+// it in another tab). `detail.service_ids` lists them.
+export const HUB_ERROR_UNKNOWN_SERVICE_IDS = "unknown_service_ids";
 
 async function rawHubFetch(
   path: string,
@@ -146,6 +165,7 @@ async function parseHubResponse<T>(res: Response): Promise<T> {
     const rawDetail: unknown = body?.detail;
     let message: string;
     let code: string | undefined;
+    let detail: Record<string, unknown> | undefined;
     if (typeof rawDetail === "string") {
       // The common shape — every hub error except the two below.
       message = rawDetail;
@@ -158,10 +178,11 @@ async function parseHubResponse<T>(res: Response): Promise<T> {
       message = (rawDetail as { message: string }).message;
       const rawCode = (rawDetail as { code?: unknown }).code;
       code = typeof rawCode === "string" ? rawCode : undefined;
+      detail = rawDetail as Record<string, unknown>;
     } else {
       message = res.statusText;
     }
-    throw new HubApiError(res.status, message, code);
+    throw new HubApiError(res.status, message, code, detail);
   }
   // 204 (e.g. disconnect on some deployments) has no body.
   if (res.status === 204) return undefined as T;
@@ -208,6 +229,13 @@ export type GoogleCalendarMode = "per_professional" | "shared_account";
 
 export type AppointmentTypeWire = {
   name: string;
+  // The canonical clinic service this entry IS (secretarIA models/service.py).
+  // Optional only because entries written before the catalog existed have none
+  // and still resolve by normalized name — but everything this app writes from
+  // now on carries it, and that link is what lets the backend answer "which
+  // other doctor offers the same service?" when a patient rebooks a cancelled
+  // consult (services/flow_router.py::rebooking_candidates).
+  service_id: string | null;
   description: string | null;
   duration_min: number;
   is_active: boolean;
@@ -787,6 +815,133 @@ export function createProfessionalCalendar(
   return hubFetch<CreateProfessionalCalendarResult>(
     session,
     `/tenants/me/professionals/${professionalId}/calendar`,
+    { method: "POST" },
+  );
+}
+
+// ---------------------------------------------------------------------------
+// MANAGE-API CALL SITE N/A — secretarIA hub: the clinic's SERVICE CATALOG.
+//
+// `services` is a real table on the secretarIA side, one row per service per
+// clinic, with a stable id (secretarIA models/service.py). A professional does
+// not own a copy of "Limpeza"; they reference the clinic's one row and add only
+// what is genuinely theirs — price, duration, and whether they offer it.
+//
+// That indirection is what the product needs it for: when a doctor cancels and
+// the patient wants to rebook, the backend asks "who else offers THIS service?"
+// by id (services/service_catalog.py::professionals_offering), not by comparing
+// strings — so "Limpeza" and "limpeza dental" cannot hide half the roster.
+// ---------------------------------------------------------------------------
+
+// GET /tenants/me/services row. Includes RETIRED rows (`is_active: false`) so
+// the hub can show and un-retire them; the patient-facing surfaces filter them
+// out themselves.
+export type ServiceWire = {
+  id: string;
+  name: string;
+  description: string | null;
+  long_description: string | null;
+  requirements: string[];
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  // Ids of the ACTIVE professionals who currently offer this service. Drives
+  // the "também oferecido por" line, and the warning shown before a rename or
+  // a retirement — both of which change what those doctors offer, because they
+  // all point at this one row.
+  professional_ids: string[];
+};
+
+export type ServiceCreatePayload = {
+  name: string;
+  description?: string | null;
+  long_description?: string | null;
+  requirements?: string[];
+  is_active?: boolean;
+  sort_order?: number;
+};
+
+export type ServiceUpdatePayload = Partial<ServiceCreatePayload>;
+
+// The clinic's whole catalog.
+export function getServices(session: Session): Promise<ServiceWire[]> {
+  return hubFetch<ServiceWire[]>(session, "/tenants/me/services");
+}
+
+// Create one canonical service.
+//
+// Throws HubApiError with `.code`:
+//   409 HUB_ERROR_SERVICE_ALREADY_EXISTS — the same service under another
+//     spelling. `detail.service` is the existing row: use it, do not retry.
+//   409 HUB_ERROR_SIMILAR_SERVICE_EXISTS — a near-miss ("Limpeza" when
+//     "Limpeza Dental" exists). `detail.similar` lists the names. This is the
+//     ONLY one `force` overrides, and overriding it is a deliberate "no, these
+//     really are two different services".
+export function createService(
+  session: Session,
+  payload: ServiceCreatePayload,
+  opts: { force?: boolean } = {},
+): Promise<ServiceWire> {
+  const qs = opts.force ? "?force=true" : "";
+  return hubFetch<ServiceWire>(session, "/tenants/me/services" + qs, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+// Rename, edit the copy, or retire one service.
+//
+// A rename here renames it for EVERY professional at once — nobody stores the
+// name. Warn with `professional_ids` before calling this.
+export function updateService(
+  session: Session,
+  serviceId: string,
+  payload: ServiceUpdatePayload,
+): Promise<ServiceWire> {
+  return hubFetch<ServiceWire>(session, `/tenants/me/services/${serviceId}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+// POST /tenants/me/professionals/calendars — the BULK counterpart of
+// createProfessionalCalendar above: one dedicated Google Calendar for every
+// active professional that has none yet, inside the clinic's connected
+// account.
+//
+// This is what makes "Conta única da clínica" mean something. Choosing that
+// mode is one decision about the whole clinic, so the hub calls this right
+// after the save that sets it, instead of leaving one button per doctor to
+// find. Idempotent: a doctor who already has a calendar is counted under
+// `already` and never sent to Google twice, so retrying is always safe.
+export type ProfessionalCalendarBulkItem = {
+  professional_id: string;
+  name: string;
+  google_calendar_id: string | null;
+  created: boolean;
+  // Per-row failure code (e.g. "calendar_unavailable") when OTHER rows
+  // succeeded. Null on success.
+  error: string | null;
+};
+
+export type ProfessionalCalendarBulkResult = {
+  created: number;
+  already: number;
+  failed: number;
+  items: ProfessionalCalendarBulkItem[];
+};
+
+// Throws HubApiError with the same two whole-clinic `.code`s as the singular
+// call (`clinic_calendar_not_connected` 422, `google_reconnect_required` 409).
+// A failure that affects only SOME professionals is not an exception — it
+// comes back as `failed` plus per-row `error`s, because the calendars that did
+// get created are already real.
+export function createProfessionalCalendars(
+  session: Session,
+): Promise<ProfessionalCalendarBulkResult> {
+  return hubFetch<ProfessionalCalendarBulkResult>(
+    session,
+    "/tenants/me/professionals/calendars",
     { method: "POST" },
   );
 }

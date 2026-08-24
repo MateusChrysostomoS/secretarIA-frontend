@@ -49,6 +49,7 @@ import { PostConsultSection } from "./components/PostConsultSection";
 import { PixSection } from "./components/PixSection";
 import { ProfessionalsSection } from "./components/ProfessionalsSection";
 import { ServicesSection } from "./components/ServicesSection";
+import { ServiceEditorModal, type ServiceDraft } from "./components/ServiceEditorModal";
 import { AvailabilitySection } from "./components/AvailabilitySection";
 import { GoogleSection } from "./components/GoogleSection";
 
@@ -61,6 +62,7 @@ import {
   EMPTY_PREFS,
   EMPTY_PROFESSIONAL_PROFILE,
   closedWeek,
+  type CatalogService,
   type ClinicCtx,
   type ConfigInheritance,
   type DayConfig,
@@ -73,12 +75,14 @@ import {
   type Service,
 } from "./lib/types";
 import {
-  applyWireAppointmentTypes,
   applyWireBusinessHours,
+  applyWireServices,
   buildConfigUpdatePayload,
   buildProfessionalConfigPayload,
 } from "./lib/hub-mapping";
+import { catalogRows, alsoAffected, pendingLinks, unpublished } from "./lib/catalog";
 import {
+  DEMO_CATALOG,
   DEMO_CTX,
   DEMO_PROFESSIONAL_ID,
   DEMO_PROFILE,
@@ -114,16 +118,24 @@ import {
   SAVE_BLOCKED_MESSAGE,
   performSave,
   retryProfessionalOnly,
+  type CalendarEnsureResult,
+  type PublishResult,
 } from "./lib/save";
 import {
+  createProfessionalCalendars,
+  createService,
   disconnectCalendar,
   getProfessionals,
+  getServices,
   getTenantConfig,
   isLegacyBackend,
   startCalendarOauth,
   updateHubConfiguration,
   updateProfessionalConfig,
+  updateService,
   updateTenantConfig,
+  HubApiError,
+  HUB_ERROR_SERVICE_ALREADY_EXISTS,
   type HubConfigurationUpdatePayload,
   type ProfessionalConfigUpdatePayload,
   type ProfessionalWire,
@@ -151,6 +163,53 @@ function pickProfessional(
   if (current && roster.some((p) => p.id === current)) return current;
   if (!canManageClinic(session) && session.professionalId) return session.professionalId;
   return roster[0]?.id ?? null;
+}
+
+/**
+ * What the success toast says. A save can fully succeed and STILL have left
+ * work undone — a service that could not be published, a Google calendar that
+ * could not be created — and both are things the clinic has to know about,
+ * because the configuration they just saved is not doing what they think it is.
+ * "Salvo" alone would be technically true and practically a lie.
+ */
+function saveMessage(
+  servicesNotPublished: number,
+  calendars: CalendarEnsureResult | null,
+): string {
+  const base = "Configuração salva — a secretarIA já está atualizada.";
+  const notes: string[] = [];
+  if (servicesNotPublished > 0) {
+    notes.push(
+      servicesNotPublished === 1
+        ? "1 serviço não entrou no catálogo da clínica; tente salvar de novo."
+        : `${servicesNotPublished} serviços não entraram no catálogo da clínica; tente salvar de novo.`,
+    );
+  }
+  if (calendars && calendars.created > 0) {
+    notes.push(
+      calendars.created === 1
+        ? "1 agenda criada na conta do Google da clínica."
+        : `${calendars.created} agendas criadas na conta do Google da clínica.`,
+    );
+  }
+  if (calendars && calendars.failed > 0) {
+    notes.push(
+      calendars.failed === 1
+        ? "1 agenda não pôde ser criada; tente salvar de novo."
+        : `${calendars.failed} agendas não puderam ser criadas; tente salvar de novo.`,
+    );
+  }
+  return notes.length > 0 ? base + " " + notes.join(" ") : base;
+}
+
+/** A save with leftovers is not a clean success, and must not look like one. */
+function successTone(result: {
+  servicesNotPublished: number;
+  calendars: CalendarEnsureResult | null;
+}): "success" | "error" {
+  return result.servicesNotPublished > 0 || (result.calendars?.failed ?? 0) > 0
+    ? "error"
+    : "success";
 }
 
 // ---------------------------------------------------------------------------
@@ -294,7 +353,18 @@ export default function ConfiguracaoPage() {
   // an inheriting professional and one who closed every day both render a
   // closed week. Starts "unknown" — nothing has been read back yet.
   const [hoursSource, setHoursSource] = useState<ConfigInheritance>("unknown");
-  const [servicesSource, setServicesSource] = useState<ConfigInheritance>("unknown");
+  // The clinic's canonical service catalog — the list Section 06 ticks from.
+  // `null` = not read back yet, which is NOT the same as an empty catalog (a
+  // real state for a clinic that has never opened this screen), so the section
+  // can tell "loading" from "nothing here yet".
+  const [catalog, setCatalog] = useState<CatalogService[] | null>(null);
+  const [catalogError, setCatalogError] = useState(false);
+  // The catalog row open in ServiceEditorModal. `{ service: null }` = creating.
+  const [editingService, setEditingService] = useState<{ service: CatalogService | null } | null>(
+    null,
+  );
+  const [savingService, setSavingService] = useState(false);
+  const [serviceError, setServiceError] = useState<string | null>(null);
   const [profile, setProfile] = useState<ProfessionalProfile>(EMPTY_PROFESSIONAL_PROFILE);
   const setProfileK = <K extends keyof ProfessionalProfile>(key: K, value: ProfessionalProfile[K]) =>
     setProfile((prev) => ({ ...prev, [key]: value }));
@@ -336,7 +406,6 @@ export default function ConfiguracaoPage() {
     setDays(s.days);
     setProfile(s.profile);
     setHoursSource(s.hoursSource);
-    setServicesSource(s.servicesSource);
   }, []);
 
   // --- session resolution: the only place `mode` is decided ---
@@ -362,8 +431,8 @@ export default function ConfiguracaoPage() {
       // The showcase shows a fully configured professional, so "own" is what a
       // visitor should see — not an inheritance story the demo cannot explain.
       hoursSource: "own",
-      servicesSource: "own",
     });
+    setCatalog(DEMO_CATALOG.forVisitor);
     setRoster(DEMO_ROSTER.forVisitor);
     dispatch({ type: "professional_selected", id: DEMO_PROFESSIONAL_ID });
   }, [hydration.mode, applyTenantSlices, applyProfessionalSlices]);
@@ -379,6 +448,32 @@ export default function ConfiguracaoPage() {
     },
     [applyProfessionalSlices],
   );
+
+  // --- catalog: the clinic's canonical service list -------------------------
+  // Loaded on its own, and reloaded on its own, because it is CLINIC-scoped,
+  // not professional-scoped: switching professional must not refetch it, and a
+  // catalog failure must degrade Section 06 alone rather than taking the whole
+  // screen read-only. Its own error state is what lets that section offer a
+  // retry without a page reload.
+  const loadCatalog = useCallback(() => {
+    if (hydration.mode !== "authenticated" || !session || !hubTokenReady) return;
+    setCatalogError(false);
+    getServices(session)
+      .then((rows) => {
+        setCatalog(applyWireServices(rows));
+      })
+      .catch((e) => {
+        console.error("secretaria configuracao: failed to load the service catalog", e);
+        // NOT `[]`: an empty catalog invites "create the first service", and a
+        // clinic whose catalog merely failed to load must never be told that.
+        setCatalog(null);
+        setCatalogError(true);
+      });
+  }, [hydration.mode, session, hubTokenReady]);
+
+  useEffect(() => {
+    loadCatalog();
+  }, [loadCatalog]);
 
   // --- authenticated hydration ---
   // One full cycle: tenant config + roster (brain-api rows and hub configs
@@ -523,7 +618,12 @@ export default function ConfiguracaoPage() {
       return;
     }
 
-    applyProfessionalSlices(professionalSlicesFromWire(wire));
+    // The clinic's legacy list is passed so a professional who still INHERITS
+    // services opens with what they actually offer ticked, instead of an empty
+    // card that the next save would persist as "offers nothing".
+    applyProfessionalSlices(
+      professionalSlicesFromWire(wire, snapshot.tenant?.appointment_types ?? []),
+    );
     dispatch({ type: "professional_loaded", id, rosterGeneration });
   }, [
     hydration.mode,
@@ -531,6 +631,7 @@ export default function ConfiguracaoPage() {
     hydration.roster.phase,
     hydration.selectedProfessionalId,
     snapshot.professionalsById,
+    snapshot.tenant,
     applyProfessionalSlices,
   ]);
 
@@ -543,20 +644,20 @@ export default function ConfiguracaoPage() {
   // never one, which is why visitors get a disabled button.
   const canDiscard = hydration.mode === "authenticated" && confirmed.tenant !== null && !saving;
 
-  // --- What "Herdar da clínica" actually resolves to ------------------------
-  // The clinic's own hours/services, from the tenant config this page already
-  // holds — no extra request. Rendered read-only while a professional inherits,
-  // so "herdando" shows WHAT is being inherited instead of an empty week that
+  // --- What "Herdar da clínica" actually resolves to, for HOURS -------------
+  // The clinic's own hours, from the tenant config this page already holds — no
+  // extra request. Rendered read-only while a professional inherits, so
+  // "herdando" shows WHAT is being inherited instead of an empty week that
   // looks indistinguishable from "closed all week".
+  //
+  // Services have no inherited counterpart any more: Section 06 asks which of
+  // the clinic's catalog services this professional offers, which is a
+  // per-professional answer by construction.
   const inheritedDays = useMemo(
     () =>
       confirmed.tenant
         ? applyWireBusinessHours(confirmed.tenant.business_hours, closedWeek())
         : closedWeek(),
-    [confirmed.tenant],
-  );
-  const inheritedServices = useMemo(
-    () => (confirmed.tenant ? applyWireAppointmentTypes(confirmed.tenant.appointment_types) : []),
     [confirmed.tenant],
   );
 
@@ -573,14 +674,6 @@ export default function ConfiguracaoPage() {
     [inheritedDays],
   );
 
-  const chooseServicesSource = useCallback(
-    (next: "inherit" | "own") => {
-      if (next === "own") setServices(inheritedServices.map((s) => ({ ...s })));
-      setServicesSource(next);
-    },
-    [inheritedServices],
-  );
-
   // --- Save: guarded by lib/save.ts, which refuses without any PUT ---
   // Adopts what the backend actually persisted as the new form state AND the
   // new authoritative snapshot, so a later Descartar returns here.
@@ -594,6 +687,9 @@ export default function ConfiguracaoPage() {
 
   const adoptProfessionalResult = useCallback(
     (tenantId: string, id: string, wire: ProfessionalWire) => {
+      // No clinic list passed on purpose: what came back from a SAVE is this
+      // professional's own stored value by definition, and seeding from the
+      // clinic here would repaint the form with services they just untucked.
       applyProfessionalSlices(professionalSlicesFromWire(wire));
       setSnapshot((prev) => ({
         ...prev,
@@ -604,6 +700,66 @@ export default function ConfiguracaoPage() {
     [applyProfessionalSlices],
   );
 
+  // Publishes the services this professional offers that the clinic's catalog
+  // does not know yet — every entry written before the catalog existed, plus
+  // anything a colleague's clinic added by hand. Giving them an id is what
+  // turns "a string that says Limpeza" into "the clinic's Limpeza", and only
+  // then can the backend find a replacement doctor for a cancelled consult.
+  //
+  // `force: true` is correct here and nowhere else: the near-duplicate check
+  // exists to stop someone TYPING a second, near-identical service, and this
+  // publishes a service the professional demonstrably already offers. An EXACT
+  // duplicate is still impossible — the server answers 409 with the existing
+  // row attached, and linking to that row is exactly the right outcome.
+  //
+  // Never throws: one save button covers eight sections, and a catalog hiccup
+  // must not hold the other seven hostage. Whatever failed stays off-catalog
+  // and is retried by the next save.
+  const publishServices = useCallback(async (): Promise<PublishResult> => {
+    const linked = new Map<number, string>();
+    let failed = 0;
+    // `catalog === null` is "the catalog did not load", not "the clinic has
+    // none". Treating it as empty would make EVERY service look off-catalog
+    // and publish the professional's whole list as brand-new clinic services.
+    // Entries that already carry a service_id still save correctly.
+    if (!session || catalog === null) return { linked, failed };
+
+    const rows = catalogRows(catalog, services);
+
+    // Free links first: entries the catalog already covers, matched by name,
+    // that simply never had the id written down. No request needed — and
+    // without this pass, only the FIRST doctor to save ever gets linked.
+    for (const [localId, serviceId] of pendingLinks(rows)) {
+      linked.set(localId, serviceId);
+    }
+
+    for (const pending of unpublished(rows)) {
+      try {
+        const created = await createService(
+          session,
+          { name: pending.name, requirements: pending.requirements.map((r) => r.text) },
+          { force: true },
+        );
+        linked.set(pending.id, created.id);
+      } catch (e) {
+        const existing =
+          e instanceof HubApiError && e.code === HUB_ERROR_SERVICE_ALREADY_EXISTS
+            ? (e.detail?.service as { id?: string } | undefined)
+            : undefined;
+        if (existing?.id) {
+          // The clinic already has this service under another spelling. That is
+          // a successful link, not a failure — it is the duplicate-collapse the
+          // catalog exists to perform.
+          linked.set(pending.id, existing.id);
+          continue;
+        }
+        failed += 1;
+        console.error("secretaria configuracao: failed to publish a service", e);
+      }
+    }
+    return { linked, failed };
+  }, [session, catalog, services]);
+
   const saveDeps = () => ({
     state: hydration,
     putConfiguration: (body: HubConfigurationUpdatePayload) =>
@@ -613,8 +769,18 @@ export default function ConfiguracaoPage() {
       updateProfessionalConfig(session!, id, patch),
     buildTenantPatch: () =>
       buildConfigUpdatePayload(ctx, messages, postConsult, pixDeposit, prefs.defaultDur, gcal.mode),
-    buildProfessionalPatch: () =>
-      buildProfessionalConfigPayload(days, services, profile, hoursSource, servicesSource),
+    buildProfessionalPatch: (linked?: Map<number, string>) =>
+      buildProfessionalConfigPayload(days, services, profile, hoursSource, linked),
+    publishServices,
+    // "Conta única da clínica" is a decision about the whole clinic, so acting
+    // on it is part of saving it: every active professional that has no
+    // dedicated agenda gets one created inside the clinic's Google account.
+    // Idempotent, so a save that changes nothing here costs one no-op call.
+    shouldEnsureCalendars: gcal.mode === "shared_account",
+    ensureCalendars: async () => {
+      const result = await createProfessionalCalendars(session!);
+      return { created: result.created, already: result.already, failed: result.failed };
+    },
     isLegacyBackend,
   });
 
@@ -672,8 +838,12 @@ export default function ConfiguracaoPage() {
         adoptProfessionalResult(tenantId, result.professional.id, result.professional.wire);
         reloadRoster(); // refresh completeness chips (has_hours/has_services)
       }
+      // Newly published services changed who offers what, and the calendar run
+      // changed google_calendar_id — both live in the catalog payload the
+      // section reads, so re-read it rather than patching it locally.
+      loadCatalog();
       emitConfigEvent({ event: "configuration_saved", mode: result.mode, partial: false });
-      flash("Configuração salva — a secretarIA já está atualizada.");
+      flash(saveMessage(result.servicesNotPublished, result.calendars), successTone(result));
     } catch (e) {
       // Nothing was written: the transactional endpoint rolled back, or the
       // tenant PUT itself failed on the legacy path.
@@ -691,12 +861,63 @@ export default function ConfiguracaoPage() {
     }
   };
 
+  // --- Catalog service create / edit ----------------------------------------
+  // Writes straight through to the clinic catalog rather than waiting for the
+  // page's Save: this row belongs to the CLINIC, not to the professional being
+  // edited, and holding it hostage to an unrelated eight-section form would
+  // mean a colleague cannot see the new service until someone saves everything
+  // else too.
+  //
+  // The dialog has already made a rename or a retirement that reaches other
+  // doctors an explicit, named confirmation — see ServiceEditorModal.
+  const handleServiceSubmit = useCallback(
+    async (draft: ServiceDraft) => {
+      if (!session || !editingService) return;
+      setSavingService(true);
+      setServiceError(null);
+      const existing = editingService.service;
+      try {
+        const payload = {
+          name: draft.name,
+          description: draft.description || null,
+          long_description: draft.longDescription || null,
+          requirements: draft.requirements,
+          is_active: draft.active,
+        };
+        const saved = existing
+          ? await updateService(session, existing.id, payload)
+          : await createService(session, payload);
+        setCatalog((prev) => {
+          const rows = prev ?? [];
+          const next = rows.some((row) => row.id === saved.id)
+            ? rows.map((row) => (row.id === saved.id ? applyWireServices([saved])[0] : row))
+            : [...rows, applyWireServices([saved])[0]];
+          return next;
+        });
+        // A NEW service is one the clinic can offer, not one this professional
+        // automatically does — they still tick it. What they do get is the row,
+        // right where they were looking.
+        setEditingService(null);
+      } catch (e) {
+        console.error("secretaria configuracao: failed to save the catalog service", e);
+        setServiceError(
+          e instanceof HubApiError
+            ? e.message
+            : "Não foi possível salvar o serviço agora. Tente novamente.",
+        );
+      } finally {
+        setSavingService(false);
+      }
+    },
+    [session, editingService],
+  );
+
   // --- Descartar: restores the last confirmed snapshot, with zero requests ---
   const currentSlices = useMemo(
     () => ({
       tenant: { ctx, messages, postConsult, pixDeposit, prefs, gcal },
       professional: hydration.selectedProfessionalId
-        ? { services, days, profile, hoursSource, servicesSource }
+        ? { services, days, profile, hoursSource }
         : null,
     }),
     [
@@ -710,7 +931,6 @@ export default function ConfiguracaoPage() {
       days,
       profile,
       hoursSource,
-      servicesSource,
       hydration.selectedProfessionalId,
     ],
   );
@@ -725,7 +945,13 @@ export default function ConfiguracaoPage() {
     const baseline = {
       tenant: tenantSlicesFromWire(confirmed.tenant),
       professional: baselineProfessionalWire
-        ? professionalSlicesFromWire(baselineProfessionalWire)
+        ? // Same clinic list hydration used, or Descartar would restore an
+          // inheriting professional to an EMPTY services card — a state they
+          // were never in, and one the next save would make real.
+          professionalSlicesFromWire(
+            baselineProfessionalWire,
+            confirmed.tenant.appointment_types,
+          )
         : null,
     };
 
@@ -885,10 +1111,17 @@ export default function ConfiguracaoPage() {
               <ServicesSection
                 services={services}
                 setServices={setServices}
+                catalog={catalog}
+                catalogError={catalogError}
+                onRetryCatalog={loadCatalog}
                 professionalName={selectedProfessionalName}
-                source={servicesSource}
-                onSourceChange={chooseServicesSource}
-                inheritedServices={inheritedServices}
+                defaultDuration={prefs.defaultDur}
+                roster={roster}
+                selectedProfessionalId={hydration.selectedProfessionalId}
+                onEditCatalogService={(service) => {
+                  setServiceError(null);
+                  setEditingService({ service });
+                }}
                 readOnly={!professionalEditable}
               />
               <AvailabilitySection
@@ -969,6 +1202,27 @@ export default function ConfiguracaoPage() {
               : "Salvar configuração"}
         </Btn>
       </div>
+
+      {/* Catalog service editor. Mounted at the screen root, not inside the
+          section, so its overlay covers the sticky save bar too — a dialog you
+          can click "Salvar configuração" behind is a dialog that is not modal. */}
+      {editingService && (
+        <ServiceEditorModal
+          service={editingService.service}
+          otherNames={(catalog ?? [])
+            .filter((row) => row.id !== editingService.service?.id)
+            .map((row) => row.name)}
+          affected={alsoAffected(
+            editingService.service,
+            roster,
+            hydration.selectedProfessionalId,
+          )}
+          onCancel={() => setEditingService(null)}
+          onSubmit={handleServiceSubmit}
+          error={serviceError}
+          saving={savingService}
+        />
+      )}
 
       {/* auto-dismissing success toast */}
       <CToast toast={toast} />
