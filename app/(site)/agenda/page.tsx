@@ -556,14 +556,12 @@ export default function AgendaPage() {
   // ---------------------------------------------------------------------------
 
   return (
-    <div
-      style={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        background: "var(--page)",
-      }}
-    >
+    // .app-screen pins this root to the viewport instead of making it a
+    // height:100vh box in normal flow — see app-shell.css (FIX 33). Same
+    // exposure as Configuração: in flow the document stays scrollable behind
+    // body{overflow:hidden}, so a single browser scroll-into-view can park the
+    // screen off-viewport with no way to scroll back.
+    <div className="app-screen">
       {/* The admin "Modo médico" impersonation switch lives in the Brain
           portal header, not here — this app has no admin surface. */}
       <PortalHeader

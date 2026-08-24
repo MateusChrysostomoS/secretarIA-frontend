@@ -2,7 +2,43 @@
    Full-viewport product shell — used only by the secretarIA Agenda and
    Configuração screens, which fill the viewport and scroll internally
    (their own .scroll panes) rather than scrolling the page body.
-   Imported per-route so it never affects the scrolling marketing pages.
+
+   NOTE: these rules are NOT route-scoped, despite being imported from a
+   route. Next.js App Router bundles an imported stylesheet globally, so
+   once either screen has been visited `body { overflow: hidden }` stays in
+   force for the rest of the client session — including after a client-side
+   navigation to a route that does expect the body to scroll.
    ===================================================================== */
 html, body { height: 100%; }
 body { overflow: hidden; }
+
+/* The screen root — pinned to the viewport, rather than a height:100vh box
+   in normal flow. (FIX 33)
+
+   In normal flow the root's own box is exactly one viewport tall, but the
+   content inside .scroll still inflates the DOCUMENT's scroll height (~5400px
+   on a fully expanded Configuração). `body { overflow: hidden }` above then
+   removes the scrollbar — and with it the user's ability to scroll back —
+   while leaving the document perfectly scrollable PROGRAMMATICALLY.
+
+   Nothing in this app scrolls the window on purpose, but the browser does:
+   clicking a radio pill focuses it, and when the layout collapses under that
+   click (choosing "Herdar da clínica", or switching the Google Calendar mode
+   — both of which hide a large editor) the browser scroll-into-views the
+   focused input and parks the viewport thousands of pixels below the app.
+
+   What the user sees is a blank, frozen screen: the app is still mounted and
+   correct, just off-screen, so there is no exception, no error boundary, no
+   console output and nothing to find. `history.scrollRestoration` replays the
+   same offset on reload, so reloading does not recover it either.
+
+   Pinning the root takes it out of flow, so the document has no overflow and
+   the viewport has nothing to scroll. The internal .scroll panes are
+   unaffected and keep scrolling normally. */
+.app-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--page);
+}
