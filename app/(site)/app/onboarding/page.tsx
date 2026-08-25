@@ -15,6 +15,7 @@ import { BrandIcon } from "../../_components/BrandIcon";
 import { ThemeToggle } from "../../_components/ThemeToggle";
 import { clearSession, isSessionExpired, usePortalGuard } from "../../_components/usePortalGuard";
 import { PortalAccessNotice } from "../../_components/PortalAccessNotice";
+import { PORTAL_HOME } from "@/lib/portal-routes";
 import {
   getDoctorOnboarding,
   logout,
@@ -105,7 +106,9 @@ export default function OnboardingPage() {
     <>
       <header className="dash-header">
         <div className="container dash-nav">
-          <Link className="brand-mark" href="/" aria-label="Brain">
+          {/* PORTAL_HOME, not "/": this screen is guarded (always
+              authenticated), and on this domain "/" is the login form. */}
+          <Link className="brand-mark" href={PORTAL_HOME} aria-label="Brain">
             <BrandGlyph size={28} />
             <span className="wordmark" style={{ fontSize: 22 }}>
               Brain

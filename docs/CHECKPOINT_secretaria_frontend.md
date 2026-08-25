@@ -266,6 +266,21 @@ Gates locais rodados: `tsc.cmd --noEmit` limpo, **120 testes verdes**, `npm run 
       o mapa de rotas. Link "Esqueci minha senha" de volta em `/`.
       *(O bug irmão continua existindo no brain-frontend — lá "Esqueci a senha" ainda chama a
       API do PreCheck, não a identidade Brain. Fora do escopo deste repo.)*
+- [x] ~~`/calendar/connected` nunca foi o alvo real do retorno do OAuth do Google Calendar.~~
+      **Resolvido em 2026-08-25**: o `secretarIA` guarda o destino pós-callback em
+      `PORTAL_POST_OAUTH_REDIRECT` (`api/hub/oauth.py`), e o valor continuava apontando para a
+      cópia da tela no `brain-frontend` — certo até 2026-08-14, errado depois da separação de
+      domínios, e ninguém atualizou o env var quando as telas de secretarIA saíram de lá em
+      2026-08-24 (ver `brain-frontend-secretaria-removed`). A cópia DESTE repo existia desde o
+      clone de 2026-08-14 mas nunca era alcançada. Corrigido: o cabeçalho e o botão "Voltar"
+      desta tela agora apontam para `PORTAL_HOME` em vez do `Link href="/"` herdado do clone
+      (que levava uma sessão válida para o login — a mesma armadilha do §6 do skill
+      `portal-role-home`); o mesmo `href="/"` existia em `/app/onboarding` e `/app/reativar`
+      (chrome `dash-header` idêntico nos dois) e foi corrigido junto. `secretarIA/config.py` e
+      `.env.example` foram comentados para deixar claro que o alvo é este app, não o
+      brain-frontend. **Ainda pendente**: atualizar `PORTAL_POST_OAUTH_REDIRECT` no EasyPanel
+      (serviço `secretaria_api`) para a origem deste app e reimplantar os dois — sem isso o
+      fluxo ao vivo continua caindo no brain-frontend.
 - [ ] **Migração `0012_role_taxonomy` ainda não rodou em produção** na brain-api. Até rodar,
       a brain-api pode emitir os papéis legados `tenant_owner`/`tenant_staff` — por isso eles
       continuam aceitos em `PORTAL_ROLES` (com teste cobrindo).

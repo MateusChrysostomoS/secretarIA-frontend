@@ -4,14 +4,26 @@
 // the frontend target secretaria's PORTAL_POST_OAUTH_REDIRECT setting should
 // point at (both the tenant-level and per-professional Calendar connect flows
 // redirect here after the Google consent round-trip). Reads `?status=` (and an
-// optional `?reason=` for the error case) and shows the result + a link back
-// to the Configuração page. Wrapped in Suspense because useSearchParams
-// requires it (same pattern as /checkout/sucesso).
+// optional `?reason=` for the error case) and shows the result + a button back
+// to PORTAL_HOME. Wrapped in Suspense because useSearchParams requires it
+// (same pattern as /checkout/sucesso).
+//
+// brain-frontend has its own copy of this same route, left over from before
+// the 2026-08-14 domain split — PORTAL_POST_OAUTH_REDIRECT must point here
+// instead (see docs/CHECKPOINT_secretaria_frontend.md).
+//
+// Not gated by usePortalGuard: the Calendar connect button only exists on an
+// already-authenticated screen (/configuracao), but this landing page reads
+// nothing from the session itself, so it stays unguarded and presentational —
+// same pattern as /checkout/sucesso, /checkout/cancelado, /convite. If the
+// session did not survive the round-trip, PORTAL_HOME's own guard sends the
+// user to login when they click through.
 
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { BrandGlyph } from "../../_components/BrandGlyph";
+import { PORTAL_HOME } from "@/lib/portal-routes";
 import "../../checkout/checkout.css";
 
 export default function CalendarConnectedPage() {
@@ -44,8 +56,8 @@ function CalendarConnectedInner() {
             : "Algo deu errado ao conectar o Google Calendar. Tente novamente pelas Configurações secretarIA."}
       </p>
       <div className="checkout-actions">
-        <Link href="/configuracao" className="btn btn--primary">
-          Voltar para as Configurações secretarIA
+        <Link href={PORTAL_HOME} className="btn btn--primary">
+          Voltar para o início da secretarIA
         </Link>
       </div>
     </CalendarConnectedShell>
@@ -56,7 +68,10 @@ function CalendarConnectedShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <header className="container" style={{ padding: "24px 0" }}>
-        <Link href="/" className="brand-mark" aria-label="Brain — início">
+        {/* PORTAL_HOME, not "/": this page is only ever reached from an
+            already-authenticated screen (/configuracao), and on this domain
+            "/" is the login form — see PortalHeader's identical note. */}
+        <Link href={PORTAL_HOME} className="brand-mark" aria-label="Brain — início">
           <BrandGlyph size={32} />
           <span className="wordmark">Brain</span>
         </Link>
