@@ -1,6 +1,11 @@
 # CHECKPOINT — Marca Brain nova + rodada de UX na Configuração
 
-**Data:** 2026-08-24 · **Estado:** BUILT e validado localmente · **UNCOMMITTED**
+**Data:** 2026-08-24, marca revista em 2026-08-25 · **Estado:** BUILT e validado localmente
+
+As seções de UX (3 a 5) foram commitadas em `59f0108`. As seções 1 e 2 (marca e favicon)
+substituem uma primeira tentativa que serviu a arte como **bitmap** (`public/brand/brain-logo.png`,
+commit `adaee99`): funcionava, mas prendia a marca num verde fixo e divergia do caminho que o
+`brain-frontend` e o `PreCheck` já tinham adotado — vetorizar. O bitmap e o `public/` saíram.
 
 Gates verdes neste repo: `tsc --noEmit`, `npm test` (12 arquivos / 297 testes), `npm run build`.
 Verificação visual feita no build estático servido localmente (login `/` e `/configuracao` em
@@ -10,41 +15,64 @@ modo demo), nos dois temas.
 
 ## 1. Marca — a logo Brain de verdade
 
-`app/(site)/_components/BrandGlyph.tsx` deixou de ser SVG e passou a servir **a arte fornecida**,
-como bitmap, de `/brand/brain-logo.png`. Mesmo nome de export e mesmo `size`, então os **9 call
-sites deste repo não mudaram uma linha**.
+`app/(site)/_components/BrandGlyph.tsx` passa a servir **a logo real**, vetorizada do arquivo da
+marca (`brand-src/brain-logo-original.png`, versionado junto para poder ser regerada). O que existia
+aqui antes era uma reconstrução à mão — arcos escritos um a um tentando lembrar a forma. Mesmo
+`viewBox 32×32` e mesma prop `size`, então os **9 call sites deste repo não mudaram uma linha**.
 
-**Como o PNG foi feito, e por que não dá pra só copiar o arquivo original:** o arquivo entregue era
-um **JPEG com o xadrez de transparência chapado nos pixels** — não tinha alpha nenhum. O alpha real
-foi recuperado por pixel explorando o fato de o xadrez ser **acromático** (`r == g == b`) e a marca
-não: compondo verde sobre um fundo cinza de nível `k` desconhecido, `px_c = a*FG_c + (1-a)*k`, então
-subtrair dois canais **cancela `k`**:
+O componente e o bloco de CSS são **cópia idêntica** do `brain-frontend` (lá no commit `54c81c9`).
+Se um mudar, o outro tem que acompanhar — são dois arquivos, não um pacote compartilhado.
 
-    alpha = (px_g - px_r) / (FG_g - FG_r)
+**Como regerar, se a arte mudar.** Três armadilhas, anotadas também no componente:
 
-Isso dá a cobertura anti-aliased correta sem nunca chutar o nível do fundo — é por isso que os
-quadradinhos cinza não deixam halo. Depois: crop no bounding box do alpha e resize pro lado maior
-512px. Se a arte for trocada, refaça por esse caminho, não por chroma key.
+- o PNG da marca vem com **fundo branco OPACO** (tem canal alpha, mas é 255 inteiro), então a
+  máscara sai da *distância ao branco*, não do alpha;
+- o `potracer` trata `False` como tinta — passar a máscara direta **vetoriza o fundo** e devolve a
+  logo em negativo; ela tem que ir invertida;
+- sem um blur gaussiano (~3) na máscara sobreamostrada antes de traçar, o potrace segue cada degrau
+  da serrilha do PNG: ~70 KB de path em vez de 8, sem nenhum ganho visual.
 
-**Consequência de ser bitmap:** a marca tem um **verde fixo** e não segue mais os tokens. Sumiram
-com o SVG: a prop `onDark` (ninguém passava) e as regras `.gs`/`.gf`/`.gt`/`.on-dark` do
-`brand-ds.css`. O verde foi conferido a 20-64px sobre claro, cream e navy — lê nos três. No tema
-escuro ele fica **ao lado** do teal dos botões, não igual a ele; é o custo de usar a arte como veio.
+`fillRule="evenodd"` não é decorativo: são 10 contornos, e os vazios entre os sulcos do cérebro só
+ficam vazados por causa dele.
 
-**Dimensionamento é por ALTURA.** A arte é mais larga que alta (512×472), então
-`.brand-glyph{width:30px;height:30px}` a espremia — virou `height:30px;width:auto`. O componente
-deriva `width` de `height` pela razão de aspecto, pra reservar a caixa certa antes de carregar.
+**Cor.** A logo é uma forma só (`.gl`), então as três classes que dividiam o desenho antigo (`.gs`
+stroke, `.gt` cauda, `.gf` nós) saíram junto. E a marca **não segue os tokens do produto**: tem verde
+próprio, `#45965d`, com `#5cb87a` no escuro — o verde cheio tem contraste ~3:1 sobre o navy e some
+quando o glifo cai para 20px.
 
 ### Login (`/`) — grupo `(auth)`
-`app/(auth)/_shared/AuthShell.tsx` passou a mostrar o lockup **"Brain │ secretarIA"**, o mesmo do
-`PortalHeader`, em vez de só o wordmark `secretarIA`. Como esse grupo roda no CSS portado do
-PreCheck e **não carrega `brand-ds.css`**, o tamanho da marca é repetido em
-`(auth)/_shared/auth-shell.css`. O default de `role` virou `"Portal da clínica"`: era `"por Brain"`,
-e o lockup logo acima já diz Brain — a linha repetia a palavra.
+
+`app/(auth)/_shared/AuthShell.tsx` mostra o lockup **"Brain │ secretarIA"**, o mesmo do
+`PortalHeader`. O default de `role` é `"Portal da clínica"`: era `"por Brain"`, e o lockup logo acima
+já diz Brain — a linha repetia a palavra.
+
+**Armadilha, e ela já mordeu o `brain-frontend`:** esse grupo roda no CSS portado do PreCheck e
+**não carrega `brand-ds.css`** — que é onde `.gl` ganha `fill`. Um `<path>` sem nenhum fill pintado
+não fica sem cor, fica **PRETO**; e como o tema padrão desses grupos legados é o escuro, a marca
+some no navy sem erro nenhum no console. Por isso `(auth)/_shared/auth-shell.css` **repete** os dois
+tons, escopado em `main.login-page .login-brand`. Toda superfície nova que use `<BrandGlyph />` fora
+do `(site)` precisa fazer o mesmo.
+
+## 2. Ícone da aba (favicon)
+
+A aba não tinha ícone nenhum: sem `app/favicon.ico`/`icon.png`/`apple-icon.png`, o navegador mostrava
+o globo genérico, e o site salvo na tela inicial do celular idem. Os três arquivos vieram do
+`brain-frontend` (commit `d60b559` lá), gerados da mesma arte: o fundo branco opaco vira alpha
+(senão o ícone seria um quadrado branco com a logo dentro) e a arte fica com 8% de folga de cada
+lado. O `.ico` carrega 16/32/48/256.
+
+O App Router monta as três tags sozinho a partir dos nomes em `app/` — conferido no HTML do build:
+
+    <link rel="icon" href="/favicon.ico" ...>
+    <link rel="icon" href="/icon.png?..." sizes="512x512">
+    <link rel="apple-touch-icon" href="/apple-icon.png?...">
+
+É a marca **Brain**, não um ícone próprio da secretarIA — que não existe. Se um dia existir, é aqui
+que troca.
 
 ---
 
-## 2. Google Calendar na aba Profissionais (Seção 05) e na Seção 08
+## 3. Google Calendar na aba Profissionais (Seção 05) e na Seção 08
 
 O que a linha do profissional mostra passou a depender do `google_calendar_mode` de verdade, em vez
 de duas variações do mesmo botão:
@@ -72,7 +100,7 @@ Google Calendar para ativar a sincronização", cobrando uma conexão de clínic
 
 ---
 
-## 3. Serviço novo já nasce marcado para quem o criou
+## 4. Serviço novo já nasce marcado para quem o criou
 
 `handleServiceSubmit` (page.tsx): ao **criar** (não ao editar) um serviço do catálogo, ele também
 entra na lista do profissional selecionado. Antes a pessoa digitava o serviço, fechava o diálogo,
@@ -84,7 +112,7 @@ hidratada (portanto vazia) montaria um payload que apaga o que o hub guarda — 
 
 ---
 
-## 4. Horário da clínica + "Preencher horários padrão da clínica" (Seção 07)
+## 5. Horário da clínica + "Preencher horários padrão da clínica" (Seção 07)
 
 O seletor **"Herdar da clínica / Configuração própria"** saiu. Ele obrigava o médico a responder uma
 pergunta de modelagem de dados ("seu horário é um override?") antes de conseguir digitar um horário —

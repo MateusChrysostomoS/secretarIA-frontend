@@ -1,43 +1,52 @@
-// BrandGlyph — the Brain mark: the brain-with-circuit-nodes whose lower lobe
-// becomes a speech bubble. Appears in header, footer, login panel, wizard
-// shells and every checkout/invite screen.
+// BrandGlyph — a marca da Brain.
 //
-// It is the supplied brand artwork, served as a bitmap from
-// /brand/brain-logo.png — not a redrawn vector. The source file was a JPEG with
-// a transparency CHECKERBOARD baked into its pixels; the shipped PNG has real
-// alpha, recovered per-pixel from the green/red channel difference (the
-// checkerboard is achromatic, the mark is not), so it composites cleanly on
-// both the cream and the navy surfaces without a grey halo.
+// O contorno abaixo é a logo REAL, vetorizada a partir do arquivo da marca
+// (`brand-src/brain-logo-original.png`, versionado junto). O
+// que existia aqui antes era uma reconstrução à mão — arcos escritos um a um,
+// tentando lembrar a forma, porque o arquivo não estava disponível. Não saía a
+// logo: a silhueta, os sulcos e o rabo do balão eram outros.
 //
-// A plain <img> on purpose: next/image is already unoptimized under
-// `output: "export"`, so it would only add markup.
+// viewBox 32×32 e a prop `size`, iguais aos de antes: as dezenas de telas que
+// chamam <BrandGlyph /> não mudaram. A arte ocupa 94 por cento da caixa — o
+// desenho antigo ocupava 78, mas era um contorno fino, e a logo real tem traço
+// cheio: na mesma fração ela lia como menor que o wordmark ao lado.
 //
-// CONSEQUENCE OF BEING A BITMAP: the mark is a fixed green and does NOT follow
-// the brand tokens. That is why there is no `onDark` prop any more (nothing
-// passed one) and why brand-ds.css no longer carries .gs/.gf/.gt colour rules —
-// there is no longer anything in here for CSS to recolour. The green reads on
-// both themes; it was checked at 20-64px on light, cream and navy.
-
-// Natural size of the artwork, used to derive the width from the height so the
-// mark never squashes and the browser reserves the right box before it loads.
-const ASPECT = 512 / 472;
+// `fillRule="evenodd"` não é decorativo: são 10 contornos, e os vazios entre os
+// sulcos do cérebro só ficam vazados por causa dele.
+//
+// COR: um único path com a classe .gl, colorida em brand-ds.css. As três classes
+// antigas (.gs stroke, .gt cauda, .gf nós) descreviam partes que só existiam na
+// reconstrução — a logo real é uma forma só.
+//
+// COMO REGERAR (se a marca mudar): traçar o PNG com potrace, com três cuidados
+// que custaram algumas tentativas — máscara pela distância ao branco (o arquivo
+// vem com fundo branco OPACO, o canal alpha é 255 inteiro); máscara INVERTIDA
+// (no potracer `False` é tinta, então passá-la direta vetoriza o fundo e devolve
+// a logo em negativo); e um blur gaussiano de ~3 na máscara sobreamostrada antes
+// de traçar — sem ele o potrace segue cada degrau da serrilha do PNG e o path
+// passa de 70 KB em vez destes 8, sem nenhum ganho visual.
 
 type BrandGlyphProps = {
-  /** Rendered HEIGHT in px. Width follows the artwork's aspect ratio. */
   size?: number;
+  onDark?: boolean;
 };
 
+// Gerado — ver a nota acima antes de editar à mão.
+const LOGO = "M22 29.8C21.7 29.6 21.4 29.3 20.1 28C19.7 27.7 19.4 27.3 19.3 27.3C19.3 27.2 19 27 18.7 26.7C18.4 26.5 17.9 26 17.6 25.6C17.2 25.3 16.7 24.8 16.4 24.5C15.9 24 15.9 24 15.5 24.1C15.4 24.1 14.8 24.2 14.3 24.3C13.9 24.4 12.7 24.3 12.3 24.2C12.2 24.2 12 24.2 11.9 24.1C10.4 23.8 9.1 22.6 8.6 21C8.4 20.5 8.4 20.5 8.2 20.5C8 20.5 6.6 20.5 6.4 20.5C6.3 20.5 6.1 20.4 6 20.4C5.4 20.3 4.1 19.8 3.6 19.4C2.8 18.8 2.2 18 1.8 17.4C1.8 17.3 1.7 17.2 1.7 17.1C1.7 17.1 1.6 17 1.6 16.9C1.5 16.7 1.4 16.6 1.4 16.5C1.1 15.7 0.9 14.5 1 13.6C1 13.5 1.1 13.2 1.1 13.1C1.1 13 1.1 12.8 1.1 12.8C1.1 12.8 1.2 12.6 1.2 12.5C1.3 11.8 1.7 10.9 2.1 10.2C2.4 9.7 3.1 9 3.6 8.6C3.9 8.3 4.1 8.2 4.1 8.1C4.6 6.9 5.5 5.7 6.7 4.8C7.1 4.6 8 4.1 8.2 4.1C8.3 4.1 8.4 4 8.5 4C8.7 3.9 9 3.8 9.4 3.7C9.5 3.7 9.8 3.7 9.9 3.6C10.3 3.6 10.5 3.5 10.8 3.5L11.1 3.5L11.4 3.3C12.3 2.8 13.4 2.4 14.6 2.2C14.7 2.2 14.9 2.2 15 2.2C15.3 2.1 16.1 2.1 16.4 2.2C16.5 2.2 16.7 2.2 16.8 2.2C16.9 2.2 17.1 2.3 17.2 2.3C17.5 2.3 17.7 2.4 17.9 2.4C18.1 2.5 18.3 2.6 18.5 2.6C18.7 2.7 19 2.8 19.6 3.1L20 3.3L20.5 3.3C20.8 3.3 21.1 3.3 21.1 3.3C21.2 3.3 21.3 3.4 21.4 3.4C22.1 3.5 22.5 3.6 22.7 3.6C22.7 3.6 22.9 3.7 23.1 3.7C23.2 3.8 23.4 3.9 23.5 3.9C23.6 3.9 23.8 4 23.9 4.1C24 4.1 24.1 4.2 24.2 4.2C24.2 4.2 24.3 4.3 24.4 4.3C24.5 4.3 24.9 4.5 25.1 4.7C25.2 4.8 25.2 4.8 25.3 4.8C25.3 4.8 25.5 5 25.6 5.1C25.8 5.2 26 5.3 26.1 5.4C26.3 5.6 27.2 6.5 27.3 6.7C27.3 6.7 27.4 6.8 27.5 6.9C27.8 7.3 28.4 8.5 28.5 8.8C28.5 9 28.6 9.2 28.7 9.3C28.7 9.4 28.8 9.6 28.8 9.7C28.8 10 28.8 10 29.3 10.5C29.8 11 30.3 11.8 30.5 12.2C30.5 12.3 30.5 12.5 30.6 12.7C30.7 12.9 30.8 13.1 30.8 13.3C30.9 13.6 30.9 13.8 31 14C31 14.2 31.1 15.8 31 16C30.6 17.7 30.1 18.6 29.1 19.5C28.8 19.7 28.8 19.7 28.8 20.2C28.8 20.4 28.8 20.6 28.8 20.7C28.8 20.8 28.7 20.9 28.7 21C28.6 21.5 28.3 22.4 28 22.7C28 22.8 27.9 22.9 27.9 22.9C27.7 23.2 26.9 24.1 26.4 24.5C25.4 25.2 24 25.7 22.8 25.8C22.3 25.8 22.2 25.9 22.4 26.3C22.4 26.4 22.5 26.7 22.5 26.9C22.6 27.1 22.7 27.4 22.8 27.6C22.8 27.8 22.9 28 22.9 28C22.9 28 22.9 28.2 23 28.4C23.2 29.1 23.2 29.3 22.9 29.6C22.7 29.9 22.2 30 22 29.8ZM14.1 22.6C14.2 22.6 14.3 22.6 14.5 22.6C15 22.5 16.2 22.1 16.7 21.8C16.7 21.8 16.8 21.8 16.9 21.7C17.1 21.6 17.7 21.3 18 21.2C18.6 20.8 19.8 20.2 20.1 20.1C20.2 20 20.4 19.9 20.4 19.9C20.6 19.8 21.3 19.6 21.6 19.5C21.8 19.4 22.1 19.4 22.2 19.3C22.3 19.3 22.5 19.2 22.5 19.2C22.7 19.2 23 19.2 23 19.1C23.1 19.1 23 19 22.5 18.7C21.6 18.2 21.3 18.1 21.1 18.2C20.8 18.4 20.3 18.5 20 18.4C19.8 18.3 19.7 18.3 19.4 18.5C18.7 18.9 17.7 19.3 17 19.5C16.8 19.6 16.5 19.7 16.4 19.7C16.3 19.8 16.1 19.8 16 19.8C15.1 20 15.2 19.9 15.1 20.1C14.6 21 13.2 21 12.9 20C12.5 18.9 13.9 18 14.8 18.8C15 18.9 15 19 15.2 19C15.4 19 16.1 18.8 16.4 18.7C16.5 18.7 16.7 18.6 16.8 18.6C17.5 18.4 18.6 17.9 19 17.6C19.2 17.4 19.2 17.4 19.2 17.2C19.2 16.6 19.7 16.1 20.5 16.1L20.8 16.1L21 15.9C21.1 15.8 21.1 15.7 21.5 15.2C21.9 14.7 22.3 13.8 22.4 13.1C22.5 12.9 22.5 12.7 22.6 12.6C22.7 12.1 22.7 11.7 22.6 11.6C22.5 11.3 21.4 10.5 21.3 10.5C21.1 10.5 20.8 10.7 20.7 10.9C20.7 11.2 20.1 12.4 19.7 12.9C19.4 13.4 18.7 14.1 18.3 14.4C17.6 14.9 17.5 15 16.9 15.3C16.4 15.5 15.8 15.8 15.6 15.9C15.5 15.9 15.4 15.9 15.4 16C15.3 16 15.1 16.1 15 16.1C14.3 16.2 13.9 16.3 13.7 16.4C13.4 16.4 13.2 16.5 12.9 16.5C12.8 16.6 12.6 16.6 12.4 16.7C10.9 17.1 9.8 18.7 10.1 20.1C10.2 20.6 10.2 20.7 10.4 21C10.8 21.8 12 22.6 12.9 22.6C13 22.6 13.1 22.6 13.2 22.6C13.3 22.7 13.9 22.7 14.1 22.6ZM26.1 19C26.7 18.9 27.2 18.7 27.4 18.5C27.5 18.3 27.2 17.4 26.6 16.7C26.3 16.2 26.1 16.1 25.8 16.2C24.7 16.5 24 15.5 24.4 14.5C24.6 14.3 24.6 14.2 24.1 13.5C23.6 12.6 23.5 12.5 23.4 13.1C23.3 13.9 22.6 15.4 22 16.1C21.9 16.3 21.8 16.5 21.7 16.6C21.5 16.8 21.5 16.8 21.6 17C21.6 17.2 21.6 17.2 22 17.4C22.2 17.4 22.4 17.5 22.4 17.6C22.8 17.8 23 17.9 23.1 17.9C23.2 18 23.3 18.1 23.5 18.2C23.6 18.3 23.8 18.4 23.9 18.4C23.9 18.5 24.1 18.6 24.2 18.6C24.2 18.7 24.4 18.7 24.4 18.8C24.7 19 25.6 19.1 26.1 19ZM8.5 18.7C8.9 18.5 9.1 18.3 9.2 18.1C9.3 18 9.4 17.8 9.4 17.7C9.8 17.1 10.6 16.3 11.2 16C11.5 15.9 11.5 15.8 11.4 15.6C11.4 15.6 11.4 15.5 11.3 15.4C11.3 15.3 11.2 15.2 11.1 15.1C10.6 14.3 10 13.1 9.9 12.1C9.9 11.9 9.8 11.8 9.7 11.8C9.4 11.7 8.7 12.3 8.1 13.2C7.9 13.6 7.6 14.3 7.6 14.5C7.6 14.6 7.6 14.7 7.7 14.8C8.1 15.4 7.9 16.2 7.2 16.5C6.6 16.8 5.8 16.5 5.6 15.8C5.6 15.5 5.5 15.5 5.2 15.3C4.7 15.1 4.6 15 4 14.5C3.9 14.4 3.8 14.3 3.8 14.3C3.8 14.3 3.7 14.2 3.6 14.1C3.4 13.8 3.2 13.5 3 13.2C2.6 12.6 2.6 15 3 15.9C3 16 3.1 16.1 3.1 16.1C3.1 16.2 3.2 16.3 3.3 16.5C3.9 17.7 4.8 18.4 6.2 18.7L6.7 18.9L7.4 18.8L8.1 18.8L8.5 18.7ZM28.5 17.6C28.6 17.5 28.6 17.5 28.7 17.4C28.7 17.4 28.7 17.3 28.8 17.2C29.3 16.6 29.5 15.3 29.3 14.1C29.2 14 29.2 13.9 29.2 13.8C29.2 13.8 29.2 13.6 29.1 13.6C29.1 13.5 29.1 13.3 29 13.2C28.9 12.8 28.4 12 28.3 12C28.2 11.9 28.2 12 28.1 12.4C27.9 12.8 27.7 13.4 27.5 13.5C27.5 13.6 27.4 13.7 27.4 13.8C27.3 13.9 27.1 14.2 26.8 14.5L26.6 14.7L26.6 15L26.6 15.3L27 15.7C27.5 16.2 27.9 16.8 28.2 17.5C28.3 17.7 28.3 17.8 28.5 17.6ZM13 15.5C13.1 15.5 13.2 15.4 13.3 15.4C13.5 15.4 13.7 15.4 13.8 15.3C13.9 15.3 14.1 15.3 14.2 15.2C15.1 15.1 16.2 14.7 16.9 14.2C17.6 13.7 18.1 13.4 18.4 13C19.3 12 20 10.6 19.8 10.3C19.7 10.3 19.7 10.2 19.6 10.1C19.5 9.9 19.4 9.4 19.5 9.1C19.7 8.4 20.7 8.1 21.3 8.6C21.6 8.8 21.6 8.8 22.2 8.7C22.4 8.7 24 8.7 24.2 8.7C24.3 8.7 24.5 8.7 24.6 8.8C24.8 8.8 25 8.9 25.2 8.9C25.3 8.9 25.5 9 25.6 9C26.1 9.2 26.4 9.3 26.5 9.3C26.8 9.5 26.9 9.4 26.8 9.3C26.5 8.4 25.9 7.5 25.3 7C24.9 6.6 24.3 6.2 24.1 6.1C23.6 5.8 23 5.5 22.5 5.3C21.8 5.1 21.7 5.1 21.1 5C20.4 4.9 20.2 5 19.7 5.1C19.1 5.2 18.2 5.7 17.8 6.2C17.5 6.5 17.2 7 17 7.2C17 7.3 16.9 7.4 16.9 7.5C16.7 7.7 16.6 8.2 16.5 8.6C16.3 9.2 16.3 9.5 16.3 9.8L16.3 10.1L16.5 10.3C16.8 10.6 16.9 10.8 16.9 11.1C16.9 12.5 15.2 12.8 14.7 11.6C14.5 11.3 14.5 11.3 14 11.2C13.7 11.2 13.5 11.1 13.5 11.1C13.4 11 11.6 11 11.4 11.1C11.4 11.1 11.3 11.2 11.2 11.2C11.2 11.3 11.1 11.4 11 11.5C10.8 11.8 10.8 11.8 11 12.5C11.2 13.4 11.9 14.7 12.4 15.3C12.6 15.5 12.7 15.5 13 15.5ZM6.1 14.5C6.2 14.4 6.3 14.3 6.4 14.3C6.6 14.2 6.6 14.2 6.7 14C6.7 13.9 6.8 13.7 6.9 13.6C6.9 13.5 7 13.4 7 13.3C7.2 12.7 7.9 11.8 8.6 11.3C9.1 10.9 9 10.9 9 10.6C9 10.3 9 10.2 8.7 10.1C7.7 9.3 5.9 9.1 5 9.7C5 9.8 4.9 9.8 4.8 9.8C4.2 10.1 3.5 11.1 3.5 11.5C3.5 11.7 3.7 12.4 3.8 12.7C4.2 13.4 4.7 14 5.4 14.3C5.6 14.4 5.7 14.5 5.7 14.5C5.9 14.6 5.9 14.6 6.1 14.5ZM26.2 13.8C26.4 13.5 26.6 13.2 26.7 13C26.8 13 26.8 12.9 26.8 12.8C27.2 12.3 27.4 11.3 27.2 10.9C27 10.6 26 10.1 25.3 9.9C24.6 9.7 23.9 9.6 23.2 9.6C22.1 9.6 21.9 9.7 22.2 9.9C22.9 10.5 24.1 11.6 24.2 11.9C24.3 11.9 24.3 12 24.4 12.1C24.7 12.5 25 12.9 25.2 13.5C25.3 13.7 25.4 13.9 25.5 13.9C25.8 14 25.9 14 26.2 13.8ZM14.8 10.4C14.8 10.3 14.9 10.3 15 10.3C15 10.2 15.1 10.2 15.1 10.1C15.2 10.1 15.3 9.9 15.3 9.6C15.3 9.5 15.3 9.3 15.3 9.3C15.3 9.2 15.4 9 15.4 8.9C15.4 8.7 15.5 8.5 15.5 8.4C15.5 8.3 15.6 8.2 15.6 8.1C15.6 8 15.9 7.2 16.1 7C16.3 6.5 16.4 6.3 16.8 5.9C17.3 5.4 17.3 5.3 17.9 4.9C18 4.8 18.2 4.7 18.2 4.6C18.5 4.5 18.5 4.5 18.2 4.3C18 4.2 17.4 4 17.1 4C16.3 3.8 14.7 3.8 14.1 4C14.1 4 13.9 4.1 13.8 4.1C13.5 4.2 13.1 4.4 12.8 4.5C12.4 4.7 12.4 4.7 12.8 5C12.9 5.2 13.1 5.3 13.1 5.3C13.2 5.4 13.2 5.4 13.5 5.4C14.6 5.3 15.2 6.6 14.4 7.4C14.2 7.6 14.1 7.6 13.8 7.7C13.6 7.7 13.5 7.7 13.1 7.6C13 7.6 12.9 7.6 12.7 7.8C12.1 8.3 11.6 8.9 11.3 9.5C11.1 9.9 11.1 9.9 11.2 10L11.3 10L12.2 10.1C13.2 10.1 13.4 10.1 13.7 10.2C13.9 10.2 14.7 10.4 14.7 10.4C14.7 10.4 14.8 10.4 14.8 10.4ZM10.1 9.5C10.2 9.5 10.3 9.4 10.4 9.1C10.7 8.6 11 8.1 11.7 7.4C12.4 6.7 12.4 6.7 12.4 6.5C12.4 6.4 12.4 6.3 12.4 6.2C12.5 5.8 11.6 5.3 10.8 5.3C10.1 5.3 9.2 5.5 8.7 5.7C8.6 5.8 8.4 5.8 8.3 5.9C7.9 6.1 7.2 6.6 6.8 6.9C6.4 7.4 5.9 8.2 6 8.3C6 8.4 6.1 8.4 6.2 8.3C6.4 8.3 7.2 8.4 7.6 8.5C8.1 8.6 8.2 8.7 8.6 8.8C8.8 9 9.3 9.3 9.4 9.4C9.6 9.5 9.7 9.5 10.1 9.5Z";
+
 // Pure server component — no client JS needed.
-export function BrandGlyph({ size = 32 }: BrandGlyphProps) {
+export function BrandGlyph({ size = 32, onDark = false }: BrandGlyphProps) {
+  const className = "brand-glyph" + (onDark ? " on-dark" : "");
+
   return (
-    <img
-      className="brand-glyph"
-      src="/brand/brain-logo.png"
-      // alt="" on purpose: every call site pairs this with the "Brain"
-      // wordmark, or sits inside a link that is already labelled.
-      alt=""
+    <svg
+      className={className}
+      viewBox="0 0 32 32"
+      width={size}
       height={size}
-      width={Math.round(size * ASPECT)}
-    />
+      aria-hidden="true"
+    >
+      <path className="gl" d={LOGO} fillRule="evenodd" />
+    </svg>
   );
 }

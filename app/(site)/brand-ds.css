@@ -236,7 +236,7 @@ img,svg{display:block}
 .nav{display:flex;align-items:center;gap:26px;height:68px}
 .brand{display:flex;align-items:baseline;gap:9px;font-family:var(--font-serif);user-select:none}
 .brand-mark{display:flex;align-items:center;gap:10px}
-.brand-glyph{height:30px;width:auto;flex-shrink:0;display:block}
+.brand-glyph{width:30px;height:30px;flex-shrink:0}
 .wordmark{font-size:25px;font-weight:500;letter-spacing:-.01em;color:var(--ink);line-height:1}
 .wordmark .i{font-style:italic;color:var(--brand)}
 .brand-by{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);font-family:var(--font-sans)}
@@ -420,12 +420,17 @@ img,svg{display:block}
 .reveal-d2{transition-delay:.16s}
 .reveal-d3{transition-delay:.24s}
 
-/* ============ BRAIN GLYPH ============
-   The mark is the supplied artwork, a bitmap (see _components/BrandGlyph.tsx),
-   so there is nothing left for CSS to recolour: the old .gbg/.gs/.gf/.gt and
-   .on-dark rules are gone with the SVG they painted. Sizing lives at line ~239
-   and is HEIGHT-based — the artwork is wider than it is tall, so pinning both
-   axes to 30px squashed it. */
+/* ============ BRAIN GLYPH (a logo da marca) ============
+   .gl = o contorno único da logo. As três classes antigas (.gs stroke, .gt
+   cauda, .gf nós) descreviam partes da reconstrução desenhada à mão; a logo
+   real é uma forma só e o glifo agora é um path com fill-rule evenodd.
+
+   A cor NÃO é --brand: a marca tem verde próprio (medido no arquivo da logo) e
+   não acompanha a paleta teal do produto. No escuro entra o mesmo tom clareado
+   — o verde cheio tem contraste ~3:1 sobre o fundo e some quando o glifo cai
+   para 20px. */
+.brand-glyph .gl{fill:#45965d}
+.brand-glyph.on-dark .gl{fill:#5cb87a}
 
 /* ============ MISC ============ */
 .divider-soft{height:1px;background:var(--line)}

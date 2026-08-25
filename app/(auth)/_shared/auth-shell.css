@@ -171,8 +171,11 @@ main.login-page .login-brand {
 }
 /* "Brain │ secretarIA" — the same lockup the portal header shows. This group
    runs on the ported PreCheck stylesheet and never loads (site)/brand-ds.css,
-   so the mark is sized here. Its colour is not set anywhere: it is the supplied
-   artwork, a bitmap in a fixed green (see (site)/_components/BrandGlyph.tsx). */
+   so the glyph's fill has to be re-declared here. The traced logo is a single
+   <path class="gl"> carrying no fill attribute, and an SVG path with no fill
+   painted anywhere renders BLACK — not invisible, which is why leaving this
+   out is not a silent no-op. Greens copied from brand-ds.css: the mark has its
+   own green and deliberately does not follow the --teal of the product. */
 main.login-page .login-brand .brain-lockup {
   display: inline-flex;
   align-items: center;
@@ -181,8 +184,8 @@ main.login-page .login-brand .brain-lockup {
 main.login-page .login-brand .brand-glyph {
   flex-shrink: 0;
   display: block;
-  width: auto;
 }
+main.login-page .login-brand .brand-glyph .gl { fill: #45965d; }
 main.login-page .login-brand .brain-lockup-word {
   font-family: var(--font-serif);
   font-size: 32px;
@@ -590,6 +593,10 @@ html[data-theme="dark"] main.login-page {
     radial-gradient(circle at 70% 90%, rgba(200, 150, 56, .06) 0%, transparent 55%),
     var(--bg);
 }
+
+/* The mark lightens in the dark theme — the full green sits at ~3:1 on the
+   navy and disappears once the glyph drops to small sizes. */
+html[data-theme="dark"] main.login-page .login-brand .brand-glyph .gl { fill: #5cb87a; }
 
 /* Medical-grid paper texture inverts to thin white lines on navy */
 html[data-theme="dark"] main.login-page .login-grid {
