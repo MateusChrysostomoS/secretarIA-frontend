@@ -236,7 +236,7 @@ img,svg{display:block}
 .nav{display:flex;align-items:center;gap:26px;height:68px}
 .brand{display:flex;align-items:baseline;gap:9px;font-family:var(--font-serif);user-select:none}
 .brand-mark{display:flex;align-items:center;gap:10px}
-.brand-glyph{width:30px;height:30px;flex-shrink:0}
+.brand-glyph{height:30px;width:auto;flex-shrink:0;display:block}
 .wordmark{font-size:25px;font-weight:500;letter-spacing:-.01em;color:var(--ink);line-height:1}
 .wordmark .i{font-style:italic;color:var(--brand)}
 .brand-by{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);font-family:var(--font-sans)}
@@ -420,17 +420,12 @@ img,svg{display:block}
 .reveal-d2{transition-delay:.16s}
 .reveal-d3{transition-delay:.24s}
 
-/* ============ BRAIN GLYPH (brain silhouette + speech-bubble tail) ============
-   .gs = stroked silhouette and cortical folds; .gt = the SOLID tail, filled
-   AND stroked so it carries the same optical weight as the outline it hangs
-   from; .gf = the neural nodes. `.gbg` is gone with the old rounded-square
-   backdrop — the mark is the brain itself now, with no container. */
-.brand-glyph .gs{stroke:var(--brand)}
-.brand-glyph .gf{fill:var(--brand)}
-.brand-glyph .gt{fill:var(--brand);stroke:var(--brand)}
-.brand-glyph.on-dark .gs{stroke:#5bccc0}
-.brand-glyph.on-dark .gf{fill:#5bccc0}
-.brand-glyph.on-dark .gt{fill:#5bccc0;stroke:#5bccc0}
+/* ============ BRAIN GLYPH ============
+   The mark is the supplied artwork, a bitmap (see _components/BrandGlyph.tsx),
+   so there is nothing left for CSS to recolour: the old .gbg/.gs/.gf/.gt and
+   .on-dark rules are gone with the SVG they painted. Sizing lives at line ~239
+   and is HEIGHT-based — the artwork is wider than it is tall, so pinning both
+   axes to 30px squashed it. */
 
 /* ============ MISC ============ */
 .divider-soft{height:1px;background:var(--line)}

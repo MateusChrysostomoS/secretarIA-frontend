@@ -8,29 +8,39 @@ modo demo), nos dois temas.
 
 ---
 
-## 1. Marca — novo glifo Brain
+## 1. Marca — a logo Brain de verdade
 
-`app/(site)/_components/BrandGlyph.tsx` teve o desenho trocado: saiu o quadrado arredondado com
-5 nós ligados, entrou um **cérebro lobulado cuja base desce numa cauda sólida de balão de fala**,
-com a fissura central, duas dobras laterais e três nós neurais (o único motivo herdado do glifo
-anterior). Mesmo nome de export, mesmas props (`size`, `onDark`) e mesmo contrato de classes CSS —
-por isso os **9 call sites deste repo não mudaram uma linha**.
+`app/(site)/_components/BrandGlyph.tsx` deixou de ser SVG e passou a servir **a arte fornecida**,
+como bitmap, de `/brand/brain-logo.png`. Mesmo nome de export e mesmo `size`, então os **9 call
+sites deste repo não mudaram uma linha**.
 
-Detalhe que precisa sobreviver a qualquer edição futura do path: a silhueta **fecha embaixo**
-(o arco `A9 9` entre os dois pontos da base da cauda) e a cauda é um path **separado, preenchido**,
-cuja aresta superior é esse mesmo arco traçado ao contrário. Os dois coincidem exatamente, então a
-emenda não aparece. Uma cauda apenas contornada foi testada e lê como caule/gota, não como balão.
+**Como o PNG foi feito, e por que não dá pra só copiar o arquivo original:** o arquivo entregue era
+um **JPEG com o xadrez de transparência chapado nos pixels** — não tinha alpha nenhum. O alpha real
+foi recuperado por pixel explorando o fato de o xadrez ser **acromático** (`r == g == b`) e a marca
+não: compondo verde sobre um fundo cinza de nível `k` desconhecido, `px_c = a*FG_c + (1-a)*k`, então
+subtrair dois canais **cancela `k`**:
 
-`app/(site)/brand-ds.css`: `.gbg` (fundo do quadrado antigo) foi removido; entrou `.gt` (a cauda,
-`fill` **e** `stroke`, para ter o mesmo peso óptico da silhueta). `.gs`/`.gf`/`.on-dark` inalterados.
+    alpha = (px_g - px_r) / (FG_g - FG_r)
+
+Isso dá a cobertura anti-aliased correta sem nunca chutar o nível do fundo — é por isso que os
+quadradinhos cinza não deixam halo. Depois: crop no bounding box do alpha e resize pro lado maior
+512px. Se a arte for trocada, refaça por esse caminho, não por chroma key.
+
+**Consequência de ser bitmap:** a marca tem um **verde fixo** e não segue mais os tokens. Sumiram
+com o SVG: a prop `onDark` (ninguém passava) e as regras `.gs`/`.gf`/`.gt`/`.on-dark` do
+`brand-ds.css`. O verde foi conferido a 20-64px sobre claro, cream e navy — lê nos três. No tema
+escuro ele fica **ao lado** do teal dos botões, não igual a ele; é o custo de usar a arte como veio.
+
+**Dimensionamento é por ALTURA.** A arte é mais larga que alta (512×472), então
+`.brand-glyph{width:30px;height:30px}` a espremia — virou `height:30px;width:auto`. O componente
+deriva `width` de `height` pela razão de aspecto, pra reservar a caixa certa antes de carregar.
 
 ### Login (`/`) — grupo `(auth)`
 `app/(auth)/_shared/AuthShell.tsx` passou a mostrar o lockup **"Brain │ secretarIA"**, o mesmo do
 `PortalHeader`, em vez de só o wordmark `secretarIA`. Como esse grupo roda no CSS portado do
-PreCheck e **não carrega `brand-ds.css`**, as classes do glifo são re-amarradas em
-`(auth)/_shared/auth-shell.css` aos tokens do próprio grupo (`--teal`, `--ink`, `--border-2`).
-O default de `role` virou `"Portal da clínica"`: era `"por Brain"`, e o lockup logo acima já diz
-Brain — a linha repetia a palavra.
+PreCheck e **não carrega `brand-ds.css`**, o tamanho da marca é repetido em
+`(auth)/_shared/auth-shell.css`. O default de `role` virou `"Portal da clínica"`: era `"por Brain"`,
+e o lockup logo acima já diz Brain — a linha repetia a palavra.
 
 ---
 

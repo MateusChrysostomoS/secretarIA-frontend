@@ -171,7 +171,8 @@ main.login-page .login-brand {
 }
 /* "Brain │ secretarIA" — the same lockup the portal header shows. This group
    runs on the ported PreCheck stylesheet and never loads (site)/brand-ds.css,
-   so the glyph's classes are re-bound here to this group's own tokens. */
+   so the mark is sized here. Its colour is not set anywhere: it is the supplied
+   artwork, a bitmap in a fixed green (see (site)/_components/BrandGlyph.tsx). */
 main.login-page .login-brand .brain-lockup {
   display: inline-flex;
   align-items: center;
@@ -180,10 +181,8 @@ main.login-page .login-brand .brain-lockup {
 main.login-page .login-brand .brand-glyph {
   flex-shrink: 0;
   display: block;
+  width: auto;
 }
-main.login-page .login-brand .brand-glyph .gs { stroke: var(--teal); }
-main.login-page .login-brand .brand-glyph .gf { fill: var(--teal); }
-main.login-page .login-brand .brand-glyph .gt { fill: var(--teal); stroke: var(--teal); }
 main.login-page .login-brand .brain-lockup-word {
   font-family: var(--font-serif);
   font-size: 32px;
