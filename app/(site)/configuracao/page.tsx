@@ -199,6 +199,15 @@ function saveMessage(
         : `${calendars.failed} agendas não puderam ser criadas; tente salvar de novo.`,
     );
   }
+  // A whole-run refusal (the clinic must reconnect, or connect at all). The
+  // mode IS saved and not one agenda exists under it, so staying quiet here
+  // reproduces the exact bug the bulk run was built to end: "Conta única"
+  // saved, nothing created, and a green toast claiming otherwise. The backend
+  // already phrased the reason in pt-BR — repeat it rather than inventing a
+  // second wording that could drift from it.
+  if (calendars?.blockedMessage) {
+    notes.push(calendars.blockedMessage);
+  }
   return notes.length > 0 ? base + " " + notes.join(" ") : base;
 }
 
@@ -207,7 +216,9 @@ function successTone(result: {
   servicesNotPublished: number;
   calendars: CalendarEnsureResult | null;
 }): "success" | "error" {
-  return result.servicesNotPublished > 0 || (result.calendars?.failed ?? 0) > 0
+  return result.servicesNotPublished > 0 ||
+    (result.calendars?.failed ?? 0) > 0 ||
+    !!result.calendars?.blockedCode
     ? "error"
     : "success";
 }
@@ -345,6 +356,13 @@ export default function ConfiguracaoPage() {
 
   const [gcal, setGcal] = useState<GcalState>(EMPTY_GCAL);
   const setGcalMode = (mode: GcalState["mode"]) => setGcal((prev) => ({ ...prev, mode }));
+
+  // Code of the last whole-run calendar refusal, or null. Lives here rather
+  // than inside GoogleSection because it is produced by the save (see save.ts's
+  // ensureCalendars) and consumed by Section 08: without it the connected card
+  // keeps saying "Conectado" over a token that can no longer create agendas,
+  // which is true about the connection and false about what it can do.
+  const [calendarBlockedCode, setCalendarBlockedCode] = useState<string | null>(null);
 
   const [services, setServices] = useState<Service[]>([]);
   const [days, setDays] = useState<DayConfig[]>(closedWeek);
@@ -787,6 +805,13 @@ export default function ConfiguracaoPage() {
       const result = await createProfessionalCalendars(session!);
       return { created: result.created, already: result.already, failed: result.failed };
     },
+    // Only the two whole-clinic refusals carry a `code` (see secretaria-hub's
+    // parseHubResponse). Everything else — a 503, a dropped connection — is a
+    // transient outage the idempotent retry fixes, and stays silent.
+    calendarRefusal: (error: unknown) =>
+      error instanceof HubApiError && error.code
+        ? { code: error.code, message: error.message }
+        : null,
     isLegacyBackend,
   });
 
@@ -848,6 +873,10 @@ export default function ConfiguracaoPage() {
       // changed google_calendar_id — both live in the catalog payload the
       // section reads, so re-read it rather than patching it locally.
       loadCatalog();
+      // Cleared by any save whose calendar run was NOT refused — including one
+      // that never ran, since leaving per_professional makes the reconnect
+      // prompt moot. A successful run is the proof the clinic acted on it.
+      setCalendarBlockedCode(result.calendars?.blockedCode ?? null);
       emitConfigEvent({ event: "configuration_saved", mode: result.mode, partial: false });
       flash(saveMessage(result.servicesNotPublished, result.calendars), successTone(result));
     } catch (e) {
@@ -1180,6 +1209,7 @@ export default function ConfiguracaoPage() {
                     : "Isso ficará disponível assim que a configuração da sua clínica terminar de carregar."
                 }
                 onModeChange={setGcalMode}
+                blockedCode={calendarBlockedCode}
                 readOnly={!tenantEditable}
               />
             </div>

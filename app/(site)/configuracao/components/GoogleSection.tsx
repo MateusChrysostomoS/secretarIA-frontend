@@ -55,10 +55,23 @@ type GoogleSectionProps = {
   // PUT like every other field, not an immediate save (mirrors ToggleRow's
   // `set` pattern used by ContextSection/PixSection).
   onModeChange: (mode: GoogleCalendarMode) => void;
+  // Code of the last whole-run refusal from the post-save calendar creation
+  // (page.tsx's ensureCalendars), or null. `google_reconnect_required` is the
+  // one this section has to act on: the clinic IS connected, so the card below
+  // says "Conectado" — accurate about the link and wrong about what it can do.
+  // Nothing in the connected state can reveal that on its own, which is why
+  // the save has to hand it down rather than let the section infer it.
+  blockedCode?: string | null;
   // True when the secretarIA hub is unreachable right now — disables the
   // selector, same convention as every other section on this page.
   readOnly?: boolean;
 };
+
+// The refusal this section can offer a fix for: the stored clinic token was
+// minted before the `calendar.app.created` scope existed, and a refresh token
+// never gains a scope on its own — only a fresh consent adds it. Reconnecting
+// IS the repair, so the button is the same OAuth handoff as connecting.
+const RECONNECT_REQUIRED = "google_reconnect_required";
 
 // Section 08 — Google Calendar OAuth connect/disconnect + real connected status.
 export function GoogleSection({
@@ -67,10 +80,16 @@ export function GoogleSection({
   onDisconnect,
   connectHint = "Conecte-se após entrar na sua conta para ativar a integração.",
   onModeChange,
+  blockedCode = null,
   readOnly,
 }: GoogleSectionProps) {
   // Whether each doctor brings their own Google account (see the header note).
   const perProfessional = gcal.mode === "per_professional";
+  // Reconnecting repairs a scope, so it is only offered while a connection
+  // actually exists. Without that guard a disconnect would leave a "Reconectar"
+  // button pointing at nothing, next to the connect card that already asks for
+  // the same thing in the right words.
+  const reconnectRequired = blockedCode === RECONNECT_REQUIRED && gcal.connected;
 
   // Scrolls to ProfessionalsSection (Section 05, id="prof") on this same page —
   // where the per-doctor connect actually lives.
@@ -161,6 +180,46 @@ export function GoogleSection({
             <span>Trocar de modo agora não desconecta nada — só muda o fluxo de conexão oferecido daqui pra frente.</span>
           </div>
         </div>
+
+        {/* Whole-run refusal carried over from the last save. It sits ABOVE the
+            connected card on purpose, because it contradicts it: the account is
+            linked — and it still cannot create a single agenda. Left unsaid,
+            the clinic reads "Conectado", sees no agendas, and has nothing to
+            act on. */}
+        {reconnectRequired && (
+          <div
+            role="alert"
+            style={{
+              display: "flex", alignItems: "flex-start", gap: 12,
+              padding: "14px 16px", borderRadius: 12,
+              background: "var(--st-miss-bg)", border: "1px solid var(--st-miss-bd)",
+            }}
+          >
+            <Icon
+              name="xCircle"
+              size={16}
+              style={{ marginTop: 2, flexShrink: 0, color: "var(--st-miss-ink)" }}
+            />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--st-miss-ink)" }}>
+                Reconecte a conta do Google da clínica
+              </div>
+              <div style={{ fontSize: 12.5, color: "var(--ink-soft)", marginTop: 3, lineHeight: 1.5 }}>
+                A conexão atual não tem mais a permissão necessária para criar as agendas
+                dos profissionais, então nenhuma foi criada. Reconectar concede a permissão
+                e não desfaz nada do que já está configurado.
+              </div>
+            </div>
+            <Btn
+              variant="outline"
+              size="sm"
+              onClick={connect}
+              disabled={!onConnect || connecting}
+            >
+              {connecting ? "Abrindo…" : "Reconectar"}
+            </Btn>
+          </div>
+        )}
 
       {perProfessional && !gcal.connected ? (
         // --- per_professional, nothing connected: there is nothing to do HERE.

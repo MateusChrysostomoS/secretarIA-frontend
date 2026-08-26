@@ -91,6 +91,16 @@ export type SaveDeps = {
    */
   shouldEnsureCalendars?: boolean;
   /**
+   * "Did the backend REFUSE the whole calendar run, and say why?" — i.e. the
+   * structured `{code, message}` errors (`google_reconnect_required` 409,
+   * `clinic_calendar_not_connected` 422), as opposed to a transient outage.
+   *
+   * Injected for the same reason `isLegacyBackend` is: this module stays free
+   * of HubApiError, and the rule is testable without constructing one. Returns
+   * null for anything that is not such a refusal.
+   */
+  calendarRefusal?: (error: unknown) => { code: string; message: string } | null;
+  /**
    * "Is this error a missing route, rather than a real failure?" Injected so
    * the fallback rule is testable without constructing HubApiError, and so it
    * stays a single, explicit decision instead of a scattered status check.
@@ -245,13 +255,34 @@ export async function performSave(deps: SaveDeps): Promise<SaveOutcome> {
  * user back to re-save something that is already live. Failures are reported
  * inside the result instead, and the run is idempotent, so the next save (or
  * the per-professional button) retries them for free.
+ *
+ * A REFUSAL is not an outage, though, and the two must not share a fate. An
+ * outage is worth staying quiet about because retrying fixes it. But
+ * `google_reconnect_required` and `clinic_calendar_not_connected` mean the run
+ * stopped and NO agenda will ever appear until the clinic does something —
+ * reconnect the account, or connect one at all. Swallowing those produced a
+ * green "Configuração salva" over a clinic in shared_account mode with zero
+ * calendars, which is precisely the symptom this whole path was built to end.
+ * So a refusal comes back as a result carrying its code, and only a genuine
+ * outage still resolves to null.
  */
 async function ensureCalendars(deps: SaveDeps): Promise<CalendarEnsureResult | null> {
   if (!deps.shouldEnsureCalendars || !deps.ensureCalendars) return null;
   try {
     return await deps.ensureCalendars();
-  } catch {
-    return null;
+  } catch (error) {
+    const refusal = deps.calendarRefusal?.(error) ?? null;
+    if (!refusal) return null;
+    // Counts stay at zero: a thrown refusal carries no body, so whatever the
+    // server committed before aborting is unknown here. Reporting the reason
+    // is what matters, and the next (idempotent) run reports the real numbers.
+    return {
+      created: 0,
+      already: 0,
+      failed: 0,
+      blockedCode: refusal.code,
+      blockedMessage: refusal.message,
+    };
   }
 }
 

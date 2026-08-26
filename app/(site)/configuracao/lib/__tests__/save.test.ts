@@ -30,6 +30,16 @@ const TENANT_PATCH = { greeting_message: "olá" };
 const PROFESSIONAL_PATCH = { specialty: "clínica geral" };
 
 /**
+ * The same predicate page.tsx injects. Only the two whole-clinic refusals send
+ * a structured `{code, message}` detail (see secretaria-hub's parseHubResponse),
+ * so a `code` is exactly the signal that retrying will not help.
+ */
+const calendarRefusal = (error: unknown) =>
+  error instanceof HubApiError && error.code
+    ? { code: error.code, message: error.message }
+    : null;
+
+/**
  * Counting fakes. `configuration` records each aggregate body so a test can
  * assert the request carried both halves; `tenant`/`professional` record the
  * legacy calls, which must stay at zero on the happy path.
@@ -492,9 +502,12 @@ describe("the shared_account calendar run", () => {
 
   it("a Google failure never turns a successful save into an error", async () => {
     // The configuration IS saved by the time this runs. Reporting a failure
-    // would send the user back to re-save something already live.
+    // would send the user back to re-save something already live. A 503 carries
+    // no `code`, so it stays an outage even with the refusal predicate wired —
+    // which is what makes this a discrimination guard and not just an absence.
     const s = spies({
       shouldEnsureCalendars: true,
+      calendarRefusal,
       ensureCalendars: async () => {
         throw new HubApiError(503, "Google indisponível");
       },
@@ -505,6 +518,41 @@ describe("the shared_account calendar run", () => {
     expect(result.status).toBe("saved");
     if (result.status === "saved") expect(result.calendars).toBeNull();
   });
+
+  // A refusal is the opposite of an outage: retrying changes nothing until the
+  // clinic acts. Swallowed, it produced a green "Configuração salva" over a
+  // clinic in shared_account mode with zero agendas — indistinguishable from
+  // the missing-feature bug the bulk run was built to end.
+  const refusals: Array<[string, number, string]> = [
+    ["a token minted before the calendar.app.created scope", 409, "google_reconnect_required"],
+    ["a clinic that never connected Google", 422, "clinic_calendar_not_connected"],
+  ];
+
+  for (const [name, status, code] of refusals) {
+    it(`reports ${name} instead of swallowing it`, async () => {
+      const s = spies({
+        shouldEnsureCalendars: true,
+        calendarRefusal,
+        ensureCalendars: async () => {
+          throw new HubApiError(status, "Reconecte a conta Google da clínica.", code);
+        },
+      });
+
+      const result = await performSave({ state: LOADED_WITH_A, ...s.deps });
+
+      // The save itself still succeeded — the mode IS persisted, and saying
+      // otherwise would send the user back to re-save what is already live.
+      expect(result.status).toBe("saved");
+      if (result.status === "saved") {
+        expect(result.calendars).not.toBeNull();
+        expect(result.calendars?.blockedCode).toBe(code);
+        expect(result.calendars?.blockedMessage).toBe("Reconecte a conta Google da clínica.");
+        // No count is claimed: a thrown refusal carries no body, so what the
+        // server committed before aborting is unknown here.
+        expect(result.calendars?.created).toBe(0);
+      }
+    });
+  }
 
   it("never runs when the save itself was refused", async () => {
     let ran = 0;
