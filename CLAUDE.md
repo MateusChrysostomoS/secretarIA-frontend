@@ -58,11 +58,11 @@ de executar:
   `/configuracao` — um usuário só alcança a segunda digitando a URL. Reverte deliberadamente
   a decisão de "uma home só" tomada na separação de 2026-08-14 (decisão nº2 do CHECKPOINT) —
   use quando quiser essa reversão.
-- `z_prompts/debug_secretaria_producao/PROMPT_FEAT_42_PROFESSIONAL_CONFIG_GAP_BANNER_FRONTENDS.md`
-  (2026-08-28) — banner dispensável avisando "configure sua secretarIA" quando um
-  profissional da clínica está com config incompleta (sem horário ou sem serviço). Depende
-  do `FEAT_41` (mesma pasta) já ter exposto o sinal em `GET /config`. Mesmo componente vale
-  para `brain-frontend`, ver CLAUDE.md de lá.
+- `PROMPT_FEAT_42_...BANNER_FRONTENDS.md` foi **executado em 2026-08-29** — ver
+  `docs/CHECKPOINT_config_gap_banner.md`. O prompt afirmava que o sinal viria de
+  `GET /config`; ele vive em `GET /tenants/me/professionals`, e este app o lê pelo
+  brain-api (`getDoctorProfessionals`), a MESMA fonte que o `brain-frontend` — por isso
+  `lib/config-gap.ts` e `_components/ConfigGapBanner.tsx` são idênticos nos dois repos.
 
 ## graphify
 

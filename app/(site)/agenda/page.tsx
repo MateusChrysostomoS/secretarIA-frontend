@@ -21,6 +21,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 
 import { useRouter } from "next/navigation";
 
+import { ConfigGapBanner } from "../_components/ConfigGapBanner";
 import { PortalHeader } from "../_components/PortalHeader";
 import { signOut } from "@/lib/sign-out";
 import {
@@ -572,6 +573,17 @@ export default function AgendaPage() {
         // The screen below is a height:100vh flex column with its own internal
         // scroll area, so the header is already pinned without `position: sticky`.
         sticky={false}
+      />
+
+      {/* FEAT 42 — the top-right "configure sua secretarIA" toast. This screen
+          also serves a session-less demo visitor, and the banner renders nothing
+          without a session, so no gate is needed for that. `enabled` waits for
+          the entitlement check to SETTLE and refuses a 403 tenant: a demo
+          showcase must never nag a visitor about a product they do not have. */}
+      <ConfigGapBanner
+        session={session}
+        enabled={hubCheckReady && !notEntitled}
+        fixHref="/configuracao?secao=prof"
       />
 
       {/* no session / not entitled / hub unavailable / hub not configured */}

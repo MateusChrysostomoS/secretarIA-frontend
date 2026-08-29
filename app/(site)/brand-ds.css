@@ -219,6 +219,28 @@ img,svg{display:block}
 .alert-line--enter{animation:alert-line-in .26s var(--ease) both}
 @keyframes alert-line-in{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
 
+/* --- Config-gap toast (FEAT 42) ---------------------------------------------
+   Pins an .alert-line to the top-right corner, over whatever screen is showing.
+   Only the POSITIONING is new here: the surface, the amber tone, the text slot
+   and the close button are the shared .alert-line vocabulary right above.
+   z-index sits UNDER .portal-header (60) so the header is never covered, over
+   .portal-banner (55), and far under .portal-modal-overlay (100) so it can never
+   float on top of a dialog.
+   top:76px clears the 64px header on the document-scrolling portals; on the
+   full-viewport product screens the header is .portal-header--flow at the top of
+   the same flex column, so the offset lands in the same place. */
+.config-gap-toast{position:fixed;top:76px;right:20px;z-index:58;width:min(360px,calc(100vw - 40px))}
+/* flex-start, not the inherited center: this message wraps to three or four
+   lines, and centering would drift the icon and the close button into the middle
+   of the paragraph. */
+.config-gap-toast .alert-line{align-items:flex-start;box-shadow:var(--shadow-md)}
+/* Direct child only, so the close button's own smaller icon keeps its size. */
+.config-gap-toast .alert-line>svg{margin-top:2px}
+.config-gap-toast__link{margin-left:6px;font-weight:700;color:inherit;text-decoration:underline;white-space:nowrap}
+@media (max-width:560px){
+  .config-gap-toast{top:72px;right:12px;left:12px;width:auto}
+}
+
 /* check / x list */
 .tick-list{display:flex;flex-direction:column;gap:12px;list-style:none}
 .tick-list li{display:flex;align-items:flex-start;gap:11px;font-size:14.5px;color:var(--ink-soft);line-height:1.45}

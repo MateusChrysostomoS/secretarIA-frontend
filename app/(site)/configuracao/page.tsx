@@ -33,6 +33,7 @@ import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { useRouter } from "next/navigation";
 import { Icon, Btn } from "../_shared/ui";
 import { HubNotice } from "../_shared/HubNotice";
+import { ConfigGapBanner } from "../_components/ConfigGapBanner";
 import { OnboardingBanner } from "../_components/OnboardingBanner";
 import { PortalHeader } from "../_components/PortalHeader";
 import { SecretariaWordmark } from "../_components/SecretariaWordmark";
@@ -1088,6 +1089,18 @@ export default function ConfiguracaoPage() {
         // The screen below is a height:100vh flex column with its own internal
         // scroll area, so the header is already pinned without `position: sticky`.
         sticky={false}
+      />
+
+      {/* FEAT 42 — the top-right "configure sua secretarIA" toast, same gate as
+          /agenda. `fixHref` is null HERE and only here: this IS the screen the
+          link points at, and a "Configurar" that reloads the page you are
+          already on is a dead affordance. The notice still earns its place —
+          it names WHICH professional is unbookable, which this screen does not
+          say until you click through to that professional. */}
+      <ConfigGapBanner
+        session={session}
+        enabled={hubCheckReady && !notEntitled}
+        fixHref={null}
       />
 
       {/* not-logged-in / not-entitled / unavailable / not-configured notice —

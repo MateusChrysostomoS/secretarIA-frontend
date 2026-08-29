@@ -42,6 +42,7 @@ import { PORTAL_ROLES, canManageClinic } from "@/lib/portal-routes";
 import { signOut } from "@/lib/sign-out";
 
 import { BrandIcon, type IconName } from "../_components/BrandIcon";
+import { ConfigGapBanner } from "../_components/ConfigGapBanner";
 import { PortalAccessNotice } from "../_components/PortalAccessNotice";
 import { PortalHeader } from "../_components/PortalHeader";
 import { SecretariaWordmark } from "../_components/SecretariaWordmark";
@@ -154,6 +155,17 @@ export default function InicioPage() {
         portalLabel="Clínica"
         userLabel={session.email || me?.tenant.clinic_name || "Brain"}
         onLogout={() => signOut((path) => router.push(path))}
+      />
+      {/* FEAT 42 — the top-right "configure sua secretarIA" toast. Gated on the
+          entitlement already carried by the /doctor/me call above (no second
+          request), and fail-CLOSED: `me` is null while that is in flight, so a
+          clinic never gets told to configure a product before we know it has
+          one. Deliberately not on the accessDenied branch above — that is a
+          session this app does not serve at all. */}
+      <ConfigGapBanner
+        session={session}
+        enabled={me?.entitlements.products.secretaria === true}
+        fixHref="/configuracao?secao=prof"
       />
       {/* .portal-main carries the design system's page padding and 1100px measure;
           it normally sits in PortalShell's sidebar grid, so centring is ours. */}
