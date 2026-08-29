@@ -257,6 +257,18 @@ export function ProfessionalsSection({
                   disabled={readOnly}
                 />
               </Field>
+              <Field
+                label="E-mail do profissional (avisos)"
+                tip="Para onde avisamos esse profissional quando um paciente tenta agendar com ele e a configuração dele está incompleta (sem horário ou sem serviço). Em branco, o aviso vai só para o e-mail da clínica."
+              >
+                <TextInput
+                  type="email"
+                  value={profile.email}
+                  onChange={(e) => onProfileChange("email", e.target.value)}
+                  placeholder="opcional — ex.: dra.ana@clinica.com.br"
+                  disabled={readOnly}
+                />
+              </Field>
             </div>
             <Field
               label="Sobre o profissional (contexto para o bot)"

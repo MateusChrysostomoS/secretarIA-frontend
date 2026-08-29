@@ -655,6 +655,11 @@ export type ProfessionalWire = {
   // unknown, never `false`.
   business_hours_inherited?: boolean;
   appointment_types_inherited?: boolean;
+  // Where THIS professional's config-gap alert is mailed, next to the
+  // clinic-wide contact address. Optional for the same deploy-order reason as
+  // the flags above; `null` is the real, common value (no backfill exists —
+  // the clinic is the only party that knows a doctor's address).
+  email?: string | null;
 };
 
 // "professional" = this doctor's own connection; "tenant" = covered by the
@@ -690,6 +695,7 @@ const PROFESSIONAL_WIRE_KEY_MAP: Record<keyof Required<ProfessionalWire>, true> 
   complete: true,
   business_hours_inherited: true,
   appointment_types_inherited: true,
+  email: true,
 };
 
 export const PROFESSIONAL_WIRE_KEYS = Object.keys(
@@ -744,6 +750,11 @@ export type ProfessionalConfigUpdatePayload = Partial<{
   about: string | null;
   context_doctor_message: string | null;
   google_calendar_id: string | null;
+  // Contact data rather than bot config, but it is edited on the same card as
+  // `specialty`, so it rides the same body and the same single commit instead
+  // of a second request that could fail on its own. Also settable through
+  // PATCH /tenants/me/professionals/{id} for roster-level edits.
+  email: string | null;
 }>;
 
 // PUT /tenants/me/professionals/{id}/config — saves one professional's hours,

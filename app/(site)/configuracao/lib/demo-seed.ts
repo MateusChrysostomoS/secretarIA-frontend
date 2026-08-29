@@ -84,6 +84,7 @@ export const DEMO_PROFILE: VisitorDemo<ProfessionalProfile> = visitorDemo({
   specialty: "Clínica geral",
   about: "",
   contextDoctorMessage: "",
+  email: "",
 });
 
 // Demo service ids are stable, fake catalog uuids: the showcase renders the
