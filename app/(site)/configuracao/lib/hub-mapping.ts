@@ -278,10 +278,6 @@ export function applyWireProfessionalProfile(p: ProfessionalWire): ProfessionalP
     specialty: p.specialty ?? "",
     about: p.about ?? "",
     contextDoctorMessage: p.context_doctor_message ?? "",
-    // `?? ""` also covers the key being ABSENT (an older backend), which reads
-    // the same on screen as "not filled in yet" — correct here, because the
-    // field is genuinely blank either way and saving it writes the truth.
-    email: p.email ?? "",
   };
 }
 
@@ -368,9 +364,6 @@ export function buildProfessionalConfigPayload(
     specialty: profile.specialty || null,
     about: profile.about || null,
     context_doctor_message: profile.contextDoctorMessage || null,
-    // Trimmed before the `||` so a field holding only spaces clears the
-    // address instead of storing whitespace the backend would then skip.
-    email: profile.email.trim() || null,
   };
 }
 

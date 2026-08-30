@@ -85,8 +85,6 @@ export function professionalWire(
     complete: false,
     business_hours_inherited: false,
     appointment_types_inherited: false,
-    // NULL is the state every real row starts in — there is no backfill.
-    email: null,
     ...overrides,
   };
 }

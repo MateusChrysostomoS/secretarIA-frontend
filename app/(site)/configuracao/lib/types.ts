@@ -147,18 +147,12 @@ export type ProfessionalProfile = {
   specialty: string;
   about: string;
   contextDoctorMessage: string;
-  // Operational contact, not bot config: where SecretarIA writes when a patient
-  // reaches this professional and cannot book because their hours or services
-  // are missing. Empty string means unset on screen and is sent as `null`,
-  // exactly like the two free-text fields above.
-  email: string;
 };
 
 export const EMPTY_PROFESSIONAL_PROFILE: ProfessionalProfile = {
   specialty: "",
   about: "",
   contextDoctorMessage: "",
-  email: "",
 };
 
 // ---------------------------------------------------------------------------

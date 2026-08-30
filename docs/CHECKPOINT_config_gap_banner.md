@@ -190,11 +190,23 @@ ver `portal-role-home` §4.
 - [ ] Commit + push nos dois repos.
 - [ ] **Deploy manual no EasyPanel dos dois frontends.** Commitar não coloca no ar; nesta
       família de apps é assim que incidentes nasceram.
-- [ ] `NEXT_PUBLIC_SECRETARIA_APP_BASE_URL` no build do **brain-frontend** está vazia hoje.
-      Sem ela o aviso aparece **sem** o link "Configurar" (por design — `secretariaAppUrl`
-      devolve `null` e um link que não vai a lugar nenhum lê como produto quebrado). Se
-      quiser o link, a variável precisa do par `ARG`/`ENV` no Dockerfile, não só do painel do
-      EasyPanel.
+- [x] ~~`NEXT_PUBLIC_SECRETARIA_APP_BASE_URL` vazia no brain-frontend~~ — **RESOLVIDO
+      2026-08-29.** O `ARG` no `Dockerfile` agora tem a origem real
+      (`https://secretaria-secretaria-frontend.cpux9k.easypanel.host`, confirmada pelo
+      usuário), mesmo padrão que resolveu o `..._HUB_BASE_URL` em 2026-07-29. Não confunda
+      as duas: HUB é a **API** da secretarIA, APP é o **site**. Provado localmente que assa
+      no bundle — a origem e `configuracao?secao=prof` aparecem no chunk
+      `app/(site)/doctor/layout-*.js`, então o link resolve para
+      `.../configuracao?secao=prof`. Como é export estático, **só entra num rebuild**;
+      trocar no painel do EasyPanel sem rebuild não faz nada.
+- [x] ~~Conferir o `CORS_ALLOW_ORIGINS` do brain-api antes de confiar no link~~ —
+      **CONFIRMADO AO VIVO 2026-08-29.** Preflight `OPTIONS` em
+      `secretaria-brain-api.cpux9k.easypanel.host/auth/token` com
+      `Origin: https://secretaria-secretaria-frontend.cpux9k.easypanel.host` devolve **200**
+      com o `Access-Control-Allow-Origin` correto. O bloqueio de 2026-08-21 (preflight 400,
+      que derrubava TODO login vindo daquele domínio) foi corrigido. Guarde o comando: é o
+      diagnóstico certo pra "erro genérico ao conectar" vindo de um domínio irmão, e essa
+      falha já foi misdiagnosticada uma vez como problema de senha.
 - [ ] Verificação ao vivo depois do deploy: o modo demo é estruturalmente incapaz de
       reproduzir este caminho (o seed nunca manda um profissional incompleto), então "no demo
       não aparece" não é evidência de nada.

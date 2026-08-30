@@ -106,7 +106,6 @@ const BACKEND_PROFESSIONAL_LIST_ITEM_KEYS = [
   "has_hours",
   "has_services",
   "complete",
-  "email",
 ];
 
 describe("ProfessionalWire contract", () => {
@@ -157,14 +156,7 @@ describe("ProfessionalWire contract", () => {
     const { missing, unexpected } = hub.inspectProfessionalWire(legacy);
 
     expect(missing.sort()).toEqual(
-      [
-        "appointment_types_inherited",
-        "business_hours_inherited",
-        "calendar_source",
-        // A pre-FEAT-41 backend does not send it either — absent means
-        // "this backend cannot tell me", not "the doctor has no address".
-        "email",
-      ].sort(),
+      ["appointment_types_inherited", "business_hours_inherited", "calendar_source"].sort(),
     );
     expect(unexpected).toEqual([]);
   });
