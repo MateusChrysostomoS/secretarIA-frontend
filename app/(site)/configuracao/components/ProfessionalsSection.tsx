@@ -446,11 +446,17 @@ function ProfessionalRow({
         ) : (
           // No linked user, so no address anywhere: the email lives on the
           // brain-api user created by an invite, and this professional was
-          // added without one. Said out loud because the consequence is
-          // invisible otherwise — they silently never get the "nova consulta
-          // marcada" email (secretarIA plugins/professional_notification.py).
+          // added without one. Said out loud because the consequences are
+          // invisible otherwise, and since FIX 34 there are TWO of them — both
+          // secretarIA mails to a doctor resolve the address the same way, by
+          // asking brain-api (services/brain_professionals.py), so a doctor
+          // with no linked user silently gets neither: the "nova consulta
+          // marcada" email (plugins/professional_notification.py) and the
+          // config-gap alert (workers/tasks.py::
+          // _handle_professional_config_incomplete). Name both, or the second
+          // one is a surprise nobody can trace back to this row.
           <div style={{ fontSize: 11.5, color: "var(--st-pending-ink, #9a6b00)", marginTop: 4 }}>
-            Sem e-mail vinculado — não recebe aviso de nova consulta
+            Sem e-mail vinculado — não recebe aviso de nova consulta nem de configuração pendente
           </div>
         )}
       </div>
