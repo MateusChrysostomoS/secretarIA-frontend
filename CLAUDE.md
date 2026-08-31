@@ -64,6 +64,59 @@ de executar:
   brain-api (`getDoctorProfessionals`), a MESMA fonte que o `brain-frontend` — por isso
   `lib/config-gap.ts` e `_components/ConfigGapBanner.tsx` são idênticos nos dois repos.
 
+### Auditoria de rotas & requisições — 30/08/2026
+
+Ordem de execução por onda (dependência por colisão de arquivo, não por tema):
+`z_prompts/PLANO_EXECUCAO_AUDIT_FRONTEND.md`.
+
+11 prompts gerados a partir de uma auditoria completa de produção (15 rotas sem sessão + 5
+telas autenticadas, clínica real). Cada prompt já inclui uma investigação de confirmação
+read-only feita em cima do achado original — vários números/causas do relatório original
+estavam imprecisos ou errados, e cada prompt documenta a correção antes da tarefa. Ordem de
+prioridade sugerida (impacto ÷ esforço, não gravidade pura): agenda → A11Y de componentes →
+headers de nginx → guarda de sessão → o resto.
+
+- `PROMPT_AUDIT_FRONTEND_AGENDA_DATAS_ERRADAS.md` — **crítico, comece por aqui.** A agenda
+  mostra (e o WhatsApp de confirmação ao paciente cita) datas fixas de junho/2026; o raio do
+  bug é maior do que a auditoria percebeu (`dayFull()`, `NowLine`, `MonthView` também
+  hardcoded) e o mecanismo do bug de domingo é diferente do relatado (evento é buscado e
+  descartado no mapeamento, não excluído da janela de busca).
+- `PROMPT_AUDIT_FRONTEND_A11Y_CTOGGLE_CSELECT.md` — `CToggle`/`CSelect` sem nome acessível;
+  existem 4 implementações independentes do mesmo controle de toggle sem label no repo.
+  `CToggle` e `CSelect` têm causas raiz diferentes (só um dos dois pode ser resolvido por
+  `<label>` envolvendo).
+- `PROMPT_AUDIT_FRONTEND_A11Y_CONTRASTE_LANDMARKS.md` — contraste insuficiente (3 tokens/CSS
+  diferentes, não 1 como a hipótese original) e landmarks ausentes em `/configuracao`; a
+  alegação sobre o progressbar do cadastro estava desatualizada (os `aria-value*` já
+  existem).
+- `PROMPT_AUDIT_FRONTEND_SEC_NGINX_HEADERS.md` — `nginx.conf` sem nenhum header de
+  segurança, 404 que nunca é servido, sem `robots.txt`. Pede decisão do usuário sobre
+  estratégia de CSP (os payloads de hidratação RSC mudam de hash a cada build).
+- `PROMPT_AUDIT_FRONTEND_SEC_TOKEN_STORAGE.md` — `refreshToken` em `sessionStorage` é
+  arquitetura **documentada** pela skill `front-brain` ("nunca em cookie"), não descuido.
+  Prompt pede decisão de escopo antes de qualquer mudança — migrar para cookie httpOnly é
+  cross-repo (brain-api + brain-frontend), não um patch local.
+- `PROMPT_AUDIT_FRONTEND_GUARDA_SESSAO.md` — botão "Sair" aparece sem sessão no modo demo de
+  `/agenda`/`/configuracao` (bug real) + `/` não redireciona sessão já autenticada. **NÃO**
+  unificar as 5 telas sob guard único — a skill `portal-role-home` documenta a demo como
+  decisão de produto deliberada, não bug.
+- `PROMPT_AUDIT_FRONTEND_API_CLIENTS_DIVERGENTES.md` — `manage-api.ts`/`secretaria-hub.ts`
+  divergem de `brain-frontend`; a divergência real de `secretaria-hub.ts` é ~161 linhas, não
+  as "1739" da auditoria (era mismatch de line-ending LF/CRLF entre os repos). Pede decisão
+  de escopo (normalizar encoding vs. extrair pacote compartilhado).
+- `PROMPT_AUDIT_FRONTEND_BUILD_HIGIENE.md` — `next lint` sem o pacote ESLint sequer
+  instalado; Next 15.1.6 desatualizado. Os números de `npm audit` da auditoria original
+  ("27 critical") estavam errados — corrigidos no prompt (na verdade 2 critical em `next`).
+- `PROMPT_AUDIT_FRONTEND_FONTES_LGPD.md` — 7 famílias de fonte do Google carregadas sem
+  gate de consentimento (ponto de LGPD num app de saúde); migrar para `next/font/google`.
+- `PROMPT_AUDIT_FRONTEND_REQUISICOES_DUPLICADAS.md` — `GET /doctor/professionals` duplicado
+  em `/configuracao` (e provavelmente também em `/agenda`/`/inicio` via `ConfigGapBanner`,
+  não confirmado pela auditoria original). Corrige também uma causa errada que a auditoria
+  atribuiu à lentidão de `/doctor/onboarding` (não tem relação com o cache de hub token).
+- `PROMPT_AUDIT_FRONTEND_UX_ONBOARDING.md` — código de erro cru da Meta em
+  `/app/onboarding` (ex.: "auth_cancelled"); `/app/reativar` não mostra dias restantes,
+  só total e prazo final.
+
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
