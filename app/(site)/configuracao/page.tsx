@@ -143,7 +143,12 @@ import {
   type TenantConfigUpdatePayload,
   type TenantConfigWire,
 } from "@/lib/secretaria-hub";
-import { getDoctorProfessionals, type DoctorProfessional, type Session } from "@/lib/manage-api";
+import {
+  getDoctorProfessionals,
+  invalidateDoctorProfessionals,
+  type DoctorProfessional,
+  type Session,
+} from "@/lib/manage-api";
 
 // SideNav section ids — used for scrollspy
 const NAV_IDS = ["ctx", "msg", "pos", "pix", "prof", "srv", "disp", "gcal"] as const;
@@ -593,6 +598,13 @@ export default function ConfiguracaoPage() {
     dispatch({ type: "roster_reload_started", rosterGeneration });
 
     const tenantId = session.tenantId;
+
+    // This function exists BECAUSE the roster just changed, so it is the one
+    // place that must not be served from getDoctorProfessionals' per-session
+    // cache — that would hand back the pre-mutation roster and quietly undo the
+    // refresh. hydrate() deliberately does NOT invalidate: on a first mount,
+    // sharing that read with <ConfigGapBanner> is the whole point.
+    invalidateDoctorProfessionals(session);
 
     Promise.all([getDoctorProfessionals(session), getProfessionals(session)])
       .then(([rows, configs]) => {
@@ -1094,200 +1106,210 @@ export default function ConfiguracaoPage() {
         sticky={false}
       />
 
-      {/* FEAT 42 — the top-right "configure sua secretarIA" toast, same gate as
-          /agenda. `fixHref` is null HERE and only here: this IS the screen the
-          link points at, and a "Configurar" that reloads the page you are
-          already on is a dead affordance. The notice still earns its place —
-          it names WHICH professional is unbookable, which this screen does not
-          say until you click through to that professional. */}
-      <ConfigGapBanner
-        session={session}
-        enabled={hubCheckReady && !notEntitled}
-        fixHref={null}
-      />
+      {/* Everything below the portal header is this screen's main content.
+          Without it the page had NO <main> at all: the heading, all eight
+          sections, the save bar and every banner sat outside any landmark, so
+          a screen-reader user had no way to skip the nav to the content and
+          axe reported 129 orphaned nodes. <nav> (SideNav) stays nested inside,
+          which is valid: it navigates WITHIN this content, it is not site nav.
+          Layout is unchanged — this takes over the flex-column role the
+          children already had as direct children of .app-screen. */}
+      <main style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+        {/* FEAT 42 — the top-right "configure sua secretarIA" toast, same gate as
+            /agenda. `fixHref` is null HERE and only here: this IS the screen the
+            link points at, and a "Configurar" that reloads the page you are
+            already on is a dead affordance. The notice still earns its place —
+            it names WHICH professional is unbookable, which this screen does not
+            say until you click through to that professional. */}
+        <ConfigGapBanner
+          session={session}
+          enabled={hubCheckReady && !notEntitled}
+          fixHref={null}
+        />
 
-      {/* not-logged-in / not-entitled / unavailable / not-configured notice —
-          hidden once the hub token path is active */}
-      <HubNotice
-        session={session}
-        notEntitled={notEntitled}
-        ready={hubCheckReady}
-        unavailable={hubUnavailable}
-        onRetry={retryHub}
-        // This screen shows a logged-in tenant NOTHING it hasn't read back —
-        // so the entitlement banner must not promise demo data here.
-        demoForVisitorsOnly
-      />
+        {/* not-logged-in / not-entitled / unavailable / not-configured notice —
+            hidden once the hub token path is active */}
+        <HubNotice
+          session={session}
+          notEntitled={notEntitled}
+          ready={hubCheckReady}
+          unavailable={hubUnavailable}
+          onRetry={retryHub}
+          // This screen shows a logged-in tenant NOTHING it hasn't read back —
+          // so the entitlement banner must not promise demo data here.
+          demoForVisitorsOnly
+        />
 
-      {/* the hub answered, but a configuration GET didn't — honest error +
-          retry, with the form held read-only meanwhile */}
-      <LoadStateNotice state={hydration} onRetry={hydrate} />
+        {/* the hub answered, but a configuration GET didn't — honest error +
+            retry, with the form held read-only meanwhile */}
+        <LoadStateNotice state={hydration} onRetry={hydrate} />
 
-      {/* WhatsApp activation status — hidden once onboarding_state === 'ativo' */}
-      <OnboardingBanner session={session} />
+        {/* WhatsApp activation status — hidden once onboarding_state === 'ativo' */}
+        <OnboardingBanner session={session} />
 
-      {/* scrollable content area — scrollspy fires on this element */}
-      <div
-        ref={scrollRef}
-        className="scroll"
-        onScroll={onScroll}
-        style={{ flex: 1, overflowY: "auto", minHeight: 0 }}
-      >
-        <div style={{
-          maxWidth: 1080, margin: "0 auto",
-          padding: "30px 28px 130px",
-          display: "flex", gap: 36,
-        }}>
-          {/* left: sticky section nav */}
-          <SideNav active={active} onJump={jump} />
+        {/* scrollable content area — scrollspy fires on this element */}
+        <div
+          ref={scrollRef}
+          className="scroll"
+          onScroll={onScroll}
+          style={{ flex: 1, overflowY: "auto", minHeight: 0 }}
+        >
+          <div style={{
+            maxWidth: 1080, margin: "0 auto",
+            padding: "30px 28px 130px",
+            display: "flex", gap: 36,
+          }}>
+            {/* left: sticky section nav */}
+            <SideNav active={active} onJump={jump} />
 
-          {/* right: page heading + sections */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            {/* page heading */}
-            <div style={{ marginBottom: 26 }}>
-              <h1 style={{
-                fontSize: 30, fontWeight: 600,
-                fontFamily: "var(--font-serif)", color: "var(--ink)",
-                lineHeight: 1.1, letterSpacing: "-.01em", margin: 0,
-              }}>
-                Configurações <SecretariaWordmark />
-              </h1>
-              <p style={{
-                fontSize: 15, color: "var(--ink-soft)",
-                marginTop: 7, maxWidth: 620, lineHeight: 1.5,
-              }}>
-                Tudo que o chatbot do WhatsApp precisa saber para atender seus pacientes como uma
-                secretária de verdade. Passe o mouse nos{" "}
-                <b style={{ color: "var(--ink)" }}>?</b>{" "}
-                para entender cada campo.
-              </p>
-            </div>
+            {/* right: page heading + sections */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {/* page heading */}
+              <div style={{ marginBottom: 26 }}>
+                <h1 style={{
+                  fontSize: 30, fontWeight: 600,
+                  fontFamily: "var(--font-serif)", color: "var(--ink)",
+                  lineHeight: 1.1, letterSpacing: "-.01em", margin: 0,
+                }}>
+                  Configurações <SecretariaWordmark />
+                </h1>
+                <p style={{
+                  fontSize: 15, color: "var(--ink-soft)",
+                  marginTop: 7, maxWidth: 620, lineHeight: 1.5,
+                }}>
+                  Tudo que o chatbot do WhatsApp precisa saber para atender seus pacientes como uma
+                  secretária de verdade. Passe o mouse nos{" "}
+                  <b style={{ color: "var(--ink)" }}>?</b>{" "}
+                  para entender cada campo.
+                </p>
+              </div>
 
-            {/* Eight config sections. `readOnly` is driven by the hydration
-                phase of the scope each section belongs to, NOT by role: every
-                authenticated tenant member (owner or staff) gets full
-                read/write access once the data is actually there. */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 34 }}>
-              <ContextSection v={ctx} set={setCtxK} readOnly={!tenantEditable} />
-              <MessagesSection v={messages} set={setMessagesK} readOnly={!tenantEditable} />
-              <PostConsultSection v={postConsult} set={setPostConsultK} readOnly={!tenantEditable} />
-              <PixSection v={pixDeposit} set={setPixDepositK} readOnly={!tenantEditable} />
-              <ProfessionalsSection
-                session={session}
-                isOwner={canManageClinic(session)}
-                roster={roster}
-                rosterError={hydration.roster.phase === "error"}
-                selectedId={hydration.selectedProfessionalId}
-                onSelect={selectProfessional}
-                profile={profile}
-                onProfileChange={setProfileK}
-                onRosterChanged={reloadRoster}
-                googleCalendarMode={gcal.mode}
-                googleCalendarIdByProfessional={googleCalendarIdByProfessional}
-                calendarSourceByProfessional={calendarSourceByProfessional}
-                readOnly={!professionalEditable}
-              />
-              <ServicesSection
-                services={services}
-                setServices={setServices}
-                catalog={catalog}
-                catalogError={catalogError}
-                onRetryCatalog={loadCatalog}
-                professionalName={selectedProfessionalName}
-                defaultDuration={prefs.defaultDur}
-                roster={roster}
-                selectedProfessionalId={hydration.selectedProfessionalId}
-                onEditCatalogService={(service) => {
-                  setServiceError(null);
-                  setEditingService({ service });
-                }}
-                readOnly={!professionalEditable}
-              />
-              <AvailabilitySection
-                days={days}
-                setDays={setProfessionalDays}
-                prefs={prefs}
-                setPref={setPrefK}
-                professionalName={selectedProfessionalName}
-                clinicDays={clinicDays}
-                setClinicDays={setClinicDays}
-                inheritingHours={hoursSource === "inherit"}
-                readOnly={!professionalEditable}
-                tenantReadOnly={!tenantEditable}
-              />
-              <GoogleSection
-                gcal={gcal}
-                onConnect={handleGoogleConnect}
-                onDisconnect={handleGoogleDisconnect}
-                connectHint={
-                  !session
-                    ? "Conecte-se após entrar na sua conta para ativar a integração."
-                    : "Isso ficará disponível assim que a configuração da sua clínica terminar de carregar."
-                }
-                onModeChange={setGcalMode}
-                blockedCode={calendarBlockedCode}
-                readOnly={!tenantEditable}
-              />
+              {/* Eight config sections. `readOnly` is driven by the hydration
+                  phase of the scope each section belongs to, NOT by role: every
+                  authenticated tenant member (owner or staff) gets full
+                  read/write access once the data is actually there. */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 34 }}>
+                <ContextSection v={ctx} set={setCtxK} readOnly={!tenantEditable} />
+                <MessagesSection v={messages} set={setMessagesK} readOnly={!tenantEditable} />
+                <PostConsultSection v={postConsult} set={setPostConsultK} readOnly={!tenantEditable} />
+                <PixSection v={pixDeposit} set={setPixDepositK} readOnly={!tenantEditable} />
+                <ProfessionalsSection
+                  session={session}
+                  isOwner={canManageClinic(session)}
+                  roster={roster}
+                  rosterError={hydration.roster.phase === "error"}
+                  selectedId={hydration.selectedProfessionalId}
+                  onSelect={selectProfessional}
+                  profile={profile}
+                  onProfileChange={setProfileK}
+                  onRosterChanged={reloadRoster}
+                  googleCalendarMode={gcal.mode}
+                  googleCalendarIdByProfessional={googleCalendarIdByProfessional}
+                  calendarSourceByProfessional={calendarSourceByProfessional}
+                  readOnly={!professionalEditable}
+                />
+                <ServicesSection
+                  services={services}
+                  setServices={setServices}
+                  catalog={catalog}
+                  catalogError={catalogError}
+                  onRetryCatalog={loadCatalog}
+                  professionalName={selectedProfessionalName}
+                  defaultDuration={prefs.defaultDur}
+                  roster={roster}
+                  selectedProfessionalId={hydration.selectedProfessionalId}
+                  onEditCatalogService={(service) => {
+                    setServiceError(null);
+                    setEditingService({ service });
+                  }}
+                  readOnly={!professionalEditable}
+                />
+                <AvailabilitySection
+                  days={days}
+                  setDays={setProfessionalDays}
+                  prefs={prefs}
+                  setPref={setPrefK}
+                  professionalName={selectedProfessionalName}
+                  clinicDays={clinicDays}
+                  setClinicDays={setClinicDays}
+                  inheritingHours={hoursSource === "inherit"}
+                  readOnly={!professionalEditable}
+                  tenantReadOnly={!tenantEditable}
+                />
+                <GoogleSection
+                  gcal={gcal}
+                  onConnect={handleGoogleConnect}
+                  onDisconnect={handleGoogleDisconnect}
+                  connectHint={
+                    !session
+                      ? "Conecte-se após entrar na sua conta para ativar a integração."
+                      : "Isso ficará disponível assim que a configuração da sua clínica terminar de carregar."
+                  }
+                  onModeChange={setGcalMode}
+                  blockedCode={calendarBlockedCode}
+                  readOnly={!tenantEditable}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* sticky save bar — fixed at viewport bottom */}
-      <div style={{
-        position: "sticky", bottom: 0, flexShrink: 0,
-        display: "flex", alignItems: "center", gap: 14,
-        padding: "14px 28px",
-        background: "var(--page-grad)",
-        borderTop: "1px solid var(--line-strong)",
-        zIndex: 20,
-      }}>
-        {/* Google Calendar status indicator. This reports the CLINIC's
-            connection, which is the whole story only in "conta única". In
-            "por profissional" each doctor connects their own (Section 05), so
-            a clinic-wide "conecte o Google Calendar" here nagged about a
-            connection that mode does not use. */}
+        {/* sticky save bar — fixed at viewport bottom */}
         <div style={{
-          display: "flex", alignItems: "center", gap: 9,
-          fontSize: 13,
-          color: gcal.connected ? "var(--st-attend-ink)" : "var(--ink-faint)",
+          position: "sticky", bottom: 0, flexShrink: 0,
+          display: "flex", alignItems: "center", gap: 14,
+          padding: "14px 28px",
+          background: "var(--page-grad)",
+          borderTop: "1px solid var(--line-strong)",
+          zIndex: 20,
         }}>
-          <Icon name={gcal.connected ? "checkCircle" : "clock"} size={16} />
-          {gcal.connected
-            ? "Google Calendar conectado"
-            : gcal.mode === "per_professional"
-              ? "Cada profissional conecta a própria agenda em Profissionais"
-              : "Conecte o Google Calendar para ativar a sincronização"}
+          {/* Google Calendar status indicator. This reports the CLINIC's
+              connection, which is the whole story only in "conta única". In
+              "por profissional" each doctor connects their own (Section 05), so
+              a clinic-wide "conecte o Google Calendar" here nagged about a
+              connection that mode does not use. */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 9,
+            fontSize: 13,
+            color: gcal.connected ? "var(--st-attend-ink)" : "var(--ink-faint)",
+          }}>
+            <Icon name={gcal.connected ? "checkCircle" : "clock"} size={16} />
+            {gcal.connected
+              ? "Google Calendar conectado"
+              : gcal.mode === "per_professional"
+                ? "Cada profissional conecta a própria agenda em Profissionais"
+                : "Conecte o Google Calendar para ativar a sincronização"}
+          </div>
+
+          <div style={{ flex: 1 }} />
+
+          <Btn
+            variant="ghost"
+            onClick={handleDiscard}
+            disabled={!canDiscard}
+            title={
+              canDiscard
+                ? "Volta a tela para a última configuração salva"
+                : "Disponível assim que sua configuração salva for carregada"
+            }
+          >
+            Descartar
+          </Btn>
+          <Btn
+            variant="primary"
+            icon="check"
+            onClick={handleSave}
+            disabled={saveBlocked !== null || saving}
+            title={saveBlocked ? SAVE_BLOCKED_MESSAGE[saveBlocked] : undefined}
+          >
+            {saving
+              ? "Salvando…"
+              : professionalPending
+                ? "Salvar dados do profissional"
+                : "Salvar configuração"}
+          </Btn>
         </div>
-
-        <div style={{ flex: 1 }} />
-
-        <Btn
-          variant="ghost"
-          onClick={handleDiscard}
-          disabled={!canDiscard}
-          title={
-            canDiscard
-              ? "Volta a tela para a última configuração salva"
-              : "Disponível assim que sua configuração salva for carregada"
-          }
-        >
-          Descartar
-        </Btn>
-        <Btn
-          variant="primary"
-          icon="check"
-          onClick={handleSave}
-          disabled={saveBlocked !== null || saving}
-          title={saveBlocked ? SAVE_BLOCKED_MESSAGE[saveBlocked] : undefined}
-        >
-          {saving
-            ? "Salvando…"
-            : professionalPending
-              ? "Salvar dados do profissional"
-              : "Salvar configuração"}
-        </Btn>
-      </div>
+      </main>
 
       {/* Catalog service editor. Mounted at the screen root, not inside the
           section, so its overlay covers the sticky save bar too — a dialog you

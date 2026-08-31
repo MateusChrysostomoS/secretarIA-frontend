@@ -1199,6 +1199,230 @@ describe("listDoctorPatients", () => {
 // Secretaries — the clinic's human receptionists (secretary role, 2026-08-14)
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// getDoctorProfessionals — per-session cache + single-flight.
+//
+// The bug this locks down: the endpoint has two INDEPENDENT consumers per
+// screen (/configuracao's hydrate() and the <ConfigGapBanner> it renders), so
+// one mount fired the same GET twice. Every test here counts fetchMock calls,
+// because "how many requests hit the network" is the whole point.
+//
+// beforeEach already does vi.resetModules() + a fresh dynamic import, so the
+// module-level cache/in-flight/epoch Maps start empty in every test.
+// ---------------------------------------------------------------------------
+
+function professionalRow(
+  id: string,
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
+  return {
+    id,
+    name: `Dra. ${id}`,
+    is_active: true,
+    has_calendar: true,
+    has_hours: true,
+    has_services: true,
+    complete: true,
+    linked_user_email: null,
+    invite_pending: false,
+    ...overrides,
+  };
+}
+
+describe("getDoctorProfessionals — cache + single-flight", () => {
+  it("concurrent callers share ONE request (the /configuracao double-fetch)", async () => {
+    const session = makeSession({ token: "tok1" });
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(200, { items: [professionalRow("p-1")] }),
+    );
+
+    // Started before either resolves — exactly how the page and the banner
+    // race on a real mount.
+    const [a, b] = await Promise.all([
+      api.getDoctorProfessionals(session),
+      api.getDoctorProfessionals(session),
+    ]);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][0]).toBe("/doctor/professionals");
+    expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe("Bearer tok1");
+    expect(a).toEqual(b);
+    expect(a[0].id).toBe("p-1");
+  });
+
+  it("a caller arriving after the first RESOLVED is still served from memory", async () => {
+    // Single-flight alone would miss this one: the two consumers are gated on
+    // the same hub-token signal but need not land in the same React commit.
+    const session = makeSession({ token: "tok1" });
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(200, { items: [professionalRow("p-1")] }),
+    );
+
+    await api.getDoctorProfessionals(session);
+    const second = await api.getDoctorProfessionals(session);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(second[0].id).toBe("p-1");
+  });
+
+  it("goes back to the network once the short TTL has passed", async () => {
+    const session = makeSession({ token: "tok1" });
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(200, { items: [professionalRow("p-1")] }),
+    );
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(200, { items: [professionalRow("p-2")] }),
+    );
+
+    const realNow = Date.now();
+    const nowSpy = vi.spyOn(Date, "now").mockReturnValue(realNow);
+    try {
+      await api.getDoctorProfessionals(session);
+      nowSpy.mockReturnValue(realNow + 60_000); // well past PROFESSIONALS_TTL_MS
+      const fresh = await api.getDoctorProfessionals(session);
+
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(fresh[0].id).toBe("p-2");
+    } finally {
+      nowSpy.mockRestore();
+    }
+  });
+
+  it("refetches after invalidateDoctorProfessionals (the reloadRoster path)", async () => {
+    const session = makeSession({ token: "tok1" });
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(200, { items: [professionalRow("p-1")] }),
+    );
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(200, { items: [professionalRow("p-1"), professionalRow("p-2")] }),
+    );
+
+    const before = await api.getDoctorProfessionals(session);
+    expect(before).toHaveLength(1);
+
+    // Stands in for an invite accepted / self-bind / calendar connected.
+    api.invalidateDoctorProfessionals(session);
+    const after = await api.getDoctorProfessionals(session);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(after).toHaveLength(2);
+  });
+
+  it("invalidation also drops an IN-FLIGHT read, so nobody joins a stale one", async () => {
+    // The subtle half: a request that started BEFORE the mutation resolves with
+    // the pre-mutation roster. Clearing only the cache would let reloadRoster
+    // join it and show the roster it was called to refresh away.
+    const session = makeSession({ token: "tok1" });
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(200, { items: [professionalRow("p-1")] }),
+    );
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(200, { items: [professionalRow("p-1"), professionalRow("p-2")] }),
+    );
+
+    const started = api.getDoctorProfessionals(session); // in flight
+    api.invalidateDoctorProfessionals(session); // mutation lands mid-flight
+    const afterMutation = api.getDoctorProfessionals(session);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    // Whoever asked before the change keeps the answer to the question it asked.
+    expect(await started).toHaveLength(1);
+    expect(await afterMutation).toHaveLength(2);
+  });
+
+  it("a superseded read never republishes its stale rows to the cache", async () => {
+    // Same race as above, but with the OLD request resolving LAST. Without the
+    // epoch guard it would overwrite the fresh roster for the rest of the TTL.
+    const session = makeSession({ token: "tok1" });
+    let releaseStale: (r: Response) => void = () => {};
+    const stale = new Promise<Response>((resolve) => {
+      releaseStale = resolve;
+    });
+    fetchMock.mockReturnValueOnce(stale); // the slow, pre-mutation one
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(200, { items: [professionalRow("p-1"), professionalRow("p-2")] }),
+    );
+
+    const superseded = api.getDoctorProfessionals(session);
+    api.invalidateDoctorProfessionals(session);
+    expect(await api.getDoctorProfessionals(session)).toHaveLength(2);
+
+    releaseStale(mockResponse(200, { items: [professionalRow("p-1")] }));
+    expect(await superseded).toHaveLength(1); // its own caller, its own answer
+
+    // A third consumer within the TTL must still see the POST-mutation roster,
+    // and must not have paid for another request to get it.
+    expect(await api.getDoctorProfessionals(session)).toHaveLength(2);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("is keyed by session — a second clinic never reads the first one's roster", async () => {
+    // Login is a route push, so one tab can hold two clinics' sessions inside a
+    // single page lifetime. An unkeyed cache would serve tenant A's roster to B.
+    const a = makeSession({ tenantId: "t1", token: "tok-a" });
+    const b = makeSession({ tenantId: "t2", token: "tok-b" });
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(200, { items: [professionalRow("clinic-a-prof")] }),
+    );
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(200, { items: [professionalRow("clinic-b-prof")] }),
+    );
+
+    expect((await api.getDoctorProfessionals(a))[0].id).toBe("clinic-a-prof");
+    expect((await api.getDoctorProfessionals(b))[0].id).toBe("clinic-b-prof");
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[1][1].headers.Authorization).toBe("Bearer tok-b");
+    // And invalidating one clinic must not evict the other.
+    api.invalidateDoctorProfessionals(b);
+    expect((await api.getDoctorProfessionals(a))[0].id).toBe("clinic-a-prof");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("hands every caller its OWN array, so one consumer cannot reorder another's", async () => {
+    const session = makeSession({ token: "tok1" });
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(200, { items: [professionalRow("p-1"), professionalRow("p-2")] }),
+    );
+
+    const first = await api.getDoctorProfessionals(session);
+    first.reverse(); // a consumer sorting the roster for display
+    const second = await api.getDoctorProfessionals(session);
+
+    expect(second.map((p) => p.id)).toEqual(["p-1", "p-2"]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not cache a failure — the next caller retries", async () => {
+    const session = makeSession({ token: "tok1" });
+    fetchMock.mockRejectedValueOnce(new Error("network down"));
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(200, { items: [professionalRow("p-1")] }),
+    );
+
+    await expect(api.getDoctorProfessionals(session)).rejects.toThrow("network down");
+    expect((await api.getDoctorProfessionals(session))[0].id).toBe("p-1");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("still unwraps { items }, tolerates a bare array, and never returns a non-array", async () => {
+    // Pre-existing contract, unchanged by the cache: a non-array reaching the
+    // Configuração page throws during render and blanks the screen.
+    const session = makeSession({ token: "tok1" });
+
+    fetchMock.mockResolvedValueOnce(mockResponse(200, [professionalRow("p-1")]));
+    expect(await api.getDoctorProfessionals(session)).toHaveLength(1);
+
+    api.invalidateDoctorProfessionals(session);
+    fetchMock.mockResolvedValueOnce(mockResponse(200, { unexpected: "shape" }));
+    expect(await api.getDoctorProfessionals(session)).toEqual([]);
+
+    api.invalidateDoctorProfessionals(session);
+    fetchMock.mockResolvedValueOnce(mockResponse(200, { items: "not a list" }));
+    expect(await api.getDoctorProfessionals(session)).toEqual([]);
+  });
+});
+
 describe("getDoctorSecretaries", () => {
   it("GETs /doctor/secretaries with the bearer and unwraps the { items } envelope", async () => {
     const session = makeSession({ token: "tok1" });

@@ -26,7 +26,7 @@ function run(...actions: HydrationAction[]): HydrationState {
   return actions.reduce(hydrationReducer, INITIAL_HYDRATION_STATE);
 }
 
-const TENANT_PATCH = { greeting_message: "olá" };
+const TENANT_PATCH = { clinic_description: "oftalmologia" };
 const PROFESSIONAL_PATCH = { specialty: "clínica geral" };
 
 /**
@@ -226,7 +226,7 @@ describe("performSave uses one transactional request", () => {
   });
 
   it("returns what the backend echoed, not what the caller sent", async () => {
-    const persisted = tenantWire({ greeting_message: "o que o servidor gravou" });
+    const persisted = tenantWire({ clinic_description: "o que o servidor gravou" });
     const result = await performSave({
       state: LOADED_NO_PROFESSIONAL,
       ...spies({
@@ -342,7 +342,7 @@ describe("legacy fallback", () => {
   it("reports a HALF-SAVE as partial, naming which half landed", async () => {
     // The one case the aggregate endpoint makes impossible, and the reason the
     // fallback must never claim atomicity.
-    const persisted = tenantWire({ greeting_message: "tenant já gravado" });
+    const persisted = tenantWire({ clinic_description: "tenant já gravado" });
     const cause = new HubApiError(500, "professional PUT failed");
     const result = await performSave({
       state: LOADED_WITH_A,

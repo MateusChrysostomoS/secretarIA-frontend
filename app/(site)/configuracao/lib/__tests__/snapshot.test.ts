@@ -38,7 +38,7 @@ describe("wire → form state", () => {
     expect(slices.ctx.addressLine).toBe("Rua Exemplo, 1");
     expect(slices.ctx.insurances).toBe("Convênio Exemplo");
     expect(slices.ctx.collectInsurance).toBe(true);
-    expect(slices.messages.greetingMessage).toBe("Olá! Como posso ajudar?");
+    expect(slices.messages.clinicDescription).toBe("Oftalmologia e cirurgia refrativa.");
     expect(slices.prefs.defaultDur).toBe(30);
     expect(slices.gcal.mode).toBe("per_professional");
   });
@@ -69,7 +69,7 @@ describe("wire → form state", () => {
     expect(tenant.ctx.clinicName).toBe("");
     expect(tenant.ctx.addressLine).toBe("");
     expect(tenant.ctx.insurances).toBe("");
-    expect(tenant.messages.greetingMessage).toBe("");
+    expect(tenant.messages.clinicDescription).toBe("");
 
     const professional = emptyProfessionalSlices();
     expect(professional.services).toEqual([]);
@@ -157,7 +157,7 @@ describe("dirtySections (what Descartar reports)", () => {
       tenant: {
         ...baseline.tenant,
         ctx: { ...baseline.tenant.ctx, city: "Campinas" },
-        messages: { ...baseline.tenant.messages, greetingMessage: "novo texto" },
+        messages: { ...baseline.tenant.messages, clinicDescription: "novo texto" },
         prefs: { defaultDur: 60 },
         gcal: { ...baseline.tenant.gcal, mode: "shared_account" as const },
       },
@@ -205,7 +205,7 @@ describe("payload honesty — no visible control is silently dropped", () => {
     });
     expect(payload.insurances).toEqual(["Convênio Exemplo"]);
     expect(payload.collect_insurance).toBe(true);
-    expect(payload.greeting_message).toBe("Olá! Como posso ajudar?");
+    expect(payload.clinic_description).toBe("Oftalmologia e cirurgia refrativa.");
     expect(payload.appointment_duration_min).toBe(45);
     expect(payload.google_calendar_mode).toBe("per_professional");
     // The clinic's own opening hours. They were always on the wire and always

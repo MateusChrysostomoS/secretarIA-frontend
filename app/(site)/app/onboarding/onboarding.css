@@ -32,7 +32,7 @@
 }
 .onb-node.done .onb-node-dot {
   background: var(--brand);
-  color: #fff;
+  color: var(--on-brand);
   border-color: var(--brand);
 }
 .onb-node.current .onb-node-dot {

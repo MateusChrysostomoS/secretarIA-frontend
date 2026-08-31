@@ -8,7 +8,7 @@
 // screen, so it keeps a lighter header instead.
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { BrandGlyph } from "../../_components/BrandGlyph";
 import "../../checkout/checkout.css";
 import "../cadastro.css";
@@ -22,6 +22,12 @@ type WizardShellProps = {
 
 export function WizardShell({ progress, progressLabel, children }: WizardShellProps) {
   const pct = Math.max(0, Math.min(1, progress)) * 100;
+  // Names the progressbar below. aria-valuenow/min/max were already there —
+  // what a screen reader had no way to say was WHICH progress this is, so it
+  // announced a bare "progress bar, 0%". Points at the step name only, not the
+  // whole label row: the row's second span is the percentage, and repeating it
+  // in the name would have it read twice, once as name and once as value.
+  const labelId = useId();
 
   return (
     <>
@@ -35,12 +41,13 @@ export function WizardShell({ progress, progressLabel, children }: WizardShellPr
       <main className="cad-main">
         <div className="card cad-card">
           <div className="cad-progress-label">
-            <span>{progressLabel}</span>
+            <span id={labelId}>{progressLabel}</span>
             <span>{Math.round(pct)}%</span>
           </div>
           <div
             className="cad-progress-track"
             role="progressbar"
+            aria-labelledby={labelId}
             aria-valuenow={Math.round(pct)}
             aria-valuemin={0}
             aria-valuemax={100}

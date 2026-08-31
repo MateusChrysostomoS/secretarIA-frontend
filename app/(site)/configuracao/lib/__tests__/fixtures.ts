@@ -14,7 +14,12 @@ export const PROF_B = "prof-b";
 export function tenantWire(overrides: Partial<TenantConfigWire> = {}): TenantConfigWire {
   return {
     clinic_name: "Clínica Exemplo",
-    greeting_message: "Olá! Como posso ajudar?",
+    clinic_description: "Oftalmologia e cirurgia refrativa.",
+    // Derived, read-only. The template mirrors what the backend renders:
+    // frame text around the placeholder that marks the clinic's slot.
+    greeting_preview_template:
+      "Olá! Bem-vindo(a) à Clínica!\n\n{{descricao}}\n\nImportante: assistente automatizado.",
+    clinic_description_max: 180,
     returning_greeting_message: null,
     post_consult_message: null,
     post_consult_knowledge: null,

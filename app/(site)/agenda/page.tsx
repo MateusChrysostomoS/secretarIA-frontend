@@ -699,60 +699,63 @@ export default function AgendaPage() {
         sticky={false}
       />
 
-      {/* FEAT 42 — the top-right "configure sua secretarIA" toast. This screen
-          also serves a session-less demo visitor, and the banner renders nothing
-          without a session, so no gate is needed for that. `enabled` waits for
-          the entitlement check to SETTLE and refuses a 403 tenant: a demo
-          showcase must never nag a visitor about a product they do not have. */}
-      <ConfigGapBanner
-        session={session}
-        enabled={hubCheckReady && !notEntitled}
-        fixHref="/configuracao?secao=prof"
-      />
-
-      {/* no session / not entitled / hub unavailable / hub not configured */}
-      <HubNotice
-        session={session}
-        notEntitled={notEntitled}
-        ready={hubCheckReady}
-        unavailable={unavailable}
-        onRetry={retry}
-      />
-
-      {/* honest error state when hubTokenReady but the events fetch itself failed —
-          distinct from HubNotice's `unavailable` (token mint never succeeded) */}
-      {hubFetchFailed && (
-        <div
-          role="status"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 9,
-            margin: "0 26px 12px",
-            padding: "10px 14px",
-            borderRadius: 10,
-            background: "var(--st-pending-bg, #fff6e5)",
-            border: "1px solid var(--st-pending-bd, #f2d98a)",
-            color: "var(--st-pending-ink, #9a6b00)",
-            fontSize: 12.5,
-          }}
-        >
-          <Icon name="clock" size={15} style={{ flexShrink: 0 }} />
-          <span style={{ flex: 1 }}>Não foi possível carregar a agenda.</span>
-          <Btn
-            variant="outline"
-            size="sm"
-            onClick={() => { void reloadRange(); }}
-            style={{ flexShrink: 0 }}
-          >
-            Tentar novamente
-          </Btn>
-        </div>
-      )}
-
       <main
         style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}
       >
+        {/* These three banners live INSIDE <main>, not beside it: as siblings
+            of <main> they were page content in no landmark at all, which is
+            the single `region` violation axe reported on this screen. */}
+        {/* FEAT 42 — the top-right "configure sua secretarIA" toast. This screen
+            also serves a session-less demo visitor, and the banner renders nothing
+            without a session, so no gate is needed for that. `enabled` waits for
+            the entitlement check to SETTLE and refuses a 403 tenant: a demo
+            showcase must never nag a visitor about a product they do not have. */}
+        <ConfigGapBanner
+          session={session}
+          enabled={hubCheckReady && !notEntitled}
+          fixHref="/configuracao?secao=prof"
+        />
+
+        {/* no session / not entitled / hub unavailable / hub not configured */}
+        <HubNotice
+          session={session}
+          notEntitled={notEntitled}
+          ready={hubCheckReady}
+          unavailable={unavailable}
+          onRetry={retry}
+        />
+
+        {/* honest error state when hubTokenReady but the events fetch itself failed —
+            distinct from HubNotice's `unavailable` (token mint never succeeded) */}
+        {hubFetchFailed && (
+          <div
+            role="status"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 9,
+              margin: "0 26px 12px",
+              padding: "10px 14px",
+              borderRadius: 10,
+              background: "var(--st-pending-bg, #fff6e5)",
+              border: "1px solid var(--st-pending-bd, #f2d98a)",
+              color: "var(--st-pending-ink, #9a6b00)",
+              fontSize: 12.5,
+            }}
+          >
+            <Icon name="clock" size={15} style={{ flexShrink: 0 }} />
+            <span style={{ flex: 1 }}>Não foi possível carregar a agenda.</span>
+            <Btn
+              variant="outline"
+              size="sm"
+              onClick={() => { void reloadRange(); }}
+              style={{ flexShrink: 0 }}
+            >
+              Tentar novamente
+            </Btn>
+          </div>
+        )}
+
         <Toolbar
           view={view}
           setView={setView}

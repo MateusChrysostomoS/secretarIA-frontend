@@ -102,10 +102,19 @@ headers de nginx → guarda de sessão → o resto.
   (3) os 4 `<select>` do modal "Nova consulta" já tinham nome — o defeito ali era o
   `Toggle` local e um `<textarea>`. O axe **passa** o caso (1), então não serve sozinho
   como prova. Padrão virou a skill `custom-control-accessible-name`.
-- `PROMPT_AUDIT_FRONTEND_A11Y_CONTRASTE_LANDMARKS.md` — contraste insuficiente (3 tokens/CSS
-  diferentes, não 1 como a hipótese original) e landmarks ausentes em `/configuracao`; a
-  alegação sobre o progressbar do cadastro estava desatualizada (os `aria-value*` já
-  existem).
+- ~~`PROMPT_AUDIT_FRONTEND_A11Y_CONTRASTE_LANDMARKS.md`~~ — **EXECUTADO 2026-08-31** — ver
+  `docs/CHECKPOINT_a11y_contraste_landmarks.md`. **0 violações** de `color-contrast`,
+  `region` e `aria-progressbar-name` nas 5 telas × 2 temas, e 0 também com o conjunto
+  COMPLETO de regras do axe. **Não deployado** (exige rebuild da imagem). Correções ao
+  diagnóstico: (1) os números do relatório usavam `--surface` como fundo, mas o fundo real
+  de `/agenda` e `/configuracao` é `--page` (`.app-screen`) — **todos os contrastes eram
+  piores** que o relatado (`--ink-faint` era 2.53:1, não 2.88:1); (2) são **seis** causas,
+  não três, em 2 design systems — a que faltava é `#fff` sobre um FUNDO `--brand`
+  (2.59:1 no escuro), que nenhuma variante de texto conserta, e que motivou o token novo
+  `--on-brand`; (3) a "Causa 4" (toolbar da agenda) não era `--ink-soft` — esse token
+  **nunca aparece** em violação nenhuma, eram `--ink-faint` mais o botão `Segmented`
+  ativo. **Pendência de design:** a escala clara ficou comprimida (`--ink-soft` 4.93:1 vs
+  `--ink-faint` 4.84:1) — ver §7 do checkpoint.
 - ~~`PROMPT_AUDIT_FRONTEND_SEC_NGINX_HEADERS.md`~~ — **EXECUTADO 2026-08-30** — ver
   `docs/CHECKPOINT_nginx_hardening.md`. Headers de segurança, 404 de verdade e `robots.txt`
   prontos e verificados contra um nginx real; **ainda não deployado** (o `nginx.conf` só
@@ -144,10 +153,21 @@ headers de nginx → guarda de sessão → o resto.
   nada** e foi removida. **Não deployado** (exige rebuild da imagem). O `brain-frontend`
   tem o mesmo `<link>` e ficou de fora, por escopo. Duas origens do Google viraram
   permissão morta na CSP do `nginx.conf`.
-- `PROMPT_AUDIT_FRONTEND_REQUISICOES_DUPLICADAS.md` — `GET /doctor/professionals` duplicado
-  em `/configuracao` (e provavelmente também em `/agenda`/`/inicio` via `ConfigGapBanner`,
-  não confirmado pela auditoria original). Corrige também uma causa errada que a auditoria
-  atribuiu à lentidão de `/doctor/onboarding` (não tem relação com o cache de hub token).
+- ~~`PROMPT_AUDIT_FRONTEND_REQUISICOES_DUPLICADAS.md`~~ — **EXECUTADO 2026-08-31**, uncommitted.
+  `getDoctorProfessionals` (`lib/manage-api.ts`) ganhou cache+single-flight por sessão
+  (molde do `getHubToken`), TTL de 5s, e `prefetch={false}` nos 2 `<Link>` de
+  `app/(auth)/page.tsx`. Correção ao diagnóstico: **era 1 tela, não 3** — medido ao vivo em
+  produção (Resource Timing API), só `/configuracao` duplicava (2 chamadas, 19ms de
+  intervalo); `/agenda` e `/inicio` só têm o `ConfigGapBanner` como consumidor, então nunca
+  houve o que deduplicar lá. Bug pego só por mutation test: só derrubar o in-flight não
+  bastava — uma request antiga (iniciada antes de uma mutação) podia resolver DEPOIS da
+  nova e sobrescrever o roster fresco; a correção usa o mesmo `generationRef`/epoch que
+  `hydrate()` já usa. PERF-3: confirmado que `/doctor/onboarding` não passa por
+  `getHubToken` (endpoint errado no relatório original), e `Access-Control-Max-Age: 600`
+  **já está setado** no brain-api — não é item aberto. **Não dá pra provar o 2→1
+  localmente** (brain-api rejeita `Origin: http://localhost:*`); só depois do deploy. Rodou
+  em paralelo com a sessão de A11Y-2/3 na mesma working tree, sem colisão real —
+  ver [[parallel-sessions-same-worktree]] antes de commitar.
 - `PROMPT_AUDIT_FRONTEND_UX_ONBOARDING.md` — código de erro cru da Meta em
   `/app/onboarding` (ex.: "auth_cancelled"); `/app/reativar` não mostra dias restantes,
   só total e prazo final.

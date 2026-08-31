@@ -17,12 +17,18 @@ main.login-page {
   --ink:        #0b1f2a;
   --ink-2:      #1c3344;
   --muted:      #5a6b76;
-  --dim:        #8a98a1;
+  /* AA on both grounds it lands on: 5.03:1 on --surface #fff (the "OU"
+     divider) and 4.65:1 on --bg #f7f6f2 (input placeholders).
+     Was #8a98a1 = 2.96:1 / 2.74:1. */
+  --dim:        #63717b;
   --border:     #e6e1d6;
   --border-2:   #d8d2c4;
   --navy:       #0b3a4a;
   --navy-2:     #0e4a5e;
-  --teal:       #1a8c93;
+  /* 5.01:1 on --surface as small text ("Esqueci minha senha", .login-badge).
+     Was #1a8c93 = 4.02:1. The 32px/26px wordmark and title usages only ever
+     needed 3:1 and still clear it. */
+  --teal:       #177b82;
   --green:      #5b8c5a;
   --warning:    #c89638;
   --danger:     #c4544c;
@@ -576,7 +582,9 @@ html[data-theme="dark"] main.login-page {
   --ink:        #f3eee0;
   --ink-2:      #e0d8c4;
   --muted:      #a0adb8;
-  --dim:        #6e7c87;
+  /* AA on the lightest dark ground (--surface-2 #173342): 4.65:1.
+     Was #6e7c87 = 3.08:1 there, 3.47:1 on --surface. */
+  --dim:        #8f9ba4;
   --border:     rgba(255, 255, 255, 0.07);
   --border-2:   rgba(255, 255, 255, 0.14);
   --teal:       #2aa6a8;

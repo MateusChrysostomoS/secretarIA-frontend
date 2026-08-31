@@ -1879,25 +1879,126 @@ export type DoctorProfessional = {
   invite_pending: boolean;
 };
 
-// GET /doctor/professionals — ALWAYS resolves to an array. The endpoint wraps its
-// rows in an `{ items: [...] }` envelope (brain-api schemas/onboarding.py::
-// ProfessionalsOut), so the raw body is an OBJECT, not a list. Unwrapping here (and
-// tolerating a bare array, in case the envelope is ever dropped) keeps that shape
-// detail out of every caller: the Configuração page feeds this straight into
-// `list.some(...)` inside a setState updater, which React runs DURING RENDER — a
-// non-array there throws past every try/catch and blanks the whole page with
-// "Application error: a client-side exception has occurred".
-export async function getDoctorProfessionals(
+// --- roster cache: module memory + single-flight, keyed by session -----------
+//
+// WHY. GET /doctor/professionals has more than one INDEPENDENT consumer per
+// screen, and neither knows about the other: /configuracao's own hydrate() and
+// the <ConfigGapBanner> it renders, which owns its fetch by design so it keeps
+// working unchanged on /agenda and /inicio, where no page-level roster fetch
+// exists. One mount of /configuracao therefore fired this request twice.
+//
+// Same shape as getHubToken in lib/secretaria-hub.ts: a module-memory entry
+// plus an in-flight promise map, both keyed by the OWNING session
+// (`${tenantId}:${token}`) rather than by "the last roster fetched". Login here
+// is a client-side route push (no full reload — app/(auth)/page.tsx), so one
+// tab can hold sessions for more than one clinic within a single page
+// lifetime; an unkeyed cache would hand clinic A's roster to clinic B. Same
+// reason the hub token is keyed, spelled out at length there.
+//
+// The TTL is deliberately SHORT and is NOT a freshness policy. It is only wide
+// enough to collapse one screen's mount fan-out: the two consumers above are
+// gated on the same hub-token signal but not guaranteed to land in the same
+// React commit, so single-flight ALONE would miss the case where the second
+// asks just after the first resolved. Anything that CHANGES the roster must
+// call invalidateDoctorProfessionals() — the TTL is the backstop for a path
+// that forgets, never the mechanism.
+//
+// Cleared only by that invalidation and by the TTL, never by logout: signOut()
+// is a route push, so these entries outlive it in tab memory. Not a stale-read
+// risk (a new login carries a new token, hence a new key), and the same
+// property the hub token cache already has.
+const PROFESSIONALS_TTL_MS = 5_000;
+
+type CachedProfessionals = { rows: DoctorProfessional[]; expiresAt: number };
+
+const professionalsCache = new Map<string, CachedProfessionals>();
+const professionalsInFlight = new Map<string, Promise<DoctorProfessional[]>>();
+// Bumped by every invalidation. A read that STARTED before the bump must not
+// write its now-pre-mutation rows into the cache when it lands: dropping the
+// in-flight entry alone is not enough, because the older request can still
+// resolve LAST (slower connection, a retried 401) and overwrite the fresh
+// roster the invalidation went and fetched — putting stale data back for the
+// rest of the TTL. Same generation guard the screens use around their own
+// hydrations (see configuracao/page.tsx and useSecretariaHub).
+const professionalsEpoch = new Map<string, number>();
+
+function professionalsKey(session: Session): string {
+  return `${session.tenantId}:${session.token}`;
+}
+
+// Drops this session's cached roster so the next getDoctorProfessionals() call
+// goes to the network. Call it from anything that CHANGED the roster — an
+// invite accepted, a self-bind, a calendar connected, a save that moved a
+// professional's completeness — before re-reading.
+//
+// Drops the IN-FLIGHT entry too, and that half is the point: a request that
+// started before the mutation will resolve with the pre-mutation roster, and
+// joining it is exactly the stale read this function exists to prevent.
+// Callers already waiting on that request keep their own promise (they asked
+// before the change); the next caller starts a genuinely new one.
+export function invalidateDoctorProfessionals(session: Session): void {
+  const key = professionalsKey(session);
+  professionalsEpoch.set(key, (professionalsEpoch.get(key) ?? 0) + 1);
+  professionalsCache.delete(key);
+  professionalsInFlight.delete(key);
+}
+
+// The wire read behind getDoctorProfessionals, minus the caching. ALWAYS
+// resolves to an array: the endpoint wraps its rows in an `{ items: [...] }`
+// envelope (brain-api schemas/onboarding.py::ProfessionalsOut), so the raw body
+// is an OBJECT, not a list. Unwrapping here (and tolerating a bare array, in
+// case the envelope is ever dropped) keeps that shape detail out of every
+// caller: the Configuração page feeds this straight into `list.some(...)`
+// inside a setState updater, which React runs DURING RENDER — a non-array there
+// throws past every try/catch and blanks the whole page with "Application
+// error: a client-side exception has occurred".
+//
+// Only a SUCCESSFUL read populates the cache; a rejection leaves it empty so
+// the next caller retries instead of inheriting a failure. And only a read that
+// was never invalidated mid-flight does — the caller still gets the rows it
+// asked for either way, it just does not publish them to everyone else.
+async function fetchDoctorProfessionals(
   session: Session,
+  key: string,
 ): Promise<DoctorProfessional[]> {
+  const epoch = professionalsEpoch.get(key) ?? 0;
   const data = await manageFetch<DoctorProfessional[] | { items?: unknown }>(
     "/doctor/professionals",
     {},
     session.token,
   );
-  if (Array.isArray(data)) return data;
-  const items = (data as { items?: unknown })?.items;
-  return Array.isArray(items) ? (items as DoctorProfessional[]) : [];
+  const items = Array.isArray(data) ? data : (data as { items?: unknown })?.items;
+  const rows = Array.isArray(items) ? (items as DoctorProfessional[]) : [];
+  if ((professionalsEpoch.get(key) ?? 0) === epoch) {
+    professionalsCache.set(key, { rows, expiresAt: Date.now() + PROFESSIONALS_TTL_MS });
+  }
+  return rows;
+}
+
+// GET /doctor/professionals, deduplicated per session (see the block above).
+// Concurrent callers share one request; a caller arriving within
+// PROFESSIONALS_TTL_MS of a successful one is served from memory.
+//
+// Every caller gets its OWN array, even on the cached path. Before the cache
+// each call returned a fresh array, and handing out one shared instance would
+// mean a future consumer that sorts the roster for display silently reorders it
+// for every other consumer AND corrupts the cache. A shallow copy of a handful
+// of rows costs nothing and keeps the old contract intact.
+export async function getDoctorProfessionals(
+  session: Session,
+): Promise<DoctorProfessional[]> {
+  const key = professionalsKey(session);
+  const cached = professionalsCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) return cached.rows.slice();
+
+  let inFlight = professionalsInFlight.get(key);
+  if (!inFlight) {
+    inFlight = fetchDoctorProfessionals(session, key).finally(() => {
+      professionalsInFlight.delete(key);
+    });
+    professionalsInFlight.set(key, inFlight);
+  }
+  return (await inFlight).slice();
 }
 
 export type ProfessionalInvitePayload = {

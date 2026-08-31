@@ -127,7 +127,7 @@ export function Btn({
   };
 
   const variantStyles: Record<BtnVariant, CSSProperties> = {
-    primary:   { background: hov ? "var(--brand-strong)" : "var(--brand)", color: "#fff", boxShadow: "var(--shadow-sm)" },
+    primary:   { background: hov ? "var(--brand-strong)" : "var(--brand)", color: "var(--on-brand)", boxShadow: "var(--shadow-sm)" },
     solidDark: { background: hov ? "#0c4a43" : "#0e564d", color: "#fff" },
     outline:   { background: hov ? "var(--surface-2)" : "var(--surface)", color: "var(--ink)", border: "1px solid var(--line-strong)" },
     ghost:     { background: hov ? "var(--surface-2)" : "transparent", color: "var(--ink-soft)" },
@@ -223,7 +223,7 @@ export function Segmented<T extends string>({
               display: "inline-flex", alignItems: "center", gap: 6,
               padding: size === "sm" ? "6px 13px" : "8px 17px", borderRadius: 999,
               fontSize: size === "sm" ? 13 : 14, fontWeight: 600, lineHeight: 1,
-              color:      active ? "#fff" : "var(--ink-soft)",
+              color:      active ? "var(--on-brand)" : "var(--ink-soft)",
               background: active ? "var(--brand)" : "transparent",
               boxShadow:  active ? "var(--shadow-sm)" : "none",
               transition: "all .18s var(--ease)", cursor: disabled ? "not-allowed" : "pointer",
@@ -325,7 +325,7 @@ export function HelpTip({ text }: { text: string }) {
           display: "inline-flex", alignItems: "center", justifyContent: "center",
           fontSize: 11, fontWeight: 700, lineHeight: 1, fontFamily: "var(--font-sans)",
           background: open ? "var(--brand)"      : "var(--surface-2)",
-          color:      open ? "#fff"               : "var(--ink-faint)",
+          color:      open ? "var(--on-brand)"     : "var(--ink-faint)",
           border:     `1px solid ${open ? "var(--brand)" : "var(--line-strong)"}`,
           transition: "all .15s var(--ease)",
         }}

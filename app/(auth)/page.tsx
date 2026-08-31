@@ -160,11 +160,18 @@ function EntryInner() {
           {/* The wizard resolves the plan from the query string; SIGNUP_HREF
               carries the one plan this domain sells. It is a plain link, not a
               gated button: /cadastro applies the launch gate itself (see
-              app/(site)/_lib/launch.ts), so the rule lives in exactly one place. */}
+              app/(site)/_lib/launch.ts), so the rule lives in exactly one place.
+
+              prefetch={false}, here and on "Esqueci minha senha" below, for the
+              same reason: this whole screen is above the fold, so <Link> would
+              fetch both routes' RSC payloads (out/cadastro/index.txt,
+              out/esqueci_senha/index.txt) the moment it paints — on a login page
+              where the overwhelmingly likely next action is submitting the form. */}
           <Link
             href={SIGNUP_HREF}
             className="btn btn-secondary login-submit"
             style={{ marginTop: 12 }}
+            prefetch={false}
           >
             Contratar secretarIA
           </Link>
@@ -198,7 +205,9 @@ function EntryInner() {
             mim" checkbox here, see the file header), just the link right-aligned
             so it stays subordinate to "Entrar" below. */}
         <div className="login-row" style={{ justifyContent: "flex-end" }}>
-          <Link href="/esqueci_senha">Esqueci minha senha</Link>
+          <Link href="/esqueci_senha" prefetch={false}>
+            Esqueci minha senha
+          </Link>
         </div>
 
         <button

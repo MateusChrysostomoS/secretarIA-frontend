@@ -23,13 +23,23 @@
   --surface-inset:#f0e9db;
   --ink:#15322d;
   --ink-soft:#5b6a64;
-  --ink-faint:#92998f;
+  /* AA on the DARKEST surface it lands on (--page #f4eee3): 4.84:1.
+     Was #92998f = 2.53:1 — the single biggest contrast defect in the app. */
+  --ink-faint:#636a60;
   --line:rgba(21,50,45,.10);
   --line-strong:rgba(21,50,45,.16);
-  --brand:#14867a;
+  /* Darkened from #14867a. That value failed in BOTH of the roles this one
+     token plays in the light theme, and both wanted the same direction:
+     as small TEXT on --page it was 3.85:1, and as a BUTTON BACKGROUND under
+     white it was 4.44:1. Now 4.62:1 and 5.34:1. */
+  --brand:#12786d;
   --brand-strong:#0e6a60;
   --brand-tint:#e0efeb;
   --brand-ink:#0c4f48;
+  /* Foreground for anything painted ON a --brand fill. A literal #fff cannot
+     work in both themes: --brand is a DARK teal here but a LIGHT teal in the
+     dark theme, where white on it measures 2.59:1. Light theme keeps white. */
+  --on-brand:#ffffff;
   --accent-amber:#b07d27;
   --shadow-sm:0 1px 2px rgba(21,50,45,.06),0 1px 3px rgba(21,50,45,.05);
   --shadow-md:0 6px 16px rgba(21,50,45,.09),0 2px 6px rgba(21,50,45,.06);
@@ -55,13 +65,18 @@
   --surface-inset:#0e141b;
   --ink:#e6edf3;
   --ink-soft:#9aa4ae;
-  --ink-faint:#6e7681;
+  /* AA on the LIGHTEST surface it lands on (--surface-2 #20262e): 4.66:1.
+     Was #6e7681 = 3.32:1 there, 3.77:1 on --surface. */
+  --ink-faint:#878f99;
   --line:rgba(240,246,252,.10);
   --line-strong:rgba(240,246,252,.17);
   --brand:#28b3a6;
   --brand-strong:#34c4b6;
   --brand-tint:#10312e;
   --brand-ink:#5bccc0;
+  /* Dark ink, not white: --brand is light here, so white on it is 2.59:1
+     (below even the 3:1 floor for graphics). This is 7.29:1. */
+  --on-brand:#0d1117;
   --accent-amber:#e0b45a;
   --shadow-sm:0 1px 2px rgba(0,0,0,.45);
   --shadow-md:0 8px 22px rgba(0,0,0,.52);
@@ -100,11 +115,13 @@ img,svg{display:block}
 .section--tight{padding:78px 0}
 .band-dark{
   background:var(--band-dark-bg);
-  --ink:#eaf5f1; --ink-soft:#a9c2bb; --ink-faint:#7c958d;
+  --ink:#eaf5f1; --ink-soft:#a9c2bb; --ink-faint:#95aaa3;
   --surface:rgba(255,255,255,.04); --surface-2:rgba(255,255,255,.06);
   --surface-inset:rgba(0,0,0,.18);
   --line:rgba(255,255,255,.10); --line-strong:rgba(255,255,255,.17);
   --brand:#2bb6aa; --brand-strong:#34c4b6; --brand-tint:rgba(43,182,170,.14); --brand-ink:#7fd8cf;
+  /* Same inversion as the dark theme: this band re-lights --brand. */
+  --on-brand:#0c241f;
   --shadow-sm:0 1px 2px rgba(0,0,0,.3);
   --shadow-md:0 10px 28px rgba(0,0,0,.36);
   color:var(--ink);
@@ -144,7 +161,7 @@ img,svg{display:block}
   letter-spacing:.005em;white-space:nowrap;transition:all .18s var(--ease);
 }
 .btn svg{width:18px;height:18px}
-.btn--primary{background:var(--brand);color:#fff;box-shadow:var(--shadow-sm)}
+.btn--primary{background:var(--brand);color:var(--on-brand);box-shadow:var(--shadow-sm)}
 .btn--primary:hover{background:var(--brand-strong);transform:translateY(-1px);box-shadow:var(--shadow-md)}
 .btn--dark{background:#0e564d;color:#fff}
 .btn--dark:hover{background:#0c4a43;transform:translateY(-1px)}
@@ -418,7 +435,7 @@ img,svg{display:block}
 .price-grid>*{display:flex}
 .price-grid .price-card{flex:1}
 .price-card.featured{border-color:var(--brand);box-shadow:var(--shadow-md);background:color-mix(in oklab,var(--brand-tint) 30%,var(--surface))}
-.price-flag{position:absolute;top:-12px;left:26px;background:var(--brand);color:#fff;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:5px 12px;border-radius:999px}
+.price-flag{position:absolute;top:-12px;left:26px;background:var(--brand);color:var(--on-brand);font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:5px 12px;border-radius:999px}
 .price-name{font-family:var(--font-serif);font-size:23px;font-weight:600}
 /* wraps rather than overflowing: the amount can be a sentence ("Pague pelo uso"),
    not just a short "R$ 000,00" literal */

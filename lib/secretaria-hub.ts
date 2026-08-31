@@ -269,9 +269,34 @@ export type AddressWire = {
 // sends it (never persisted). See FIXED_GREETING_BUTTONS in
 // configuracao/components/MessagesSection.tsx for the local, read-only
 // display of this fixed set.
+// The token `greeting_preview_template` uses to mark the clinic's slot —
+// mirrors secretarIA's services/greeting_template.py::PREVIEW_PLACEHOLDER.
+// This is the ONLY piece of the frame duplicated on this side, and it is one
+// short literal rather than the copy itself, precisely so the two cannot
+// diverge in any way a reader would fail to notice.
+export const GREETING_PREVIEW_PLACEHOLDER = "{{descricao}}";
+
 export type TenantConfigWire = {
   clinic_name: string;
-  greeting_message: string | null; // capped at 1024 chars server-side
+  // The ONE clinic-authored slot in the first-contact WhatsApp greeting. The
+  // greeting itself is a FIXED product frame now (secretarIA
+  // services/greeting_template.py) that supplies the automated-assistant
+  // disclosure, the "no medical advice here" line, the button guidance and the
+  // emergency escape — `greeting_message` is gone from this wire entirely, the
+  // same way `greeting_buttons` went before it.
+  clinic_description: string | null;
+  // DERIVED, read-only. The rendered frame for THIS clinic with the slot
+  // replaced by `GREETING_PREVIEW_PLACEHOLDER`, so the hub can interpolate what
+  // the clinic is typing and show a live preview. Served by the backend on
+  // purpose: re-typing 800+ chars of frame copy here would guarantee the
+  // preview and the message patients actually receive drift apart.
+  greeting_preview_template: string;
+  // DERIVED, read-only. How many characters of `clinic_description` still fit
+  // for THIS clinic — it SHRINKS as `clinic_name` grows, because the whole
+  // rendered greeting has to fit WhatsApp's 1024-char interactive body. Never
+  // hardcode it here; a stale copy would let the UI accept a description the
+  // server then rejects with a 422.
+  clinic_description_max: number;
   returning_greeting_message: string | null; // capped at 1024 chars server-side
   // Ready-made message the secretary sends/uses right after a patient's
   // consult (send automation comes later; today it is stored + surfaced).
@@ -318,7 +343,7 @@ export type TenantConfigWire = {
 // PUT /tenants/me/config body (schemas/config.py::TenantConfigUpdate) — every
 // field optional, partial update (backend applies exclude_unset semantics).
 export type TenantConfigUpdatePayload = Partial<{
-  greeting_message: string | null;
+  clinic_description: string | null;
   returning_greeting_message: string | null;
   post_consult_message: string | null;
   post_consult_knowledge: string | null;

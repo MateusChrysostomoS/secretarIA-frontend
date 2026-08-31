@@ -59,7 +59,7 @@ export const EMPTY_CLINIC_CTX: ClinicCtx = {
 // Section 02 — Messages (greeting/persona copy the bot uses)
 // ---------------------------------------------------------------------------
 
-// greetingMessage/returningGreetingMessage/language are real fields on
+// clinicDescription/returningGreetingMessage/language are real fields on
 // secretarIA's wire (TenantConfigWire) — this section is the first UI for
 // them, not a new backend surface. There is no `greetingButtons` here
 // (2026-08 round): the WhatsApp first-contact buttons are now a FIXED
@@ -67,15 +67,34 @@ export const EMPTY_CLINIC_CTX: ClinicCtx = {
 // FIXED_GREETING_BUTTONS in MessagesSection.tsx, which renders them as
 // local, read-only display copy.
 export type Messages = {
-  greetingMessage: string;
+  // The clinic's own slot in the fixed first-contact greeting frame — what it
+  // offers, its values, a differentiator. NOT a whole greeting: the frame
+  // already introduces the clinic and the assistant, so writing another
+  // "Olá! Sou a secretária…" here is the duplicated, ambiguous opener the
+  // frame exists to remove. MessagesSection renders the surrounding frame so
+  // the clinic can see exactly where this text lands.
+  clinicDescription: string;
   returningGreetingMessage: string;
   language: string;
+  // DERIVED from the server, never edited here. `greetingPreviewTemplate` is
+  // the real frame with the clinic's slot marked by
+  // GREETING_PREVIEW_PLACEHOLDER; `clinicDescriptionMax` is this clinic's
+  // budget, which SHRINKS as the clinic name grows. Both are carried on this
+  // type (rather than fetched separately) so the section renders the live
+  // preview and the right counter from one snapshot.
+  greetingPreviewTemplate: string;
+  clinicDescriptionMax: number;
 };
 
 export const EMPTY_MESSAGES: Messages = {
-  greetingMessage: "",
+  clinicDescription: "",
   returningGreetingMessage: "",
   language: "pt-BR",
+  // Empty until the hub answers. The section degrades to "no preview yet"
+  // rather than inventing a frame — an invented one would be wrong copy shown
+  // as if it were what patients receive.
+  greetingPreviewTemplate: "",
+  clinicDescriptionMax: 0,
 };
 
 // ---------------------------------------------------------------------------

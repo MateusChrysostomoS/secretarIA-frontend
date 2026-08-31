@@ -217,9 +217,15 @@ export function applyWireInsurances(wire: string[] | null): string {
 
 export function applyWireMessages(cfg: TenantConfigWire): Messages {
   return {
-    greetingMessage: cfg.greeting_message ?? "",
+    clinicDescription: cfg.clinic_description ?? "",
     returningGreetingMessage: cfg.returning_greeting_message ?? "",
     language: cfg.language || "pt-BR",
+    // Read-only, server-derived. `?? ""` / `?? 0` rather than a local default
+    // frame or a hardcoded cap: an older backend that does not send these
+    // yields "no preview" and a disabled counter, which is honest, instead of
+    // a preview and a limit that quietly disagree with the server.
+    greetingPreviewTemplate: cfg.greeting_preview_template ?? "",
+    clinicDescriptionMax: cfg.clinic_description_max ?? 0,
   };
 }
 
@@ -310,7 +316,7 @@ export function buildConfigUpdatePayload(
     address: toWireAddress(ctx),
     insurances: toWireInsurances(ctx.insurances),
     collect_insurance: ctx.collectInsurance,
-    greeting_message: messages.greetingMessage || null,
+    clinic_description: messages.clinicDescription || null,
     returning_greeting_message: messages.returningGreetingMessage || null,
     language: messages.language,
     post_consult_message: postConsult.postConsultMessage || null,
