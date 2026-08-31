@@ -41,6 +41,16 @@
 // instead of as a generic appointment.
 
 import type { CalendarEventWire } from "@/lib/secretaria-hub";
+import {
+  GRID_DAY_COUNT,
+  addDays,
+  addMonths,
+  fromDateKey,
+  minutesFromMidnight,
+  startOfMonth,
+  startOfWeek,
+  toDateKey,
+} from "../../_shared/calendar-dates";
 import type { Appt } from "../../_shared/data";
 
 // The exact tag secretarIA's backend uses for a blocked slot (see the
@@ -77,63 +87,92 @@ export function formatBlockSummary(reason: string): string {
   return trimmed ? `${BLOCK_SUMMARY_PREFIX}: ${trimmed}` : BLOCK_SUMMARY_PREFIX;
 }
 
-// The demo grid has 6 columns, Monday(0)..Saturday(5) — Sunday has no column.
-const GRID_DAY_COUNT = 6;
-
-// Returns the Date (local time) for Monday 00:00 of the week containing `now`.
-// Shared anchor for currentWeekIsoRange (read) and slotToIsoRange (write) so
-// a slot picked in the grid lands in the same week the grid is showing.
-function mondayOfWeek(now: Date): Date {
-  const day = now.getDay(); // 0=Sun..6=Sat
-  // Distance back to Monday: Sunday (0) is 6 days after the prior Monday.
-  const diffToMonday = day === 0 ? 6 : day - 1;
-  const monday = new Date(now);
-  monday.setHours(0, 0, 0, 0);
-  monday.setDate(monday.getDate() - diffToMonday);
-  return monday;
+// Returns the ISO bounds [start 00:00, end 00:00) of the week beginning at
+// `weekStart` (a Sunday — see calendar-dates.ts's startOfWeek), in the
+// browser's local timezone. Date#toISOString converts to UTC on the wire; the
+// hub API takes any parseable ISO datetime.
+export function weekIsoRange(weekStart: Date): { startIso: string; endIso: string } {
+  return {
+    startIso: weekStart.toISOString(),
+    endIso: addDays(weekStart, GRID_DAY_COUNT).toISOString(),
+  };
 }
 
-// Returns the ISO bounds [monday 00:00, next monday 00:00) of the current
-// real-world week, in the browser's local timezone (Date#toISOString below
-// converts to UTC on the wire — the hub API takes any parseable ISO datetime).
+// The week containing `now`. Kept as a named entry point because "the current
+// real-world week" is what the screen opens on and what the "Hoje" button
+// returns to; everything else navigates by passing an explicit weekStart.
 export function currentWeekIsoRange(now: Date = new Date()): { startIso: string; endIso: string } {
-  const monday = mondayOfWeek(now);
-  const nextMonday = new Date(monday);
-  nextMonday.setDate(monday.getDate() + 7);
-  return { startIso: monday.toISOString(), endIso: nextMonday.toISOString() };
+  return weekIsoRange(startOfWeek(now));
 }
 
-// Converts a grid slot (day index 0=Monday..5=Saturday, start/dur in minutes
-// from midnight — the shape NewApptModal/BlockModal hand back) into ISO
-// start/end datetimes for AppointmentCreatePayload/BlockCreatePayload,
-// anchored to the SAME Monday currentWeekIsoRange uses for the read fetch.
-export function slotToIsoRange(
-  day: number,
+// Returns the ISO bounds covering every cell the month grid for `anchor`
+// draws — which starts before the 1st and ends after the last day, because the
+// grid is padded out to whole Sunday-first weeks (see monthGrid).
+//
+// The month view fetches this WIDER range rather than reusing the week window.
+// Once the grid shows real dates, an empty cell reads as a statement of fact
+// ("nothing booked that day"); with only one week loaded, ~28 of ~35 cells
+// would be making that claim without having asked.
+export function monthIsoRange(anchor: Date): { startIso: string; endIso: string } {
+  const gridStart = startOfWeek(startOfMonth(anchor));
+  const monthEnd = addMonths(startOfMonth(anchor), 1);
+  // Walk whole weeks until the month is covered — same rule monthGrid uses, so
+  // the fetched range and the drawn range can't disagree.
+  let gridEnd = gridStart;
+  while (gridEnd < monthEnd) gridEnd = addDays(gridEnd, GRID_DAY_COUNT);
+  return { startIso: gridStart.toISOString(), endIso: gridEnd.toISOString() };
+}
+
+// Converts a slot on an explicit calendar DAY (local "YYYY-MM-DD" key, plus
+// start/duration in minutes from midnight) into the ISO start/end datetimes
+// AppointmentCreatePayload/BlockCreatePayload take.
+//
+// Keying the write on the date the user actually picked — rather than on
+// (week anchor + column index) — is what stops a create from silently landing
+// in a different week than the one on screen. The old form did exactly that
+// on a Sunday: "the Monday of this week" was six days back, so every option
+// the picker offered wrote into the week that had already ended.
+export function slotIsoRangeFromDateKey(
+  dateKey: string,
   startMin: number,
   durMin: number,
-  now: Date = new Date(),
 ): { startIso: string; endIso: string } {
-  const monday = mondayOfWeek(now);
-  const slotStart = new Date(monday);
-  slotStart.setDate(monday.getDate() + day);
+  const slotStart = fromDateKey(dateKey);
   slotStart.setMinutes(slotStart.getMinutes() + startMin);
   const slotEnd = new Date(slotStart);
   slotEnd.setMinutes(slotEnd.getMinutes() + durMin);
   return { startIso: slotStart.toISOString(), endIso: slotEnd.toISOString() };
 }
 
-// Maps one hub calendar event onto the Appt shape. Returns null for Sunday
-// events (no grid column to place them in).
-function mapHubEventToAppt(e: CalendarEventWire): Appt | null {
+// Same conversion addressed by grid position: day index 0=Sunday..6=Saturday
+// within the week beginning at `weekStart`.
+export function slotToIsoRange(
+  day: number,
+  startMin: number,
+  durMin: number,
+  weekStart: Date = startOfWeek(new Date()),
+): { startIso: string; endIso: string } {
+  return slotIsoRangeFromDateKey(toDateKey(addDays(weekStart, day)), startMin, durMin);
+}
+
+// Maps one hub calendar event onto the Appt shape. Returns null only when the
+// wire dates are unparseable — there is no longer a weekday the grid cannot
+// represent.
+//
+// It used to drop every Sunday event (`if (jsDay === 0) return null`) because
+// the grid had six columns. The event was fetched, received, and discarded in
+// silence: a consultation or block sitting on Sunday in the connected Google
+// Calendar simply did not exist as far as the screen was concerned. The grid
+// now has seven columns, so Sunday maps like any other day.
+export function mapHubEventToAppt(e: CalendarEventWire): Appt | null {
   const start = new Date(e.start);
   const end = new Date(e.end);
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
 
-  const jsDay = start.getDay(); // 0=Sun..6=Sat
-  if (jsDay === 0 || jsDay - 1 >= GRID_DAY_COUNT) return null;
-  const day = jsDay - 1; // Monday=0 .. Saturday=5
+  const day = start.getDay(); // 0=Sun..6=Sat — the grid column, directly
+  const date = toDateKey(start);
 
-  const startMin = start.getHours() * 60 + start.getMinutes();
+  const startMin = minutesFromMidnight(start);
   const durMin = Math.max(5, Math.round((end.getTime() - start.getTime()) / 60000));
 
   // A real block round-trips as a "bloqueio" item (see the module doc above)
@@ -141,6 +180,7 @@ function mapHubEventToAppt(e: CalendarEventWire): Appt | null {
   if (isBlockSummary(e.summary)) {
     return {
       id: "hub-" + e.id,
+      date,
       day,
       start: startMin,
       dur: durMin,
@@ -152,6 +192,7 @@ function mapHubEventToAppt(e: CalendarEventWire): Appt | null {
 
   return {
     id: "hub-" + e.id,
+    date,
     day,
     start: startMin,
     dur: durMin,

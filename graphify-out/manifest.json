@@ -480,8 +480,8 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\next-env.d.ts": {
-    "mtime": 1786747688.032453,
-    "ast_hash": "c68600c0eb0d34c34bfc0f4b2547e31f",
+    "mtime": 1788141445.0747027,
+    "ast_hash": "90426577ad8f38459f3e566411c85589",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\next.config.mjs": {
@@ -490,8 +490,8 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\package.json": {
-    "mtime": 1786747724.1080432,
-    "ast_hash": "f722e058c34614f2d97fa38fc5bc8e7e",
+    "mtime": 1788141723.5496757,
+    "ast_hash": "a3f0aee960464139ea4a2a1df2ef2bd3",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\tsconfig.json": {
@@ -525,13 +525,13 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(auth)\\esqueci_senha\\atualizar_senha\\page.tsx": {
-    "mtime": 1786752988.4022675,
-    "ast_hash": "c0cc10210d95be127ab12d11c4f3070f",
+    "mtime": 1788141893.34533,
+    "ast_hash": "c8897ff94af9f82c292ec4286da0df64",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(auth)\\esqueci_senha\\token\\page.tsx": {
-    "mtime": 1786752973.373368,
-    "ast_hash": "76f275c4d6dc29aedb5b0304b1996233",
+    "mtime": 1788141893.34533,
+    "ast_hash": "5f8edc1d617df3737a3df3fe26ff0c35",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(auth)\\_shared\\AuthShell.tsx": {
@@ -560,28 +560,28 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\agenda\\calendar.tsx": {
-    "mtime": 1786747688.1509974,
-    "ast_hash": "ea42836a80640f7f238aefe76fdbc284",
+    "mtime": 1788142234.855865,
+    "ast_hash": "f2ae3c3aacb997a6f43a2053ea20ddd8",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\agenda\\drawer.tsx": {
-    "mtime": 1787061265.118679,
-    "ast_hash": "c3f6eec031ac1f5df16e6d3c8da5a920",
+    "mtime": 1788142252.3106425,
+    "ast_hash": "8e762e591192156086527d33b51f96cd",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\agenda\\modals.tsx": {
-    "mtime": 1787078397.578681,
-    "ast_hash": "30c04338e511031534d1bacfc1073a45",
+    "mtime": 1788142424.6740103,
+    "ast_hash": "5a6de1bdf04fea267e38d4f83ae29ee0",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\agenda\\page.tsx": {
-    "mtime": 1788016951.137723,
-    "ast_hash": "4a5051fc8b90cb15d2a1efec45a1e21a",
+    "mtime": 1788142572.4382846,
+    "ast_hash": "44b8cf4e549925aedd0a6f7d0c9f9bfc",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\agenda\\lib\\hub-mapping.ts": {
-    "mtime": 1787061219.0007532,
-    "ast_hash": "a3633e77dcb0062c9c978c343f71093a",
+    "mtime": 1788142094.42726,
+    "ast_hash": "dccf437d6489193c4f956d27cf94d501",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\app\\onboarding\\page.tsx": {
@@ -785,8 +785,8 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\configuracao\\components\\ProfessionalsSection.tsx": {
-    "mtime": 1787974309.190806,
-    "ast_hash": "221468655f17f9dcb449c38b8eb0e896",
+    "mtime": 1788060335.952167,
+    "ast_hash": "4ebf3a2c2a4fb3e758674ba62d43e117",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\configuracao\\components\\Section.tsx": {
@@ -820,13 +820,13 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\configuracao\\lib\\demo-seed.ts": {
-    "mtime": 1787974328.823744,
-    "ast_hash": "ab8fe9f60686a5b7d785785b6e6bed92",
+    "mtime": 1788049031.494011,
+    "ast_hash": "a63378bda12f784a8213712ebb884734",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\configuracao\\lib\\hub-mapping.ts": {
-    "mtime": 1787974291.3064997,
-    "ast_hash": "922ce1c2d85e442fb2e599be0e0b3970",
+    "mtime": 1788049031.493478,
+    "ast_hash": "c00483d710b5a9eaa0aef3b317c7e18d",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\configuracao\\lib\\hydration.ts": {
@@ -850,8 +850,8 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\configuracao\\lib\\types.ts": {
-    "mtime": 1787974272.1769056,
-    "ast_hash": "0a3739d1387e93a1f423665fbe173c75",
+    "mtime": 1788049031.4929464,
+    "ast_hash": "de97a7879beee8cc5a7d54522880cbb3",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\configuracao\\lib\\__tests__\\catalog.test.ts": {
@@ -860,8 +860,8 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\configuracao\\lib\\__tests__\\fixtures.ts": {
-    "mtime": 1787974337.8221095,
-    "ast_hash": "535749a61bc3311e584a17414ae7b2ae",
+    "mtime": 1788049031.4955854,
+    "ast_hash": "1216d605b0326c882a27ec83032fc58a",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\configuracao\\lib\\__tests__\\hydration.test.ts": {
@@ -880,8 +880,8 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\convite\\page.tsx": {
-    "mtime": 1786750167.4386666,
-    "ast_hash": "65e3b7eb27d1a3b1dfaffc21aaa07fcc",
+    "mtime": 1788141893.34533,
+    "ast_hash": "3bc53c094acee4547bb4217b4d1fb639",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\convite\\_components\\SetPasswordForm.tsx": {
@@ -975,8 +975,8 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\_shared\\data.ts": {
-    "mtime": 1787061218.996282,
-    "ast_hash": "976cfcfab00d47f2b15656604d08ad6d",
+    "mtime": 1788142031.2679846,
+    "ast_hash": "bffe5d5bbf5598cfe61077f2ee4f1e6d",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\_shared\\HubNotice.tsx": {
@@ -1015,8 +1015,8 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\lib\\secretaria-hub.ts": {
-    "mtime": 1787974240.8416686,
-    "ast_hash": "dd51f7b660e156d5ab525e09a495a434",
+    "mtime": 1788049031.49134,
+    "ast_hash": "b8fcc971b10e9fdbf0c5e1fb8528af01",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\lib\\sign-out.ts": {
@@ -1045,8 +1045,8 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\lib\\__tests__\\secretaria-hub.test.ts": {
-    "mtime": 1787974256.565317,
-    "ast_hash": "e475af7ac2ad3a6dc17b7314de98914c",
+    "mtime": 1788049031.492414,
+    "ast_hash": "83ba5410f56d85dd0968d2f67e14f25d",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\lib\\__tests__\\sign-out.test.ts": {
@@ -1060,8 +1060,8 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\CLAUDE.md": {
-    "mtime": 1788017306.441512,
-    "ast_hash": "fac83c3f3051b5b89eb3ba18675eddbb",
+    "mtime": 1788142885.948794,
+    "ast_hash": "5c7f9c775cd56fb479ece20369fa9638",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\docs\\CHECKPOINT_catalogo_servicos_ui.md": {
@@ -1070,8 +1070,8 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\docs\\CHECKPOINT_config_gap_banner.md": {
-    "mtime": 1788017287.3888247,
-    "ast_hash": "f8f52a72d34d59156210be8a2420f754",
+    "mtime": 1788025934.1290166,
+    "ast_hash": "7d295ba606c6c6c2280947a6cfab1b52",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\docs\\CHECKPOINT_marca_e_ux_configuracao.md": {
@@ -1097,6 +1097,36 @@
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\brand-src\\brain-logo-original.png": {
     "mtime": 1787675733.6757803,
     "ast_hash": "f8f9be12b3addfbb0cb8eeef01ea2f3d",
+    "semantic_hash": ""
+  },
+  "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\agenda\\lib\\__tests__\\hub-mapping.test.ts": {
+    "mtime": 1788142818.710505,
+    "ast_hash": "743fd9b89acf1034bd4beba44c7de4ea",
+    "semantic_hash": ""
+  },
+  "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\_shared\\calendar-dates.ts": {
+    "mtime": 1788142344.9584775,
+    "ast_hash": "99003247354fc392fe408bfb86328721",
+    "semantic_hash": ""
+  },
+  "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\_shared\\__tests__\\calendar-dates.test.ts": {
+    "mtime": 1788142701.7058537,
+    "ast_hash": "7e9e3eb1b06ca13a53f15e388a556169",
+    "semantic_hash": ""
+  },
+  "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\__tests__\\nginx-hardening.test.ts": {
+    "mtime": 1788142025.8386645,
+    "ast_hash": "902926c4b1a014eecdd2d39197e2e290",
+    "semantic_hash": ""
+  },
+  "C:\\TECH\\BRAIN\\secretarIA-frontend\\docs\\CHECKPOINT_nginx_hardening.md": {
+    "mtime": 1788142863.1127934,
+    "ast_hash": "259c172ea34d8e9250319244b815f760",
+    "semantic_hash": ""
+  },
+  "C:\\TECH\\BRAIN\\secretarIA-frontend\\public\\robots.txt": {
+    "mtime": 1788141756.3537786,
+    "ast_hash": "feca76ebec9e66b57a116f97d2611092",
     "semantic_hash": ""
   }
 }

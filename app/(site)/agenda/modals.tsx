@@ -16,16 +16,35 @@ import {
   inputStyle,
 } from "../_shared/ui";
 import {
-  WEEK_DAYS,
   APPT_TYPES,
   DURATIONS,
   fmtTime,
   fmtRange,
-  dayFull,
   firstName,
 } from "../_shared/data";
 import type { Appt } from "../_shared/data";
+import { dayIndexFromKey, dayLabelFromKey } from "../_shared/calendar-dates";
+import type { WeekDay } from "../_shared/calendar-dates";
 import type { CancelPreviewWire } from "@/lib/secretaria-hub";
+
+// ---------------------------------------------------------------------------
+// Day selection
+// ---------------------------------------------------------------------------
+
+/**
+ * Which day a slot-picking modal should open on.
+ *
+ * The day pickers below used to list six fixed labels ("Segunda 1/06" …
+ * "Sábado 6/06") and default to index 1 — the column the mock had flagged as
+ * today. They now offer the real dates of the week on screen; the default
+ * prefers an explicit preset, then today when today is in that week, and only
+ * then falls back to the first day, so opening the modal while looking at a
+ * week that isn't the current one still lands somewhere inside it.
+ */
+function defaultDateKey(days: WeekDay[], preset?: string): string {
+  if (preset && days.some((d) => d.iso === preset)) return preset;
+  return (days.find((d) => d.today) ?? days[0])?.iso ?? "";
+}
 
 // ---------------------------------------------------------------------------
 // clinicDisplay — strips a leading "Consultório " so a real clinic_name reads
@@ -438,7 +457,8 @@ function MessagePreview({
 export function NewApptModal({
   onClose,
   onCreate,
-  presetDay,
+  days,
+  presetDate,
   clinicName,
 }: {
   onClose: () => void;
@@ -446,7 +466,10 @@ export function NewApptModal({
     data: Omit<Appt, "id">,
     message: string | null
   ) => void;
-  presetDay?: number;
+  // The real days of the week currently on screen — the only dates this modal
+  // offers, and the source of every label in it.
+  days: WeekDay[];
+  presetDate?: string;
   // Real clinic name (from getMe(session) in page.tsx) — "" while logged out
   // or before the fetch settles, in which case the message below simply omits
   // the clinic mention rather than ever showing a hardcoded demo name.
@@ -454,7 +477,7 @@ export function NewApptModal({
 }) {
   const [patient, setPatient] = useState("");
   const [phone, setPhone]     = useState("+55 ");
-  const [day, setDay]         = useState(presetDay ?? 1);
+  const [date, setDate]       = useState(() => defaultDateKey(days, presetDate));
   const [start, setStart]     = useState(9 * 60);
   const [dur, setDur]         = useState(50);
   const [type, setType]       = useState(APPT_TYPES[2]);
@@ -464,20 +487,28 @@ export function NewApptModal({
   const valid =
     patient.trim().length > 1 && phone.replace(/\D/g, "").length >= 10;
 
-  // Build the default WhatsApp message — recalculated whenever key fields change
+  // Build the default WhatsApp message — recalculated whenever key fields change.
+  // The date here is the patient-facing one: this text is what actually reaches
+  // them on WhatsApp, so it reads off the chosen day's real date rather than a
+  // grid position (it used to append a hardcoded "/06", which told patients
+  // their August consultation was in June).
   const clinicPhrase = clinicName ? ` no ${clinicDisplay(clinicName)}` : "";
-  const msg = `Olá, ${firstName(patient) || "tudo bem"}! Sua consulta de ${type}${clinicPhrase} ficou agendada para ${dayFull(day)} às ${fmtTime(start)}. Antes do atendimento envio a pré-consulta por aqui. Até lá! 😊`;
+  const msg = `Olá, ${firstName(patient) || "tudo bem"}! Sua consulta de ${type}${clinicPhrase} ficou agendada para ${dayLabelFromKey(date)} às ${fmtTime(start)}. Antes do atendimento envio a pré-consulta por aqui. Até lá! 😊`;
   const [text, setText] = useState(msg);
 
-  // Keep the default text in sync when scheduling fields change
-  useEffect(() => { setText(msg); }, [patient, type, day, start]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Keep the default text in sync when scheduling fields change. clinicName is in
+  // here because it arrives async (page.tsx fetches it via GET /auth/me): without
+  // it, a modal opened before that fetch settles keeps the clinic-less phrasing
+  // forever, and the patient gets a message missing the clinic name.
+  useEffect(() => { setText(msg); }, [patient, type, date, start, clinicName]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const submit = () =>
     onCreate(
       {
         patient: patient.trim(),
         phone: phone.trim(),
-        day,
+        date,
+        day: dayIndexFromKey(date),
         start,
         dur,
         type,
@@ -534,10 +565,10 @@ export function NewApptModal({
           style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr 1fr", gap: 14 }}
         >
           <Field label="Dia">
-            <Select value={day} onChange={(e) => setDay(+e.target.value)}>
-              {WEEK_DAYS.map((d, i) => (
-                <option key={d.key} value={i}>
-                  {d.full} {d.date}/06
+            <Select value={date} onChange={(e) => setDate(e.target.value)}>
+              {days.map((d) => (
+                <option key={d.iso} value={d.iso}>
+                  {dayLabelFromKey(d.iso)}
                 </option>
               ))}
             </Select>
@@ -731,35 +762,40 @@ export function RescheduleModal({
   appt,
   onClose,
   onConfirm,
+  days,
   clinicName,
 }: {
   appt: Appt;
   onClose: () => void;
   onConfirm: (
     appt: Appt,
-    slot: { day: number; start: number },
+    slot: { date: string; start: number },
     message: string
   ) => void;
+  // The real days of the week on screen — see NewApptModal's `days`.
+  days: WeekDay[];
   // See NewApptModal's clinicName doc — same real-name-or-omit contract.
   // Currently unreachable from page.tsx (see agenda/drawer.tsx's disabled
   // "Remarcar" action) — kept wired so this component has no fake clinic
   // name left in it for whenever a follow-up re-enables it.
   clinicName: string;
 }) {
-  const [day, setDay]     = useState(appt.day);
+  const [date, setDate]   = useState(() => defaultDateKey(days, appt.date));
   const [start, setStart] = useState(appt.start);
 
-  // Base message template — {NOVO} is replaced by the new slot label
+  // Base message template — {NOVO} is replaced by the new slot label. Both
+  // halves name real dates: the old slot from the appointment's own `date`,
+  // the new one from the picked day.
   const clinicPhrase = clinicName ? ` no ${clinicDisplay(clinicName)}` : "";
-  const base = `Olá, ${firstName(appt.patient)}! Sua consulta de ${appt.type}${clinicPhrase} foi remarcada de ${dayFull(appt.day)} às ${fmtTime(appt.start)} para {NOVO}. Pode confirmar pra gente? Qualquer coisa é só responder por aqui.`;
+  const base = `Olá, ${firstName(appt.patient)}! Sua consulta de ${appt.type}${clinicPhrase} foi remarcada de ${dayLabelFromKey(appt.date)} às ${fmtTime(appt.start)} para {NOVO}. Pode confirmar pra gente? Qualquer coisa é só responder por aqui.`;
 
-  const newLabel = `${dayFull(day)} às ${fmtTime(start)}`;
+  const newLabel = `${dayLabelFromKey(date)} às ${fmtTime(start)}`;
   const [text, setText] = useState(base.replace("{NOVO}", newLabel));
 
   // Keep message in sync when the new slot changes
   useEffect(() => {
-    setText(base.replace("{NOVO}", `${dayFull(day)} às ${fmtTime(start)}`));
-  }, [day, start]); // eslint-disable-line react-hooks/exhaustive-deps
+    setText(base.replace("{NOVO}", `${dayLabelFromKey(date)} às ${fmtTime(start)}`));
+  }, [date, start, clinicName]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Modal
@@ -774,7 +810,7 @@ export function RescheduleModal({
           <Btn
             variant="wa"
             icon="send"
-            onClick={() => onConfirm(appt, { day, start }, text)}
+            onClick={() => onConfirm(appt, { date, start }, text)}
           >
             Remarcar e avisar
           </Btn>
@@ -796,7 +832,7 @@ export function RescheduleModal({
           }}
         >
           <span style={{ textDecoration: "line-through", opacity: 0.7 }}>
-            {dayFull(appt.day)} · {fmtTime(appt.start)}
+            {dayLabelFromKey(appt.date)} · {fmtTime(appt.start)}
           </span>
           <Icon name="chevR" size={16} style={{ color: "var(--brand)" }} />
           <b style={{ color: "var(--ink)" }}>{newLabel}</b>
@@ -805,10 +841,10 @@ export function RescheduleModal({
         {/* new slot selectors */}
         <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 14 }}>
           <Field label="Novo dia">
-            <Select value={day} onChange={(e) => setDay(+e.target.value)}>
-              {WEEK_DAYS.map((d, i) => (
-                <option key={d.key} value={i}>
-                  {d.full} {d.date}/06
+            <Select value={date} onChange={(e) => setDate(e.target.value)}>
+              {days.map((d) => (
+                <option key={d.iso} value={d.iso}>
+                  {dayLabelFromKey(d.iso)}
                 </option>
               ))}
             </Select>
@@ -896,7 +932,7 @@ export function CancelModal({
   return (
     <Modal
       title="Cancelar consulta"
-      subtitle={`${appt.patient} · ${dayFull(appt.day)} ${fmtTime(appt.start)}`}
+      subtitle={`${appt.patient} · ${dayLabelFromKey(appt.date)} ${fmtTime(appt.start)}`}
       icon="xCircle"
       onClose={onClose}
       width={560}
@@ -1112,18 +1148,21 @@ const BLOCK_REASONS = [
 export function BlockModal({
   onClose,
   onCreate,
-  presetDay,
+  days,
+  presetDate,
 }: {
   onClose: () => void;
   onCreate: (data: {
-    day: number;
+    date: string;
     start: number;
     dur: number;
     reason: string;
   }) => void;
-  presetDay?: number;
+  // The real days of the week on screen — see NewApptModal's `days`.
+  days: WeekDay[];
+  presetDate?: string;
 }) {
-  const [day, setDay]     = useState(presetDay ?? 1);
+  const [date, setDate]   = useState(() => defaultDateKey(days, presetDate));
   const [start, setStart] = useState(12 * 60);
   const [dur, setDur]     = useState(60);
   const [reason, setReason] = useState<string>(BLOCK_REASONS[0]);
@@ -1141,7 +1180,7 @@ export function BlockModal({
           <Btn
             variant="primary"
             icon="check"
-            onClick={() => onCreate({ day, start, dur, reason })}
+            onClick={() => onCreate({ date, start, dur, reason })}
           >
             Bloquear horário
           </Btn>
@@ -1180,10 +1219,10 @@ export function BlockModal({
           style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr", gap: 14 }}
         >
           <Field label="Dia">
-            <Select value={day} onChange={(e) => setDay(+e.target.value)}>
-              {WEEK_DAYS.map((d, i) => (
-                <option key={d.key} value={i}>
-                  {d.full} {d.date}/06
+            <Select value={date} onChange={(e) => setDate(e.target.value)}>
+              {days.map((d) => (
+                <option key={d.iso} value={d.iso}>
+                  {dayLabelFromKey(d.iso)}
                 </option>
               ))}
             </Select>

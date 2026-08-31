@@ -14,6 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 import { ManageApiError, verifyResetToken } from "@/lib/manage-api";
+import { stripQueryParamFromUrl } from "@/lib/url-token";
 
 import { AuthShell } from "../../_shared/AuthShell";
 import { StepIndicator } from "../../_shared/StepIndicator";
@@ -39,13 +40,22 @@ function ResetTokenInner() {
   const [loading, setLoading] = useState(false);
 
   // --- Derived ---
-  const queryToken = search.get("token");
+  // Captured ONCE, on the first client render, because the effect below then
+  // wipes ?token= out of the address bar. Next patches history.replaceState to
+  // keep its router in sync, so `search` goes empty immediately afterwards —
+  // and reading it reactively here would re-run this effect, trip its
+  // `cancelled` cleanup, and abandon the verification already in flight.
+  const [queryToken] = useState(() => search.get("token"));
 
   // --- Effects ---
   // Auto-verify when the URL carries a token (deep link from the e-mail).
   useEffect(() => {
     if (!queryToken) return;
     setToken(queryToken);
+    // The token is in component state now; take it out of the URL BEFORE the
+    // round trip, not after, so the window in which it is on screen is as
+    // short as this screen can make it.
+    stripQueryParamFromUrl();
     let cancelled = false;
     setLoading(true);
     verifyResetToken(queryToken)

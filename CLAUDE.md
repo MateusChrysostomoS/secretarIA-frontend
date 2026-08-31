@@ -38,11 +38,20 @@ de repos e **substitui** a skill genérica `frontend` aqui. Em resumo:
 - **Um cliente tipado por backend**: `lib/manage-api.ts` (brain-api) e `lib/secretaria-hub.ts`
   (hub da secretarIA). Não crie `fetch` solto fora deles. Ao adicionar uma chamada nova em
   `manage-api.ts`, siga o padrão de comentário `// MANAGE-API CALL SITE #N`.
+- **`nginx.conf` é o único lugar de header de resposta** (sem processo Node em produção):
+  headers de segurança, CSP, 404 e `robots.txt` têm armadilhas específicas deste deploy —
+  a skill `static-export-nginx-hardening` cobre todas antes de você editar o arquivo.
 - **`NEXT_PUBLIC_*` são assadas no build** pelos pares `ARG`/`ENV` do `Dockerfile` — setar só
   no painel do EasyPanel não tem efeito. Toda variável nova precisa do par na mesma tarefa.
 - Texto de UI em **português**; nomes de componente/variável e comentários em **inglês**.
 - Gates reais: `.\node_modules\.bin\tsc.cmd --noEmit` + `npm test` + `npm run build`
-  (não existe config de ESLint; `npx tsc` é um pacote errado nesta máquina).
+  (`npx tsc` é um pacote errado nesta máquina).
+- **Este repo não usa ESLint, por decisão** (2026-08-30). O script `"lint": "next lint"`
+  existia sem o pacote `eslint` sequer instalado e foi removido: `next lint` é depreciado
+  na 15.5 e **sai no Next 16**, e sem config ele abre um prompt interativo que trava CI.
+  Os `eslint-disable-line react-hooks/exhaustive-deps` que sobraram são documentação de
+  intenção, não supressão de nada que rode — revise a lista de dependências à mão ao mexer
+  neles. Raciocínio completo em `z_prompts/DECISAO_ARQ4_SEM_ESLINT.md`.
 
 ## Prompts prontos para rodar
 
@@ -89,9 +98,13 @@ headers de nginx → guarda de sessão → o resto.
   diferentes, não 1 como a hipótese original) e landmarks ausentes em `/configuracao`; a
   alegação sobre o progressbar do cadastro estava desatualizada (os `aria-value*` já
   existem).
-- `PROMPT_AUDIT_FRONTEND_SEC_NGINX_HEADERS.md` — `nginx.conf` sem nenhum header de
-  segurança, 404 que nunca é servido, sem `robots.txt`. Pede decisão do usuário sobre
-  estratégia de CSP (os payloads de hidratação RSC mudam de hash a cada build).
+- ~~`PROMPT_AUDIT_FRONTEND_SEC_NGINX_HEADERS.md`~~ — **EXECUTADO 2026-08-30** — ver
+  `docs/CHECKPOINT_nginx_hardening.md`. Headers de segurança, 404 de verdade e `robots.txt`
+  prontos e verificados contra um nginx real; **ainda não deployado** (o `nginx.conf` só
+  vale num rebuild da imagem). CSP: decidida a via permissiva com `'unsafe-inline'` — hash
+  é inviável aqui, são 43 blocos inline com um build id que muda a cada `next build`, e o
+  `/app/onboarding` ainda injeta o SDK da Meta em runtime. O padrão virou a skill
+  `static-export-nginx-hardening`; o `brain-frontend` tem o mesmo problema e NÃO foi tocado.
 - `PROMPT_AUDIT_FRONTEND_SEC_TOKEN_STORAGE.md` — `refreshToken` em `sessionStorage` é
   arquitetura **documentada** pela skill `front-brain` ("nunca em cookie"), não descuido.
   Prompt pede decisão de escopo antes de qualquer mudança — migrar para cookie httpOnly é
@@ -104,9 +117,9 @@ headers de nginx → guarda de sessão → o resto.
   divergem de `brain-frontend`; a divergência real de `secretaria-hub.ts` é ~161 linhas, não
   as "1739" da auditoria (era mismatch de line-ending LF/CRLF entre os repos). Pede decisão
   de escopo (normalizar encoding vs. extrair pacote compartilhado).
-- `PROMPT_AUDIT_FRONTEND_BUILD_HIGIENE.md` — `next lint` sem o pacote ESLint sequer
-  instalado; Next 15.1.6 desatualizado. Os números de `npm audit` da auditoria original
-  ("27 critical") estavam errados — corrigidos no prompt (na verdade 2 critical em `next`).
+- ~~`PROMPT_AUDIT_FRONTEND_BUILD_HIGIENE.md`~~ — **EXECUTADO 2026-08-30.** Next 15.1.6 →
+  15.5.24 (31 advisories em `next` → 0) e o script `lint` morto removido. Os números de
+  `npm audit` da auditoria original ("27 critical") estavam errados — eram 2 critical.
 - `PROMPT_AUDIT_FRONTEND_FONTES_LGPD.md` — 7 famílias de fonte do Google carregadas sem
   gate de consentimento (ponto de LGPD num app de saúde); migrar para `next/font/google`.
 - `PROMPT_AUDIT_FRONTEND_REQUISICOES_DUPLICADAS.md` — `GET /doctor/professionals` duplicado

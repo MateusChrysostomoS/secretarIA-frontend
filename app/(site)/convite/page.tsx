@@ -25,6 +25,7 @@ import {
   setPassword,
   type Session,
 } from "@/lib/manage-api";
+import { stripQueryParamFromUrl } from "@/lib/url-token";
 import "../checkout/checkout.css";
 
 type ViewState = "missing-token" | "exchanging" | "invalid" | "set-password";
@@ -40,7 +41,11 @@ export default function ConvitePage() {
 function ConviteInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams.get("token");
+  // Captured ONCE, on the first client render: the effect below wipes ?token=
+  // out of the address bar, and this screen stays open through the whole
+  // "choose your password" step. Reading it reactively afterwards would flip
+  // the view to "missing-token" in the middle of a working invite.
+  const [token] = useState(() => searchParams.get("token"));
 
   const [view, setView] = useState<ViewState>(token ? "exchanging" : "missing-token");
   const [session, setSession] = useState<Session | null>(null);
@@ -49,6 +54,9 @@ function ConviteInner() {
 
   useEffect(() => {
     if (!token) return;
+    // The token is in component state now, and the exchange below spends it
+    // server-side, so there is nothing left for the URL to hold on to.
+    stripQueryParamFromUrl();
     let cancelled = false;
     exchangeInviteToken(token)
       .then((s) => {

@@ -14,7 +14,8 @@
 // hint, instead of quietly mutating local state and flashing a fake success.
 
 import { Icon, Btn, StatusBadge, Avatar, IconBtn } from "../_shared/ui";
-import { STATUS_META, fmtRange, dayFull } from "../_shared/data";
+import { STATUS_META, fmtRange } from "../_shared/data";
+import { dayLabelFromKey } from "../_shared/calendar-dates";
 import type { Appt, ApptStatus } from "../_shared/data";
 
 // ---------------------------------------------------------------------------
@@ -257,7 +258,7 @@ export function Drawer({ appt, onClose, onCancel }: DrawerProps) {
                 {appt.reason}
               </div>
               <div style={{ fontSize: 14, color: "var(--ink-soft)", marginTop: 4 }}>
-                {dayFull(appt.day)} · {fmtRange(appt.start, appt.dur)}
+                {dayLabelFromKey(appt.date)} · {fmtRange(appt.start, appt.dur)}
               </div>
             </div>
             <div style={{ height: 1, background: "var(--line)" }} />
@@ -312,7 +313,7 @@ export function Drawer({ appt, onClose, onCancel }: DrawerProps) {
               }}
             >
               <InfoRow icon="calendar" label="Data e horário">
-                {dayFull(appt.day)} · {fmtRange(appt.start, appt.dur)}
+                {dayLabelFromKey(appt.date)} · {fmtRange(appt.start, appt.dur)}
               </InfoRow>
               <InfoRow icon="doc" label="Tipo de consulta">
                 {appt.type}

@@ -1,0 +1,23 @@
+# secretarIA — https://secretaria-secretaria-frontend.cpux9k.easypanel.host
+#
+# Everything here except the entry screen and the sign-up funnel is a logged-in
+# clinic surface or a one-time link target (password reset, team invite,
+# checkout return, Google Calendar OAuth return). None of it belongs in a search
+# index, and some of it carries a token in the query string.
+#
+# This file is served by nginx from out/robots.txt (Next.js copies public/ into
+# the export). Before it existed the catch-all in nginx.conf answered
+# /robots.txt with 200 text/html — the login page — so every crawler that asked
+# for the rules got an HTML document instead.
+
+User-agent: *
+Disallow: /inicio/
+Disallow: /agenda/
+Disallow: /configuracao/
+Disallow: /convite/
+Disallow: /esqueci_senha/
+Disallow: /app/
+Disallow: /calendar/
+Disallow: /checkout/
+Allow: /
+Allow: /cadastro/

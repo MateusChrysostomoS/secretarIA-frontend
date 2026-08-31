@@ -31,12 +31,23 @@ import {
   IconBtn,
 } from "../_shared/ui";
 import type { IconName } from "../_shared/ui";
-import {
-  MONTH_LABEL,
-  PERIOD_LABEL,
-  dayFull,
-} from "../_shared/data";
 import type { Appt } from "../_shared/data";
+import {
+  GRID_DAY_COUNT,
+  addDays,
+  addMonths,
+  dayLabelFromKey,
+  fromDateKey,
+  isSameDay,
+  minutesFromMidnight,
+  monthGrid,
+  monthLabel,
+  startOfDay,
+  startOfWeek,
+  toDateKey,
+  weekDays,
+  weekPeriodLabel,
+} from "../_shared/calendar-dates";
 
 import { WeekView, DayView, MonthView } from "./calendar";
 import { Drawer }                        from "./drawer";
@@ -55,8 +66,9 @@ import {
 import type { CancelPreviewWire } from "@/lib/secretaria-hub";
 import { getMe } from "@/lib/manage-api";
 import {
-  currentWeekIsoRange,
-  slotToIsoRange,
+  weekIsoRange,
+  monthIsoRange,
+  slotIsoRangeFromDateKey,
   mapHubEventsToAppts,
   formatBlockSummary,
 } from "./lib/hub-mapping";
@@ -154,31 +166,34 @@ function Toolbar({
   setView,
   onNew,
   onBlock,
-  day,
+  onPrev,
+  onNext,
   onToday,
+  periodLabel,
+  sub,
   disabled,
 }: {
   view: ViewMode;
   setView: (v: ViewMode) => void;
   onNew: () => void;
   onBlock: () => void;
-  day: number;
+  onPrev: () => void;
+  onNext: () => void;
   onToday: () => void;
+  // Both labels are computed by the page from the anchor date and passed in —
+  // they used to be built here from MONTH_LABEL/PERIOD_LABEL/dayFull plus a
+  // third, independently hardcoded "Junho de 2026" literal, none of which had
+  // any connection to the week actually being fetched. Empty before the anchor
+  // is set on mount, which keeps the prerendered HTML and the first client
+  // render identical.
+  periodLabel: string;
+  sub: string;
   // True whenever the real hub isn't usable (no session, not entitled,
   // unavailable, or hub not configured in this environment) — creating here
   // would only be able to fake-mutate local state, so both action buttons
   // stay disabled instead of opening a modal that could never really submit.
   disabled: boolean;
 }) {
-  // Label depends on the active view
-  const periodLabel =
-    view === "dia"    ? dayFull(day)   :
-    view === "mes"    ? MONTH_LABEL    :
-    PERIOD_LABEL;
-
-  // Secondary sub-label shown only in week view
-  const sub = view === "semana" ? "Junho de 2026" : "";
-
   const disabledHint = disabled
     ? "Disponível quando a agenda real estiver conectada."
     : undefined;
@@ -198,9 +213,20 @@ function Toolbar({
     >
       {/* left cluster: navigation + period label */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        {/* Period navigation. These two were rendered with no onClick at all —
+            a visible control that taught the secretary the agenda simply does
+            not navigate. They now step by the unit the active view shows. */}
         <div style={{ display: "flex", gap: 4 }}>
-          <IconBtn icon="chevL" title="Anterior" />
-          <IconBtn icon="chevR" title="Próximo" />
+          <IconBtn
+            icon="chevL"
+            title={view === "mes" ? "Mês anterior" : view === "dia" ? "Dia anterior" : "Semana anterior"}
+            onClick={onPrev}
+          />
+          <IconBtn
+            icon="chevR"
+            title={view === "mes" ? "Próximo mês" : view === "dia" ? "Próximo dia" : "Próxima semana"}
+            onClick={onNext}
+          />
         </div>
         <Btn
           variant="outline"
@@ -288,7 +314,39 @@ export default function AgendaPage() {
 
   // --- Calendar state ---
   const [view, setView]     = useState<ViewMode>("semana");
-  const [day, setDay]       = useState(1);           // index into WEEK_DAYS
+
+  // The anchor: the day the screen is focused on. Every date on this route —
+  // the column headers, the period label, the month grid, the day picker in
+  // both modals, the WhatsApp confirmation text, and the ISO window sent to
+  // the hub — is derived from this one value, so they cannot disagree.
+  //
+  // It starts null and is filled in on mount rather than initialised with
+  // `new Date()`. This route is a static export (next.config.mjs sets
+  // `output: "export"`), so its HTML is generated at BUILD time: reading the
+  // clock during render would bake the deploy date into out/agenda/index.html
+  // and then contradict it on the client — the same bug that is being fixed
+  // here, just with a fresher wrong date, plus a hydration mismatch.
+  const [anchor, setAnchor] = useState<Date | null>(null);
+  // Real "today", kept separately from the anchor so navigating away from this
+  // week doesn't move the today highlight.
+  const [today, setToday] = useState<Date | null>(null);
+  // Minutes since midnight, for the red "now" rule. Was a frozen 11:22.
+  const [nowMin, setNowMin] = useState(0);
+
+  useEffect(() => {
+    const now = new Date();
+    setToday(startOfDay(now));
+    setAnchor(startOfDay(now));
+    setNowMin(minutesFromMidnight(now));
+    // Keep the rule moving, and roll the today highlight over at midnight for
+    // a tab left open — a clinic's agenda screen commonly is.
+    const timer = setInterval(() => {
+      const n = new Date();
+      setNowMin(minutesFromMidnight(n));
+      setToday((prev) => (prev && isSameDay(prev, n) ? prev : startOfDay(n)));
+    }, 60_000);
+    return () => clearInterval(timer);
+  }, []);
   // Permanently-empty fallback for `items` below (no setter — nothing writes
   // to it). The demo-seed rows and the local-only "fabricate a row" create
   // paths are gone; this route only ever shows REAL hub data or nothing.
@@ -332,14 +390,55 @@ export default function AgendaPage() {
     };
   }, [session]);
 
-  // Refetches the current week's real calendar events. Shared by the initial
+  // --- Everything below is derived from the anchor ---
+
+  const weekStart = useMemo(() => (anchor ? startOfWeek(anchor) : null), [anchor]);
+  const anchorKey = useMemo(() => (anchor ? toDateKey(anchor) : ""), [anchor]);
+
+  // The seven real columns of the week on screen.
+  const days = useMemo(
+    () => (weekStart && today ? weekDays(weekStart, today) : []),
+    [weekStart, today],
+  );
+  const monthCells = useMemo(
+    () => (anchor && today ? monthGrid(anchor, today) : []),
+    [anchor, today],
+  );
+  const anchorDay = useMemo(
+    () => days.find((d) => d.iso === anchorKey),
+    [days, anchorKey],
+  );
+
+  // The window to fetch, following whatever the active view actually shows.
+  // The month view asks for its whole grid rather than reusing the week
+  // window: now that its cells carry real dates, an empty cell is read as
+  // "nothing booked that day", and with one week loaded most cells would be
+  // making that claim without the hub ever having been asked.
+  const range = useMemo(() => {
+    if (!anchor) return null;
+    return view === "mes" ? monthIsoRange(anchor) : weekIsoRange(startOfWeek(anchor));
+  }, [anchor, view]);
+
+  const periodLabel = !anchor
+    ? ""
+    : view === "dia"
+      ? dayLabelFromKey(anchorKey)
+      : view === "mes"
+        ? monthLabel(anchor)
+        : weekStart
+          ? weekPeriodLabel(weekStart)
+          : "";
+  // Carries the year, which the week/day label alone doesn't.
+  const sub = !anchor || view === "mes" ? "" : monthLabel(anchor);
+
+  // Refetches the real calendar events for the visible range. Shared by the
   // load effect below AND by createAppt/createBlock after a successful hub
   // write, so the grid always reflects what secretarIA's Calendar actually
   // holds instead of a fabricated local row. Also wired to the "Tentar
   // novamente" retry button on the fetch-failure banner below.
-  const reloadWeek = useCallback(() => {
-    if (!session) return Promise.resolve();
-    const { startIso, endIso } = currentWeekIsoRange();
+  const reloadRange = useCallback(() => {
+    if (!session || !range) return Promise.resolve();
+    const { startIso, endIso } = range;
     return listCalendarEvents(session, startIso, endIso)
       .then((events) => {
         setHubAppts(mapHubEventsToAppts(events));
@@ -350,16 +449,32 @@ export default function AgendaPage() {
         setHubAppts(null);
         setHubFetchFailed(true);
       });
-  }, [session]);
+  }, [session, range]);
 
-  // Load the current week's real calendar events when the hub becomes usable.
-  // CANCEL/RESCHEDULE/EDIT/status-change stay disabled everywhere — see the
+  // Load real calendar events when the hub becomes usable, and again whenever
+  // the visible range moves (navigating weeks/months, or switching view).
+  // RESCHEDULE/EDIT/status-change stay disabled everywhere — see the
   // TODO(hub-write) note in hub-mapping.ts and drawer.tsx (blocked on
-  // secretarIA exposing an appointment id on the read model, not a frontend gap).
+  // secretarIA exposing a richer read model, not a frontend gap).
   useEffect(() => {
     if (!hubTokenReady || !session) return;
-    reloadWeek();
-  }, [hubTokenReady, session, reloadWeek]);
+    reloadRange();
+  }, [hubTokenReady, session, reloadRange]);
+
+  // --- Navigation ---
+
+  /** Steps the anchor by the unit the active view displays. */
+  const step = useCallback(
+    (dir: 1 | -1) => {
+      setAnchor((prev) => {
+        if (!prev) return prev;
+        if (view === "mes") return addMonths(prev, dir);
+        if (view === "dia") return addDays(prev, dir);
+        return addDays(prev, dir * GRID_DAY_COUNT);
+      });
+    },
+    [view],
+  );
 
   // ---------------------------------------------------------------------------
   // flash — shows a toast then auto-dismisses after 3.4 s
@@ -442,7 +557,7 @@ export default function AgendaPage() {
       });
       setModal(null);
       setSelected(null);
-      await reloadWeek();
+      await reloadRange();
       // Only claim the patient was told when a notice could actually go out:
       // outside the 24h window with the paid send declined, nothing is sent,
       // and saying otherwise would be a lie the doctor acts on.
@@ -481,7 +596,7 @@ export default function AgendaPage() {
       flash("A agenda real não está disponível agora.", "xCircle");
       return;
     }
-    const { startIso, endIso } = slotToIsoRange(data.day, data.start, data.dur);
+    const { startIso, endIso } = slotIsoRangeFromDateKey(data.date, data.start, data.dur);
     const summary = [data.type, data.patient].filter(Boolean).join(" — ") || "Consulta";
     try {
       await createAppointment(session, {
@@ -492,7 +607,7 @@ export default function AgendaPage() {
         phone: data.phone || null,
       });
       setModal(null);
-      await reloadWeek();
+      await reloadRange();
       flash("Consulta criada na agenda.", "check");
     } catch (e) {
       console.error("secretaria hub: failed to create appointment", e);
@@ -514,7 +629,7 @@ export default function AgendaPage() {
    * real bloqueio item instead of a generic appointment on the next fetch.
    */
   const createBlock = async (data: {
-    day: number;
+    date: string;
     start: number;
     dur: number;
     reason: string;
@@ -525,7 +640,7 @@ export default function AgendaPage() {
       flash("A agenda real não está disponível agora.", "xCircle");
       return;
     }
-    const { startIso, endIso } = slotToIsoRange(data.day, data.start, data.dur);
+    const { startIso, endIso } = slotIsoRangeFromDateKey(data.date, data.start, data.dur);
     try {
       await createHubBlock(session, {
         start: startIso,
@@ -533,7 +648,7 @@ export default function AgendaPage() {
         summary: formatBlockSummary(data.reason),
       });
       setModal(null);
-      await reloadWeek();
+      await reloadRange();
       flash(`Horário bloqueado: ${data.reason}.`, "ban");
     } catch (e) {
       console.error("secretaria hub: failed to create block", e);
@@ -546,9 +661,15 @@ export default function AgendaPage() {
     }
   };
 
-  /** Navigate to DayView for a specific day index. */
-  const goDay = (d: number) => {
-    setDay(d);
+  /**
+   * Navigate to DayView for a specific date.
+   *
+   * Takes a date key rather than a column index, so a click on any month cell
+   * — not just the six the old hardcoded grid gave an index to — moves the
+   * anchor to that actual day.
+   */
+  const goDay = (dateKey: string) => {
+    setAnchor(fromDateKey(dateKey));
     setView("dia");
   };
 
@@ -618,7 +739,7 @@ export default function AgendaPage() {
           <Btn
             variant="outline"
             size="sm"
-            onClick={() => { void reloadWeek(); }}
+            onClick={() => { void reloadRange(); }}
             style={{ flexShrink: 0 }}
           >
             Tentar novamente
@@ -632,25 +753,42 @@ export default function AgendaPage() {
         <Toolbar
           view={view}
           setView={setView}
-          day={day}
+          periodLabel={periodLabel}
+          sub={sub}
           onNew={() => setModal({ type: "new" })}
           onBlock={() => setModal({ type: "block" })}
+          onPrev={() => step(-1)}
+          onNext={() => step(1)}
           onToday={() => {
-            setDay(1);
+            setAnchor(today ?? startOfDay(new Date()));
             // From month view, jump back to week instead of staying in month
             if (view === "mes") setView("semana");
           }}
           disabled={!hubTokenReady}
         />
 
-        {view === "semana" && (
-          <WeekView items={items} onSelect={setSelected} onDayClick={goDay} />
+        {/* The grid renders once the anchor exists (set on mount — see the
+            state block). Until then this is deliberately empty so the
+            prerendered HTML and the first client render match. */}
+        {anchor && view === "semana" && (
+          <WeekView
+            days={days}
+            items={items}
+            onSelect={setSelected}
+            onDayClick={goDay}
+            nowMin={nowMin}
+          />
         )}
-        {view === "dia" && (
-          <DayView dayIdx={day} items={items} onSelect={setSelected} />
+        {anchor && view === "dia" && anchorDay && (
+          <DayView
+            day={anchorDay}
+            items={items}
+            onSelect={setSelected}
+            nowMin={nowMin}
+          />
         )}
-        {view === "mes" && (
-          <MonthView items={items} onDayClick={goDay} />
+        {anchor && view === "mes" && (
+          <MonthView cells={monthCells} items={items} onDayClick={goDay} />
         )}
       </main>
 
@@ -670,7 +808,8 @@ export default function AgendaPage() {
           disabled); Cancel is wired — see drawer.tsx. */}
       {modal?.type === "new" && (
         <NewApptModal
-          presetDay={view === "dia" ? day : undefined}
+          days={days}
+          presetDate={view === "dia" ? anchorKey : undefined}
           onClose={() => setModal(null)}
           onCreate={createAppt}
           clinicName={clinicName}
@@ -678,7 +817,8 @@ export default function AgendaPage() {
       )}
       {modal?.type === "block" && (
         <BlockModal
-          presetDay={view === "dia" ? day : undefined}
+          days={days}
+          presetDate={view === "dia" ? anchorKey : undefined}
           onClose={() => setModal(null)}
           onCreate={createBlock}
         />

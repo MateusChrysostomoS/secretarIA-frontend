@@ -1,16 +1,16 @@
-# Graph Report - secretarIA-frontend  (2026-08-29)
+# Graph Report - secretarIA-frontend  (2026-08-30)
 
 ## Corpus Check
-- 121 files · ~136,184 words
+- 126 files · ~144,936 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1513 nodes · 3255 edges · 101 communities (93 shown, 8 thin omitted)
+- 1598 nodes · 3441 edges · 97 communities (88 shown, 9 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 2 edges (avg confidence: 0.65)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f382c917`
+- Built from commit: `8d96c8f8`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -97,14 +97,10 @@
 - [[_COMMUNITY_Community 83|Community 83]]
 - [[_COMMUNITY_Community 84|Community 84]]
 - [[_COMMUNITY_Community 85|Community 85]]
-- [[_COMMUNITY_Community 86|Community 86]]
 - [[_COMMUNITY_Community 87|Community 87]]
-- [[_COMMUNITY_Community 88|Community 88]]
 - [[_COMMUNITY_Community 89|Community 89]]
 - [[_COMMUNITY_Community 90|Community 90]]
 - [[_COMMUNITY_Community 91|Community 91]]
-- [[_COMMUNITY_Community 92|Community 92]]
-- [[_COMMUNITY_Community 93|Community 93]]
 - [[_COMMUNITY_Community 94|Community 94]]
 - [[_COMMUNITY_Community 95|Community 95]]
 - [[_COMMUNITY_Community 98|Community 98]]
@@ -133,35 +129,35 @@
 - `useSecretariaHub()` --calls--> `hubConfigured()`  [EXTRACTED]
   app/(site)/_shared/useSecretariaHub.ts → lib/secretaria-hub.ts
 
-## Communities (101 total, 8 thin omitted)
+## Communities (97 total, 9 thin omitted)
 
 ### Community 0 - "page.tsx"
-Cohesion: 0.06
-Nodes (55): ApptBlock(), DayBlock(), DayView(), heightOf(), MONTH_GRID, MonthView(), NowLine(), toneOf() (+47 more)
+Cohesion: 0.11
+Nodes (25): ApptBlock(), DayBlock(), DayView(), heightOf(), MONTH_GRID, MonthView(), NowLine(), toneOf() (+17 more)
 
 ### Community 1 - "manage-api.ts"
 Cohesion: 0.05
 Nodes (78): AdminAnamnesis, AdminAnamnesisDetail, AdminAnamnesisList, AdminDemoRequest, AdminMetrics, AdminMetricsClinic, AdminMetricsDoctor, AdminMetricsSatisfaction (+70 more)
 
 ### Community 2 - "CadastroWizard.tsx"
-Cohesion: 0.17
-Nodes (12): DedicatedNumberGuide(), DedicatedNumberGuideProps, STEPS, PageCreationGuide(), PageCreationGuideProps, STEPS, TestWindowExplainerStep(), TestWindowExplainerStepProps (+4 more)
+Cohesion: 0.14
+Nodes (15): DedicatedNumberGuide(), DedicatedNumberGuideProps, STEPS, PageCreationGuide(), PageCreationGuideProps, STEPS, OPTIONS, PriorApiStep() (+7 more)
 
 ### Community 3 - "page.tsx"
 Cohesion: 0.22
-Nodes (6): CadastroWizard(), resolvePlan(), CadastroInner(), errorStyle, LaunchWaitlistForm(), LaunchWaitlistFormProps
+Nodes (6): CadastroWizard(), PURCHASABLE_PLANS, ResolvedPlan, resolvePlan(), CadastroInner(), CatalogPlanId
 
 ### Community 4 - "secretaria-hub.ts"
-Cohesion: 0.10
-Nodes (41): getSecretariaHubToken(), AddressWire, AppointmentCancelPayload, AppointmentCreatePayload, AppointmentReschedulePayload, AppointmentStatusWire, AppointmentTypeWire, AppointmentWire (+33 more)
+Cohesion: 0.07
+Nodes (55): getSecretariaHubToken(), AddressWire, AppointmentCancelPayload, AppointmentCreatePayload, AppointmentReschedulePayload, AppointmentStatusWire, AppointmentTypeWire, AppointmentWire (+47 more)
 
 ### Community 5 - "page.tsx"
 Cohesion: 0.09
-Nodes (30): AddressFieldsOfCtx, applyWireAddress(), applyWireAppointmentTypes(), applyWireBusinessHours(), applyWireGcal(), applyWireInsurances(), applyWireMessages(), applyWirePixDeposit() (+22 more)
+Nodes (38): AddressFieldsOfCtx, applyWireAddress(), applyWireAppointmentTypes(), applyWireBusinessHours(), applyWireGcal(), applyWireInsurances(), applyWireMessages(), applyWirePixDeposit() (+30 more)
 
 ### Community 6 - "ProfessionalsSection.tsx"
-Cohesion: 0.10
-Nodes (17): InviteKind, FIXED_GREETING_BUTTONS, LANGUAGE_OPTIONS, MessagesSection(), MessagesSectionProps, PostConsultSection(), PostConsultSectionProps, ProfessionalsSection() (+9 more)
+Cohesion: 0.07
+Nodes (32): CSelect(), CSelectProps, CToast(), CToastProps, FIXED_GREETING_BUTTONS, LANGUAGE_OPTIONS, MessagesSection(), MessagesSectionProps (+24 more)
 
 ### Community 7 - "manageFetch"
 Cohesion: 0.12
@@ -176,16 +172,16 @@ Cohesion: 0.10
 Nodes (19): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+11 more)
 
 ### Community 10 - "PixSection.tsx"
-Cohesion: 0.14
-Nodes (15): AddressFields(), AddressFieldsProps, ContextSection(), ContextSectionProps, NumberFieldProps, PixSection(), PixSectionProps, ToggleRow() (+7 more)
+Cohesion: 0.12
+Nodes (15): Modal(), ModalProps, AddressFields(), AddressFieldsProps, ContextSection(), ContextSectionProps, COPY, InviteKind (+7 more)
 
 ### Community 11 - "page.tsx"
 Cohesion: 0.25
 Nodes (9): formatDate(), isConnected(), ReativarPage(), alertStyle, PortalAccessNotice(), wrapStyle, isSessionExpired(), usePortalGuard() (+1 more)
 
 ### Community 12 - "page.tsx"
-Cohesion: 0.17
-Nodes (8): CheckoutSucessoInner(), renderView(), ViewState, getOnboardingStatus(), getSession(), CheckoutSucessoInner(), renderView(), ViewState
+Cohesion: 0.15
+Nodes (11): CheckoutSucessoInner(), renderView(), ViewState, enterDoctorMode(), exitDoctorMode(), getOnboardingStatus(), getSession(), saveSession() (+3 more)
 
 ### Community 13 - "page.tsx"
 Cohesion: 0.19
@@ -196,8 +192,8 @@ Cohesion: 0.15
 Nodes (6): AuthShell(), AuthShellProps, StepIndicator(), StepIndicatorProps, requestPasswordReset(), verifyResetToken()
 
 ### Community 15 - "Icon"
-Cohesion: 0.22
-Nodes (8): Modal(), ModalProps, COPY, InviteKind, InviteTeamMemberModal(), InviteTeamMemberModalProps, createProfessionalInvite(), createSecretaryInvite()
+Cohesion: 0.12
+Nodes (23): Drawer(), BLOCK_REASONS, BlockModal(), CANCEL_REASONS, CancelModal(), clinicDisplay(), MessagePreview(), NewApptModal() (+15 more)
 
 ### Community 16 - "meta-embedded-signup.ts"
 Cohesion: 0.08
@@ -208,52 +204,48 @@ Cohesion: 0.21
 Nodes (9): BrandIcon(), BrandIconProps, FILLED, IconName, PATHS, ThemeToggle(), ThemeToggleProps, Theme (+1 more)
 
 ### Community 18 - "AvailabilitySection.tsx"
-Cohesion: 0.17
-Nodes (9): AvailabilitySection(), AvailabilitySectionProps, DayRowProps, TIME_LIST, CSelect(), CSelectProps, Prefs, HelpTip() (+1 more)
+Cohesion: 0.09
+Nodes (19): AvailabilitySection(), AvailabilitySectionProps, DayRowProps, TIME_LIST, CSelect(), CSelectProps, CToggle(), CToggleProps (+11 more)
 
 ### Community 19 - "doRefresh"
-Cohesion: 0.24
-Nodes (15): decodeJwtPayload(), doRefresh(), enterDoctorMode(), exchangeInviteToken(), exchangeOnboardingToken(), exitDoctorMode(), fetchImpersonationDoctor(), login() (+7 more)
+Cohesion: 0.30
+Nodes (12): decodeJwtPayload(), doRefresh(), exchangeInviteToken(), exchangeOnboardingToken(), fetchImpersonationDoctor(), login(), rawManageFetch(), readBoolClaim() (+4 more)
 
 ### Community 20 - "Session"
 Cohesion: 0.22
 Nodes (3): b64url(), makeJwt(), ManageApiModule
 
 ### Community 21 - "ServiceCard.tsx"
-Cohesion: 0.18
-Nodes (10): CToggle(), CToggleProps, DURATION_OPTIONS, RequirementRowProps, ServiceCard(), ServiceCardProps, ServicesSection(), ServicesSectionProps (+2 more)
+Cohesion: 0.09
+Nodes (20): appt, block, d, end, { endIso }, events, instant, keys (+12 more)
 
 ### Community 22 - "CHECKPOINT — secretarIA-frontend (split out of brain-frontend)"
 Cohesion: 0.13
 Nodes (13): A tela `/` — composição nova, não é cópia, CHECKPOINT — secretarIA-frontend (split out of brain-frontend), code:block1 (npm install), Decisões tomadas nesta rodada, Deploy no EasyPanel (guia — nada disto foi executado), Lacunas conhecidas (nada disto bloqueia o build), Mapa de rotas (14 + `_not-found`, todas estáticas), Mapa de rotas (14, todas estáticas) (+5 more)
 
 ### Community 23 - "types.ts"
-Cohesion: 0.40
-Nodes (4): GoogleGlyph(), GoogleSection(), GoogleSectionProps, GoogleCalendarMode
+Cohesion: 0.20
+Nodes (10): conf, csp, firstLocation, lines, map, read(), repoRoot, REQUIRED (+2 more)
 
 ### Community 24 - "manage-api.test.ts"
-Cohesion: 0.40
-Nodes (3): HubModule, mockHubTokenMint(), mockResponse()
-
-### Community 25 - "ActivateButton.tsx"
-Cohesion: 0.12
-Nodes (13): RETRY_DELAYS_MS, UseSecretariaHubResult, Session, hubConfigured(), ManageApiModule, SignOutModule, baseStyle, HubNotice() (+5 more)
+Cohesion: 0.13
+Nodes (14): AgendaPage(), baseStyle, HubNotice(), HubNoticeProps, warnStyle, RETRY_DELAYS_MS, useSecretariaHub(), UseSecretariaHubResult (+6 more)
 
 ### Community 26 - "usePortalGuard.ts"
-Cohesion: 0.20
-Nodes (10): isSessionExpired(), clearSession(), isSamePath(), PORTAL_ROLES, PostLoginDecision, resolvePostLogin(), decision, malformed (+2 more)
+Cohesion: 0.26
+Nodes (8): isSamePath(), PORTAL_ROLES, PostLoginDecision, resolvePostLogin(), decision, malformed, query, route
 
 ### Community 27 - "Section.tsx"
-Cohesion: 0.19
-Nodes (9): FIXED_GREETING_BUTTONS, LANGUAGE_OPTIONS, MessagesSection(), MessagesSectionProps, PostConsultSection(), PostConsultSectionProps, Section(), SectionProps (+1 more)
+Cohesion: 0.11
+Nodes (16): GoogleGlyph(), GoogleSection(), GoogleSectionProps, FIXED_GREETING_BUTTONS, LANGUAGE_OPTIONS, MessagesSection(), MessagesSectionProps, PostConsultSection() (+8 more)
 
 ### Community 28 - "StateTimeline.tsx"
-Cohesion: 0.09
-Nodes (30): ConfiguracaoPage(), buildLoadFailedEvent(), canEditProfessionalFields(), canEditTenantFields(), canSave(), ConfigEvent, ConfigScope, emitConfigEvent() (+22 more)
+Cohesion: 0.10
+Nodes (24): buildLoadFailedEvent(), ConfigEvent, ConfigScope, emitConfigEvent(), HydrationAction, hydrationReducer(), IDLE_SCOPE, INITIAL_HYDRATION_STATE (+16 more)
 
 ### Community 29 - "SideNav.tsx"
-Cohesion: 0.09
-Nodes (22): CToast(), CToastProps, ProfessionalsSection(), ProfessionalsSectionProps, RosterActionError, NAV, NavItem, SideNav() (+14 more)
+Cohesion: 0.12
+Nodes (19): DrawerProps, CToast(), CToastProps, NAV, NavItem, SideNav(), SideNavProps, ApptStatus (+11 more)
 
 ### Community 30 - "secretarIA-frontend"
 Cohesion: 0.40
@@ -272,36 +264,36 @@ Cohesion: 0.10
 Nodes (22): ConfigGapBannerProps, colleagueMessage(), ConfigGapNotice, ConfigGapProfessional, ConfigGapSession, dismissConfigGap(), findConfigGaps(), isConfigGapDismissed() (+14 more)
 
 ### Community 40 - "Community 40"
-Cohesion: 0.12
-Nodes (27): demoWeek(), applyWireAddress(), applyWireAppointmentTypes(), applyWireBusinessHours(), applyWireGcal(), applyWireInsurances(), applyWireMessages(), applyWirePixDeposit() (+19 more)
+Cohesion: 0.10
+Nodes (33): AddressFieldsOfCtx, applyWireAddress(), applyWireAppointmentTypes(), applyWireBusinessHours(), applyWireGcal(), applyWireInsurances(), applyWireMessages(), applyWirePixDeposit() (+25 more)
 
 ### Community 41 - "clearSession"
 Cohesion: 0.22
 Nodes (6): logout(), signOut(), ManageApiModule, navigate, sessionStorageMock, SignOutModule
 
 ### Community 42 - "Community 42"
-Cohesion: 0.12
-Nodes (18): ServiceDraft, ServiceEditorModalProps, alsoAffected(), CatalogRow, catalogRows(), offerService(), pendingLinks(), unpublished() (+10 more)
+Cohesion: 0.10
+Nodes (21): ServiceDraft, ServiceEditorModalProps, DURATION_OPTIONS, ServicesSection(), ServicesSectionProps, CatalogRow, catalogRows(), offerService() (+13 more)
 
 ### Community 43 - "Community 43"
-Cohesion: 0.11
-Nodes (23): NAV_IDS, NavId, SaveMode, CalendarEnsureResult, ensureCalendars(), performSave(), PublishResult, retryProfessionalOnly() (+15 more)
+Cohesion: 0.16
+Nodes (13): canSave(), SaveBlockedReason, SaveMode, CalendarEnsureResult, ensureCalendars(), performSave(), PublishResult, retryProfessionalOnly() (+5 more)
 
 ### Community 44 - "Community 44"
 Cohesion: 0.09
 Nodes (17): b64url(), body, deferredRefresh, fresh, jwt, logoutPromise, makeJwt(), ManageApiModule (+9 more)
 
 ### Community 45 - "Community 45"
-Cohesion: 0.13
+Cohesion: 0.12
 Nodes (16): AddressFields(), AddressFieldsProps, ContextSection(), ContextSectionProps, CToggle(), CToggleProps, NumberFieldProps, PixSection() (+8 more)
 
 ### Community 46 - "Community 46"
 Cohesion: 0.09
-Nodes (17): AUTHENTICATED, blockedScenarios, boom, cause, deps, LOADED_NO_PROFESSIONAL, LOADED_WITH_A, loadedWithB (+9 more)
+Nodes (18): isLegacyBackend(), AUTHENTICATED, blockedScenarios, boom, cause, deps, LOADED_NO_PROFESSIONAL, LOADED_WITH_A (+10 more)
 
 ### Community 47 - "Community 47"
-Cohesion: 0.12
-Nodes (13): AvailabilitySection(), AvailabilitySectionProps, DayRowProps, TIME_LIST, CSelect(), CSelectProps, InlineNote(), DURATION_OPTIONS (+5 more)
+Cohesion: 0.18
+Nodes (7): AvailabilitySection(), AvailabilitySectionProps, DayRowProps, TIME_LIST, InlineNote(), DayConfig, Prefs
 
 ### Community 48 - "Community 48"
 Cohesion: 0.10
@@ -312,8 +304,8 @@ Cohesion: 0.10
 Nodes (19): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+11 more)
 
 ### Community 50 - "Community 50"
-Cohesion: 0.15
-Nodes (14): DrawerProps, CToast(), CToastProps, ApptStatus, firstLetter(), STATUS_META, Avatar(), BtnSize (+6 more)
+Cohesion: 0.20
+Nodes (9): 1. O que estava errado, medido em produção, 2. A armadilha que quase anulou a correção, 3. CSP — a decisão e por que ela é essa, 4. Referrer-Policy e os tokens na URL (SEC-3), 5. 404 e robots.txt (SEC-4), 6. Arquivos, 7. Como foi verificado, 8. Pendências (+1 more)
 
 ### Community 51 - "Community 51"
 Cohesion: 0.15
@@ -324,52 +316,52 @@ Cohesion: 0.13
 Nodes (5): BrandGlyph(), BrandGlyphProps, SetPasswordForm(), SetPasswordFormProps, ViewState
 
 ### Community 53 - "Community 53"
-Cohesion: 0.18
-Nodes (13): BLOCK_REASONS, BlockModal(), CANCEL_REASONS, CancelModal(), clinicDisplay(), MessagePreview(), NewApptModal(), RescheduleModal() (+5 more)
+Cohesion: 0.09
+Nodes (29): Drawer(), DrawerProps, BLOCK_REASONS, BlockModal(), CANCEL_REASONS, CancelModal(), clinicDisplay(), MessagePreview() (+21 more)
 
 ### Community 54 - "Community 54"
-Cohesion: 0.18
-Nodes (14): COPY, InviteTeamMemberModal(), InviteTeamMemberModalProps, Modal(), ModalProps, ServiceEditorModal(), isProfessionalNameAtLimit(), isServiceNameAtLimit() (+6 more)
+Cohesion: 0.09
+Nodes (24): COPY, InviteKind, InviteTeamMemberModal(), InviteTeamMemberModalProps, Modal(), ModalProps, ProfessionalsSection(), ProfessionalsSectionProps (+16 more)
 
 ### Community 55 - "Community 55"
-Cohesion: 0.18
-Nodes (14): ApptBlock(), DayBlock(), DayView(), heightOf(), MONTH_GRID, MonthView(), NowLine(), toneOf() (+6 more)
+Cohesion: 0.20
+Nodes (13): ApptBlock(), DayBlock(), DayView(), heightOf(), MONTH_GRID, MonthView(), NowLine(), toneOf() (+5 more)
 
 ### Community 56 - "Community 56"
-Cohesion: 0.12
-Nodes (14): AgendaPage(), ModalState, ToastState, ViewMode, ConfigGapBanner(), PortalHeader(), cancelAppointment(), CancelPreviewWire (+6 more)
+Cohesion: 0.11
+Nodes (27): AgendaPage(), capitalize(), dayIndexFromKey(), fromDateKey(), isSameDay(), MONTH_FMT, MONTH_YEAR_FMT, MonthCell (+19 more)
 
 ### Community 57 - "Community 57"
-Cohesion: 0.18
-Nodes (12): ADDON_COPY, AddonsStep(), AddonsStepProps, CadastroWizardProps, PROGRESS, PROGRESS_LABEL, EMPTY_ANSWERS, EMPTY_CONTACT (+4 more)
+Cohesion: 0.20
+Nodes (9): ADDON_COPY, AddonsStep(), AddonsStepProps, EMPTY_ANSWERS, EMPTY_CONTACT, SIGNUP_ADDON_IDS, SignupAddonId, StepId (+1 more)
 
 ### Community 58 - "Community 58"
-Cohesion: 0.15
-Nodes (13): AddressFieldsOfCtx, applyWireServices(), buildConfigUpdatePayload(), buildProfessionalConfigPayload(), LOCAL_TO_WIRE_DAY, toWireAddress(), toWireAppointmentTypes(), toWireBusinessHours() (+5 more)
+Cohesion: 0.25
+Nodes (6): CadastroWizardProps, PROGRESS, PROGRESS_LABEL, PageCreationGuide(), PageCreationGuideProps, STEPS
 
 ### Community 59 - "Community 59"
-Cohesion: 0.17
-Nodes (12): CadastroWizardProps, PROGRESS, PROGRESS_LABEL, ContactStep(), ContactStepProps, honeypotStyle, ContactFields, EMPTY_ANSWERS (+4 more)
+Cohesion: 0.13
+Nodes (17): ADDON_COPY, AddonsStep(), AddonsStepProps, CadastroWizardProps, PROGRESS, PROGRESS_LABEL, ContactStep(), ContactStepProps (+9 more)
 
 ### Community 60 - "Community 60"
-Cohesion: 0.17
-Nodes (12): DedicatedNumberGuide(), DedicatedNumberGuideProps, STEPS, PageCreationGuide(), PageCreationGuideProps, STEPS, TestWindowExplainerStep(), TestWindowExplainerStepProps (+4 more)
+Cohesion: 0.16
+Nodes (13): ContactStep(), ContactStepProps, honeypotStyle, DedicatedNumberGuide(), DedicatedNumberGuideProps, STEPS, TestWindowExplainerStep(), TestWindowExplainerStepProps (+5 more)
 
 ### Community 61 - "Community 61"
-Cohesion: 0.15
-Nodes (12): FacebookPageStep(), FacebookPageStepProps, OPTIONS, OPTIONS, PriorApiStep(), PriorApiStepProps, RadioOption, RadioPillGroup() (+4 more)
+Cohesion: 0.14
+Nodes (13): FacebookPageStep(), FacebookPageStepProps, OPTIONS, OPTIONS, PriorApiStep(), PriorApiStepProps, RadioOption, RadioPillGroup() (+5 more)
 
 ### Community 62 - "Community 62"
-Cohesion: 0.19
-Nodes (10): PortalHeaderProps, PortalProduct, PRODUCT_NAME, ProductLockup(), SecretariaWordmark(), SecretariaWordmarkProps, ThemeToggle(), ThemeToggleProps (+2 more)
+Cohesion: 0.27
+Nodes (7): PortalHeader(), PortalHeaderProps, PortalProduct, PRODUCT_NAME, ProductLockup(), SecretariaWordmark(), SecretariaWordmarkProps
 
 ### Community 63 - "Community 63"
-Cohesion: 0.16
-Nodes (12): GoogleGlyph(), GoogleSection(), GoogleSectionProps, ConfigInheritance, EMPTY_CATALOG_SERVICE, EMPTY_GCAL, EMPTY_MESSAGES, EMPTY_PROFESSIONAL_PROFILE (+4 more)
+Cohesion: 0.14
+Nodes (14): GoogleGlyph(), GoogleSection(), GoogleSectionProps, EMPTY_CATALOG_SERVICE, EMPTY_CLINIC_CTX, EMPTY_GCAL, EMPTY_MESSAGES, EMPTY_POST_CONSULT (+6 more)
 
 ### Community 64 - "Community 64"
-Cohesion: 0.19
-Nodes (10): PauseToggles(), PauseTogglesProps, NODES, rankOf(), StateTimeline(), ATTEMPT_RESULT_LABEL, BLOCKER_COPY, formatDateTime() (+2 more)
+Cohesion: 0.14
+Nodes (13): PauseToggles(), PauseTogglesProps, alertStyle, PortalAccessNotice(), wrapStyle, NODES, rankOf(), StateTimeline() (+5 more)
 
 ### Community 65 - "Community 65"
 Cohesion: 0.16
@@ -380,20 +372,20 @@ Cohesion: 0.21
 Nodes (11): CheckoutTrialNotice(), CheckoutTrialNoticeProps, loadTrialDays(), noticeStyle, isPurchaseGated(), CheckoutTrialNotice(), CheckoutTrialNoticeProps, loadTrialDays() (+3 more)
 
 ### Community 67 - "Community 67"
-Cohesion: 0.19
-Nodes (10): BrandIcon(), BrandIconProps, FILLED, IconName, PATHS, pickProfessional(), InicioPage(), DoctorMe (+2 more)
+Cohesion: 0.18
+Nodes (11): BrandIcon(), BrandIconProps, FILLED, IconName, PATHS, ConfigGapBanner(), pickProfessional(), InicioPage() (+3 more)
 
 ### Community 68 - "Community 68"
-Cohesion: 0.18
-Nodes (9): ADDON_SUMMARY_LABEL, FB_PAGE_LABEL, PRIOR_API_LABEL, SummaryStep(), SummaryStepProps, USAGE_LABEL, createPublicCheckoutSession(), PURCHASABLE_PLANS (+1 more)
+Cohesion: 0.20
+Nodes (8): ADDON_SUMMARY_LABEL, FB_PAGE_LABEL, PRIOR_API_LABEL, SummaryStep(), SummaryStepProps, USAGE_LABEL, PURCHASABLE_PLANS, ResolvedPlan
 
 ### Community 69 - "Community 69"
 Cohesion: 0.17
 Nodes (11): 1. O que é, 2. De onde vem o sinal — e a correção ao prompt, 3. As três decisões, confirmadas pelo usuário antes do código, 4. Arquivos, 5. Armadilhas registradas, 6. Gates (rodados 2026-08-29), 7. Pendências, CHECKPOINT — Banner "configure sua secretarIA" (FEAT 42) (+3 more)
 
 ### Community 70 - "Community 70"
-Cohesion: 0.20
-Nodes (8): ADDON_COPY, AddonsStep(), AddonsStepProps, PURCHASABLE_PLANS, ResolvedPlan, SIGNUP_ADDON_IDS, CatalogPlanId, updateSignupIntentCatalog()
+Cohesion: 0.47
+Nodes (4): ThemeToggle(), ThemeToggleProps, Theme, useBrandTheme()
 
 ### Community 71 - "Community 71"
 Cohesion: 0.18
@@ -404,12 +396,12 @@ Cohesion: 0.20
 Nodes (8): BACKEND_PROFESSIONAL_LIST_ITEM_KEYS, HubModule, legacy, { missing, unexpected }, mockHubTokenMint(), mockResponse(), result, { unexpected }
 
 ### Community 73 - "Community 73"
-Cohesion: 0.31
-Nodes (9): blockReasonFromSummary(), currentWeekIsoRange(), formatBlockSummary(), isBlockSummary(), mapHubEventsToAppts(), mapHubEventToAppt(), mondayOfWeek(), slotToIsoRange() (+1 more)
+Cohesion: 0.20
+Nodes (22): ModalState, ToastState, Toolbar(), ViewMode, blockReasonFromSummary(), currentWeekIsoRange(), formatBlockSummary(), isBlockSummary() (+14 more)
 
 ### Community 74 - "Community 74"
-Cohesion: 0.29
-Nodes (8): alertStyle, PortalAccessNotice(), wrapStyle, usePortalGuard(), getTestWindow(), formatDate(), isConnected(), ReativarPage()
+Cohesion: 0.31
+Nodes (7): isSessionExpired(), usePortalGuard(), clearSession(), TestWindow, formatDate(), isConnected(), ReativarPage()
 
 ### Community 76 - "Community 76"
 Cohesion: 0.27
@@ -420,20 +412,20 @@ Cohesion: 0.27
 Nodes (9): baseStyle, failureMessage(), infoStyle, LoadStateNotice(), LoadStateNoticeProps, warnStyle, hasLoadError(), HydrationState (+1 more)
 
 ### Community 78 - "Community 78"
-Cohesion: 0.20
-Nodes (9): DEMO_CATALOG, DEMO_CTX, DEMO_PROFILE, DEMO_ROSTER, DEMO_SERVICE_IDS, DEMO_SERVICES, VisitorDemo, DayConfig (+1 more)
+Cohesion: 0.14
+Nodes (20): ConfiguracaoPage(), NAV_IDS, NavId, alsoAffected(), DEMO_CATALOG, DEMO_CTX, DEMO_PROFILE, DEMO_ROSTER (+12 more)
 
 ### Community 79 - "Community 79"
 Cohesion: 0.22
 Nodes (4): SetPasswordForm(), SetPasswordFormProps, ViewState, setPassword()
 
 ### Community 82 - "Community 82"
-Cohesion: 0.22
-Nodes (7): ADDON_SUMMARY_LABEL, FB_PAGE_LABEL, PRIOR_API_LABEL, SummaryStep(), SummaryStepProps, USAGE_LABEL, attachSignupIntake()
+Cohesion: 0.20
+Nodes (8): ADDON_SUMMARY_LABEL, FB_PAGE_LABEL, PRIOR_API_LABEL, SummaryStep(), SummaryStepProps, USAGE_LABEL, attachSignupIntake(), createPublicCheckoutSession()
 
 ### Community 83 - "Community 83"
-Cohesion: 0.31
-Nodes (4): CadastroInner(), CadastroWizard(), isPurchaseGated(), resolvePlan()
+Cohesion: 0.21
+Nodes (7): CadastroInner(), CadastroWizard(), errorStyle, LaunchWaitlistForm(), LaunchWaitlistFormProps, isPurchaseGated(), resolvePlan()
 
 ### Community 84 - "Community 84"
 Cohesion: 0.22
@@ -443,57 +435,41 @@ Nodes (8): 1. O problema, 2. A tela nova, 3. As três armadilhas de migração, 
 Cohesion: 0.29
 Nodes (6): OnboardingBanner(), STATE_LABEL, OnboardingBanner(), STATE_LABEL, DoctorOnboarding, getDoctorOnboarding()
 
-### Community 86 - "Community 86"
-Cohesion: 0.25
-Nodes (7): Anamnese, APPT_TYPES, CLINIC, CURRENT_USER, DURATIONS, StatusTone, WeekDay
-
-### Community 88 - "Community 88"
-Cohesion: 0.33
-Nodes (5): NAV, NavItem, SideNav(), SideNavProps, IconName
-
 ### Community 89 - "Community 89"
 Cohesion: 0.33
 Nodes (4): css, repoRoot, rule, SCREENS
 
 ### Community 90 - "Community 90"
-Cohesion: 0.33
-Nodes (5): Convenções deste repo, Documentação — manter em dia (obrigatório), graphify, Prompts prontos para rodar, secretarIA-frontend
+Cohesion: 0.29
+Nodes (6): Auditoria de rotas & requisições — 30/08/2026, Convenções deste repo, Documentação — manter em dia (obrigatório), graphify, Prompts prontos para rodar, secretarIA-frontend
 
 ### Community 91 - "Community 91"
 Cohesion: 0.40
 Nodes (3): PauseToggles(), PauseTogglesProps, pauseOnboarding()
-
-### Community 92 - "Community 92"
-Cohesion: 0.40
-Nodes (4): ContactStep(), ContactStepProps, honeypotStyle, ContactFields
-
-### Community 93 - "Community 93"
-Cohesion: 0.40
-Nodes (4): OPTIONS, PriorApiStep(), PriorApiStepProps, SignupIntakePriorApi
 
 ### Community 94 - "Community 94"
 Cohesion: 0.40
 Nodes (4): errorStyle, LaunchWaitlistForm(), LaunchWaitlistFormProps, submitLaunchWaitlist()
 
 ## Knowledge Gaps
-- **479 isolated node(s):** `nextConfig`, `name`, `version`, `private`, `dev` (+474 more)
+- **528 isolated node(s):** `nextConfig`, `name`, `version`, `private`, `dev` (+523 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **8 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Session` connect `ActivateButton.tsx` to `manage-api.ts`, `secretaria-hub.ts`, `ProfessionalsSection.tsx`, `Icon`, `meta-embedded-signup.ts`, `Session`, `manage-api.test.ts`, `usePortalGuard.ts`, `SideNav.tsx`, `ManageApiError`, `Community 39`, `clearSession`, `Community 43`, `Community 44`, `Community 52`, `Community 54`, `Community 64`, `Community 72`, `Community 79`, `Community 85`, `Community 91`?**
-  _High betweenness centrality (0.091) - this node is a cross-community bridge._
-- **Why does `ManageApiError` connect `Community 87` to `manage-api.ts`, `Community 68`, `secretaria-hub.ts`, `ManageApiError`, `Community 70`, `page.tsx`, `page.tsx`, `Icon`, `Community 79`, `Community 82`, `Community 51`, `Community 52`, `Community 54`, `Community 57`, `usePortalGuard.ts`, `Community 59`, `ActivateButton.tsx`?**
-  _High betweenness centrality (0.060) - this node is a cross-community bridge._
-- **Why does `signOut()` connect `clearSession` to `page.tsx`, `Community 67`, `page.tsx`, `Community 43`, `Community 56`?**
-  _High betweenness centrality (0.019) - this node is a cross-community bridge._
+- **Why does `Session` connect `manage-api.test.ts` to `manage-api.ts`, `secretaria-hub.ts`, `ProfessionalsSection.tsx`, `PixSection.tsx`, `meta-embedded-signup.ts`, `Session`, `ActivateButton.tsx`, `usePortalGuard.ts`, `ManageApiError`, `Community 39`, `clearSession`, `Community 44`, `Community 52`, `Community 54`, `Community 64`, `Community 72`, `Community 74`, `Community 78`, `Community 79`, `Community 85`, `Community 91`?**
+  _High betweenness centrality (0.074) - this node is a cross-community bridge._
+- **Why does `ManageApiError` connect `Community 87` to `manage-api.ts`, `usePortalGuard.ts`, `Community 68`, `secretaria-hub.ts`, `ManageApiError`, `Community 74`, `PixSection.tsx`, `page.tsx`, `page.tsx`, `Community 79`, `Community 82`, `Community 51`, `Community 52`, `Community 54`, `manage-api.test.ts`, `Community 57`, `Community 58`, `Community 59`?**
+  _High betweenness centrality (0.068) - this node is a cross-community bridge._
+- **Why does `signOut()` connect `clearSession` to `page.tsx`, `Community 67`, `page.tsx`, `Community 73`, `Community 78`?**
+  _High betweenness centrality (0.022) - this node is a cross-community bridge._
 - **What connects `nextConfig`, `name`, `version` to the rest of the system?**
-  _479 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _528 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `page.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.05714285714285714 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.10967741935483871 - nodes in this community are weakly interconnected._
 - **Should `manage-api.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.05031645569620253 - nodes in this community are weakly interconnected._
-- **Should `secretaria-hub.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.09513742071881606 - nodes in this community are weakly interconnected._
+- **Should `CadastroWizard.tsx` be split into smaller, more focused modules?**
+  _Cohesion score 0.14210526315789473 - nodes in this community are weakly interconnected._

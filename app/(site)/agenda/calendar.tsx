@@ -7,7 +7,6 @@
 import { useState } from "react";
 import { Icon, StatusBadge } from "../_shared/ui";
 import {
-  WEEK_DAYS,
   HOUR_START,
   HOUR_END,
   SLOT_H,
@@ -16,13 +15,22 @@ import {
   fmtRange,
 } from "../_shared/data";
 import type { Appt } from "../_shared/data";
+import { GRID_DAY_COUNT, weekdayShortFromKey } from "../_shared/calendar-dates";
+import type { MonthCell, WeekDay } from "../_shared/calendar-dates";
 
 // ---------------------------------------------------------------------------
 // Calendar layout constants
 // ---------------------------------------------------------------------------
 
-/** Minutes from midnight representing "now" (11:22 on Tue). */
-export const NOW_MIN = 11 * 60 + 22;
+// `NOW_MIN = 11 * 60 + 22` used to live here — the design mock's "11:22 on
+// Tue" — so the red "now" rule was painted at 11:22 for the rest of time, on
+// whichever column carried the hardcoded today flag. It is now the live
+// `nowMin` prop threaded in from page.tsx, which reads the clock after mount
+// (this route is prerendered, so reading it during render would bake the build
+// time into the HTML) and refreshes it on a timer.
+
+/** CSS columns for the week grid: hour gutter + one per weekday. */
+const WEEK_GRID_COLUMNS = `60px repeat(${GRID_DAY_COUNT}, 1fr)`;
 
 /** Total pixel height of the time grid (hours × px-per-hour). */
 const TOTAL_H = (HOUR_END - HOUR_START) * SLOT_H;
@@ -193,16 +201,23 @@ function ApptBlock({
 
 /**
  * Red dot + horizontal rule that marks the current time inside a day column.
- * Positioned absolutely via topOf(NOW_MIN).
+ * Rendered only on the column that is really today, at the real clock minute.
+ *
+ * Renders nothing outside the HOUR_START..HOUR_END band the grid draws. This
+ * could not happen while "now" was the mock's frozen 11:22, which always sat
+ * inside business hours; with the real clock, a secretary opening the agenda
+ * at 22:00 would otherwise get a red rule floating past the bottom of the
+ * grid, marking a time the column does not show.
  */
-function NowLine() {
+function NowLine({ nowMin }: { nowMin: number }) {
+  if (nowMin < HOUR_START * 60 || nowMin > HOUR_END * 60) return null;
   return (
     <div
       style={{
         position: "absolute",
         left: -1,
         right: 0,
-        top: topOf(NOW_MIN),
+        top: topOf(nowMin),
         zIndex: 6,
         pointerEvents: "none",
       }}
@@ -303,24 +318,35 @@ function GridLines() {
 }
 
 // ---------------------------------------------------------------------------
-// WeekView — 6-column (Mon–Sat) scrollable week grid
+// WeekView — 7-column (Sun–Sat) scrollable week grid
 // ---------------------------------------------------------------------------
 
 /**
  * Full-week calendar view.
  * Sticky header row shows day labels with today highlighted;
  * clicking a day label navigates to DayView via onDayClick.
+ *
+ * `days` carries the real dates of the week on screen (see calendar-dates.ts)
+ * — the grid has no opinion of its own about which week it is drawing, which
+ * is what keeps the header, the fetch window and the day picker in agreement.
  */
 export function WeekView({
+  days,
   items,
   onSelect,
   onDayClick,
+  nowMin,
 }: {
+  days: WeekDay[];
   items: Appt[];
   onSelect: (a: Appt) => void;
-  onDayClick: (dayIdx: number) => void;
+  onDayClick: (dateKey: string) => void;
+  nowMin: number;
 }) {
-  const byDay = (d: number) => items.filter((a) => a.day === d);
+  // Filtered on the slot's real date, not on its column index: two different
+  // weeks share the same indices, so an item from outside this week would
+  // otherwise be drawn here as if it belonged.
+  const byDay = (iso: string) => items.filter((a) => a.date === iso);
 
   return (
     <div className="scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
@@ -331,16 +357,16 @@ export function WeekView({
           top: 0,
           zIndex: 10,
           display: "grid",
-          gridTemplateColumns: "60px repeat(6, 1fr)",
+          gridTemplateColumns: WEEK_GRID_COLUMNS,
           background: "var(--page)",
           borderBottom: "1px solid var(--line-strong)",
         }}
       >
         <div />
-        {WEEK_DAYS.map((d, di) => (
+        {days.map((d) => (
           <button
-            key={d.key}
-            onClick={() => onDayClick(di)}
+            key={d.iso}
+            onClick={() => onDayClick(d.iso)}
             style={{
               display: "flex",
               flexDirection: "column",
@@ -390,16 +416,16 @@ export function WeekView({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "60px repeat(6, 1fr)",
+          gridTemplateColumns: WEEK_GRID_COLUMNS,
           position: "relative",
         }}
       >
         <div style={{ position: "relative", height: TOTAL_H }}>
           <HourGutter />
         </div>
-        {WEEK_DAYS.map((d, di) => (
+        {days.map((d) => (
           <div
-            key={d.key}
+            key={d.iso}
             style={{
               position: "relative",
               height: TOTAL_H,
@@ -417,10 +443,10 @@ export function WeekView({
               }}
             />
             <GridLines />
-            {byDay(di).map((a) => (
+            {byDay(d.iso).map((a) => (
               <ApptBlock key={a.id} a={a} onSelect={onSelect} />
             ))}
-            {d.today && <NowLine />}
+            {d.today && <NowLine nowMin={nowMin} />}
           </div>
         ))}
       </div>
@@ -438,17 +464,18 @@ export function WeekView({
  * time range, type, anamnese badge, and status.
  */
 export function DayView({
-  dayIdx,
+  day,
   items,
   onSelect,
+  nowMin,
 }: {
-  dayIdx: number;
+  day: WeekDay;
   items: Appt[];
   onSelect: (a: Appt) => void;
+  nowMin: number;
 }) {
-  const d = WEEK_DAYS[dayIdx];
   const list = items
-    .filter((a) => a.day === dayIdx)
+    .filter((a) => a.date === day.iso)
     .sort((x, y) => x.start - y.start);
 
   return (
@@ -487,7 +514,7 @@ export function DayView({
           {list.map((a) => (
             <DayBlock key={a.id} a={a} onSelect={onSelect} />
           ))}
-          {d?.today && <NowLine />}
+          {day.today && <NowLine nowMin={nowMin} />}
         </div>
       </div>
     </div>
@@ -645,45 +672,40 @@ function DayBlock({
 }
 
 // ---------------------------------------------------------------------------
-// MonthView — full month grid (June 2026 hard-coded like the design source)
+// MonthView — full month grid, built from the anchor
 // ---------------------------------------------------------------------------
-
-/**
- * Builds the month grid cells for June 2026.
- * Week starts on Sunday to match the Brazilian calendar convention.
- * Cells outside the month (May 31, July overflow) are marked `out: true`.
- */
-const MONTH_GRID = (() => {
-  const cells: Array<{ d: number; dayIdx?: number; out?: boolean }> = [];
-  // Week 1: May 31 (Sun) + June 1–6
-  cells.push({ d: 31, out: true });
-  for (let d = 1; d <= 6; d++) cells.push({ d, dayIdx: d - 1 });
-  // June 7–30 (no WEEK_DAYS entry for these — month grid only shows dot counts)
-  for (let d = 7; d <= 30; d++) cells.push({ d });
-  // Pad the last partial week with July dates
-  let jul = 1;
-  while (cells.length % 7 !== 0) cells.push({ d: jul++, out: true });
-  return cells;
-})();
-
-const WD_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 /**
  * Month-at-a-glance view.
  * Each cell shows the day number and up to 3 appointment dots.
- * Clicking a week-1 day (those with a dayIdx) drills into DayView.
+ * Clicking any day drills into DayView for that date.
+ *
+ * `cells` comes from calendar-dates.ts's monthGrid(anchor). It used to be a
+ * module-level MONTH_GRID literal spelling out June 2026 by hand, with "today"
+ * pinned to `c.d === 2` and dots wired only to the six cells that had a
+ * WEEK_DAYS index — every other day of the month was structurally incapable of
+ * showing an appointment. page.tsx now fetches the whole visible grid's range
+ * (monthIsoRange), so an empty cell here means the hub really had nothing.
  */
 export function MonthView({
+  cells,
   items,
   onDayClick,
 }: {
+  cells: MonthCell[];
   items: Appt[];
-  onDayClick: (dayIdx: number) => void;
+  onDayClick: (dateKey: string) => void;
 }) {
-  const countFor = (dayIdx: number) =>
-    items.filter((a) => a.day === dayIdx && a.status !== "bloqueio");
+  const countFor = (iso: string) =>
+    items.filter((a) => a.date === iso && a.status !== "bloqueio");
 
-  const rows = Math.ceil(MONTH_GRID.length / 7);
+  // Header labels are read off the grid's own first row rather than kept in a
+  // parallel list, so the column names cannot drift from the columns.
+  const headLabels = cells
+    .slice(0, GRID_DAY_COUNT)
+    .map((c) => weekdayShortFromKey(c.iso));
+
+  const rows = Math.ceil(cells.length / GRID_DAY_COUNT);
 
   return (
     <div
@@ -702,7 +724,7 @@ export function MonthView({
           borderBottom: "1px solid var(--line)",
         }}
       >
-        {WD_LABELS.map((w) => (
+        {headLabels.map((w) => (
           <div
             key={w}
             style={{
@@ -731,17 +753,14 @@ export function MonthView({
           overflow: "auto",
         }}
       >
-        {MONTH_GRID.map((c, i) => {
-          const appts = c.dayIdx != null ? countFor(c.dayIdx) : [];
-          // June 2: today (index 1 in WEEK_DAYS, but in month grid it's d=2)
-          const today = c.d === 2 && !c.out;
-          const clickable = c.dayIdx != null;
+        {cells.map((c, i) => {
+          const appts = countFor(c.iso);
+          const today = c.today;
 
           return (
             <button
-              key={i}
-              onClick={() => clickable && onDayClick(c.dayIdx!)}
-              disabled={!clickable}
+              key={c.iso}
+              onClick={() => onDayClick(c.iso)}
               style={{
                 padding: "8px 9px",
                 display: "flex",
@@ -751,11 +770,14 @@ export function MonthView({
                 textAlign: "left",
                 background: today ? "var(--brand-tint)" : "transparent",
                 minHeight: 84,
-                cursor: clickable ? "pointer" : "default",
+                cursor: "pointer",
                 opacity: c.out ? 0.35 : 1,
                 transition: "background .14s",
                 border: "none",
-                borderRight: i % 7 !== 6 ? "1px solid var(--line)" : "none",
+                borderRight:
+                  i % GRID_DAY_COUNT !== GRID_DAY_COUNT - 1
+                    ? "1px solid var(--line)"
+                    : "none",
                 borderBottom: "1px solid var(--line)",
               } as React.CSSProperties}
             >
@@ -776,7 +798,7 @@ export function MonthView({
                   justifyContent: "center",
                 }}
               >
-                {c.d}
+                {c.day}
               </span>
 
               {/* up to 3 appointment dot rows */}

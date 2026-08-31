@@ -22,6 +22,7 @@ import {
   MIN_PASSWORD_LENGTH,
   passwordPolicyError,
 } from "@/lib/password-policy";
+import { stripQueryParamFromUrl } from "@/lib/url-token";
 
 import { AuthShell } from "../../_shared/AuthShell";
 import { PasswordField } from "../../_shared/PasswordField";
@@ -46,7 +47,17 @@ function UpdatePasswordInner() {
   const [loading, setLoading] = useState(false);
 
   // --- Derived ---
-  const token = search.get("token") ?? "";
+  // Captured ONCE, on the first client render: the effect below wipes ?token=
+  // out of the address bar, and reading it reactively afterwards would see an
+  // empty value and bounce a user who is mid-way through typing a password.
+  //
+  // This screen is where the token used to be exposed longest — it stayed in
+  // the bar, and in the session history, for however long choosing a password
+  // takes. The cost of cleaning it is that RELOADING this URL no longer
+  // carries a token, so it bounces to step 2 (below) instead of staying put.
+  // That is the same path a missing token already took, and the e-mail link is
+  // unaffected: it points at step 2, which re-verifies and forwards here.
+  const [token] = useState(() => search.get("token") ?? "");
 
   // --- Effects ---
   // If we landed here without a token, bounce back to step 2 so the user
@@ -54,7 +65,9 @@ function UpdatePasswordInner() {
   useEffect(() => {
     if (!token) {
       router.replace("/esqueci_senha/token");
+      return;
     }
+    stripQueryParamFromUrl();
   }, [token, router]);
 
   // --- Handlers ---

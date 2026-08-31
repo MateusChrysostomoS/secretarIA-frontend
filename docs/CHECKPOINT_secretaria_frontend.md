@@ -31,6 +31,13 @@ lados, está em `secretarIA/docs/CHECKPOINT_whatsapp_text_limits.md`.
 > `docs/CHECKPOINT_catalogo_servicos_ui.md` — inclui a variável de build nova
 > `NEXT_PUBLIC_SECRETARIA_APP_BASE_URL`, que o brain-frontend precisa.
 
+> **2026-08-30** — A `/agenda` parou de exibir (e de mandar ao paciente) a semana
+> fixa de junho/2026 herdada do mock: toda data agora deriva de uma âncora única em
+> `_shared/calendar-dates.ts`, a grade tem 7 colunas (domingo deixou de ser
+> descartado no mapeamento), e Anterior/Próximo/Hoje navegam de verdade. Ver
+> `docs/CHECKPOINT_agenda_datas_reais.md` — inclui as decisões de produto tomadas
+> (semana começando no domingo, busca do mês seguindo a grade) e por quê.
+
 ## O que é este repo
 
 O frontend dedicado da **secretarIA**, um dos 3 domínios da Brain desde 2026-08-14:

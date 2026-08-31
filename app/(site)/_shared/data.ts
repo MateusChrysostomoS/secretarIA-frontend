@@ -1,19 +1,21 @@
-// ===== secretarIA — calendar grid constants, status metadata, time helpers =====
+// ===== secretarIA — appointment types, status metadata, time helpers =====
 // Ported from _design-source/data.jsx — plain ES module, no browser globals.
 //
-// The weekly/monthly grid labels below (WEEK_DAYS, MONTH_LABEL, PERIOD_LABEL —
-// plus MonthView's hardcoded June-2026 grid in calendar.tsx) still describe a
-// fixed reference week (Mon 01/06 – Sat 06/06 2026) inherited from the ported
-// design. Real hub events are mapped onto these fixed day columns by
-// day-of-week only (see agenda/lib/hub-mapping.ts) — the header/month-grid
-// dates do not track which real calendar week is actually being fetched. This
-// is a known scaffold limitation, not something the agenda mock-purge round
-// (2026-07-22) fixes — see that round's notes for follow-up.
+// The weekly/monthly grid labels that used to live here (WEEK_DAYS,
+// MONTH_LABEL, PERIOD_LABEL, dayFull — plus MonthView's hardcoded June-2026
+// grid in calendar.tsx) described a fixed reference week, Mon 01/06 – Sat
+// 06/06 2026, inherited from the ported design. They were the screen's second
+// clock: the hub fetch always asked for the REAL current week, so the labels
+// contradicted the data they sat on top of, and `dayFull()` fed that invented
+// date into the WhatsApp confirmation sent to the patient.
+//
+// All of it now derives from one anchor Date in _shared/calendar-dates.ts —
+// see that module's header for the rule and the local-time reasoning.
 //
 // The fabricated SEED_APPTS/SEED_BLOCKS appointment rows that used to live in
-// this file were deleted in that same round: the agenda page now only ever
-// renders real secretarIA hub data or an honest empty/error state, never
-// fabricated appointments.
+// this file were deleted in the agenda mock-purge round (2026-07-22): the
+// agenda page now only ever renders real secretarIA hub data or an honest
+// empty/error state, never fabricated appointments.
 
 // ---------------------------------------------------------------------------
 // Domain types
@@ -32,6 +34,17 @@ export type Anamnese = "recebida" | "pendente" | "—";
 /** A single appointment or block slot on the calendar. */
 export type Appt = {
   id: string;
+  /**
+   * The slot's REAL local date, "YYYY-MM-DD".
+   *
+   * `day` below is only a column position, so on its own it cannot tell two
+   * different weeks apart — an event from another week would land in the
+   * visible grid with nothing to contradict it, and the drawer would label it
+   * with whatever date that column happened to be showing. Every view filters
+   * on this field; `day` just decides which column to paint it in.
+   */
+  date: string;
+  /** Column index in the week grid: 0=Sunday .. 6=Saturday. Derived from `date`. */
   day: number;
   start: number;   // minutes from midnight
   dur: number;     // duration in minutes
@@ -54,33 +67,17 @@ export type Appt = {
   appointmentId?: string | null;
 };
 
-/** One column in the weekly calendar header. */
-export type WeekDay = {
-  key: string;
-  label: string;
-  date: number;
-  full: string;
-  today?: boolean;
-};
-
 /** Design-token tone identifiers for status colors. */
 export type StatusTone = "pending" | "confirm" | "attend" | "miss" | "block";
 
 // ---------------------------------------------------------------------------
 // Calendar grid constants
+//
+// The day/month LABELS that used to sit here now come from
+// _shared/calendar-dates.ts, derived from the same anchor that builds the
+// fetch window. What stays here is the part of the grid that genuinely does
+// not depend on which week is on screen: the visible hour band and its scale.
 // ---------------------------------------------------------------------------
-
-export const WEEK_DAYS: WeekDay[] = [
-  { key: "seg", label: "Seg", date: 1, full: "Segunda" },
-  { key: "ter", label: "Ter", date: 2, full: "Terça", today: true },
-  { key: "qua", label: "Qua", date: 3, full: "Quarta" },
-  { key: "qui", label: "Qui", date: 4, full: "Quinta" },
-  { key: "sex", label: "Sex", date: 5, full: "Sexta" },
-  { key: "sab", label: "Sáb", date: 6, full: "Sábado" },
-];
-
-export const MONTH_LABEL = "Junho de 2026";
-export const PERIOD_LABEL = "1 – 6 de junho";
 
 export const HOUR_START = 7;   // 07:00
 export const HOUR_END = 20;    // 20:00
@@ -135,11 +132,10 @@ export const fmtRange = (start: number, dur: number): string =>
 export const firstLetter = (name?: string): string =>
   (name || "?").trim().charAt(0).toUpperCase();
 
-/** "Terça, 02/06" style label for a calendar day column. */
-export const dayFull = (i: number): string =>
-  WEEK_DAYS[i]
-    ? WEEK_DAYS[i].full + ", " + String(WEEK_DAYS[i].date).padStart(2, "0") + "/06"
-    : "";
+// `dayFull(i)` used to live here, turning a column index into "Terça, 02/06"
+// by appending a hardcoded "/06". It is replaced by
+// calendar-dates.ts's `dayLabelFromKey(iso)`, which formats the slot's real
+// date — the one now carried on `Appt.date`.
 
 /** First word of a name — used in headers, modals, and chat previews. */
 export const firstName = (n?: string): string => (n || "").trim().split(" ")[0];
