@@ -505,8 +505,8 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\layout.tsx": {
-    "mtime": 1786748026.2467368,
-    "ast_hash": "77faf1a2ce24d00bbb9c6e464d4db261",
+    "mtime": 1788174636.4362147,
+    "ast_hash": "fc4a95c4715ee8a3b1372db1bed0ad91",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(auth)\\layout.tsx": {
@@ -560,8 +560,8 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\agenda\\calendar.tsx": {
-    "mtime": 1788142234.855865,
-    "ast_hash": "f2ae3c3aacb997a6f43a2053ea20ddd8",
+    "mtime": 1788143194.0417912,
+    "ast_hash": "8f76d36dc5ebfc6c293a08167f4f2e2c",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\agenda\\drawer.tsx": {
@@ -585,8 +585,8 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\app\\onboarding\\page.tsx": {
-    "mtime": 1787676089.5962224,
-    "ast_hash": "e984e6a3e5753bc26c21b174d37deb92",
+    "mtime": 1788174651.2714212,
+    "ast_hash": "26ca299ae14d20a0138a486c1f75a48b",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\app\\onboarding\\lib\\meta-embedded-signup.ts": {
@@ -615,8 +615,8 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\app\\reativar\\page.tsx": {
-    "mtime": 1787676151.889047,
-    "ast_hash": "2dd03011113abf6199cd7c17769940e2",
+    "mtime": 1788174713.8676383,
+    "ast_hash": "50d551c3226411de77b8f23613682975",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\app\\reativar\\_components\\RestartButton.tsx": {
@@ -1060,8 +1060,8 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\CLAUDE.md": {
-    "mtime": 1788142885.948794,
-    "ast_hash": "5c7f9c775cd56fb479ece20369fa9638",
+    "mtime": 1788174997.720733,
+    "ast_hash": "dae367e0a4ac788a93c3da422a4a2ac8",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\docs\\CHECKPOINT_catalogo_servicos_ui.md": {
@@ -1080,8 +1080,8 @@
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\docs\\CHECKPOINT_secretaria_frontend.md": {
-    "mtime": 1787676361.0821376,
-    "ast_hash": "9e91284b3b24d17e8d9a3929e165c534",
+    "mtime": 1788143526.0208073,
+    "ast_hash": "ed5cc0ae4047327bc6e0f210281d3f09",
     "semantic_hash": ""
   },
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\apple-icon.png": {
@@ -1127,6 +1127,36 @@
   "C:\\TECH\\BRAIN\\secretarIA-frontend\\public\\robots.txt": {
     "mtime": 1788141756.3537786,
     "ast_hash": "feca76ebec9e66b57a116f97d2611092",
+    "semantic_hash": ""
+  },
+  "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\app\\onboarding\\lib\\attempt-error.ts": {
+    "mtime": 1788174619.1582944,
+    "ast_hash": "bc827b5ccca49b90f740446efa2eaa5b",
+    "semantic_hash": ""
+  },
+  "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\app\\onboarding\\lib\\__tests__\\attempt-error.test.ts": {
+    "mtime": 1788174633.876629,
+    "ast_hash": "7a47001ae9b2ceef9f3293f86e5bdbe4",
+    "semantic_hash": ""
+  },
+  "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\app\\reativar\\lib\\test-window.ts": {
+    "mtime": 1788174665.1433198,
+    "ast_hash": "a4234a79c90744f8e372081662b28fb4",
+    "semantic_hash": ""
+  },
+  "C:\\TECH\\BRAIN\\secretarIA-frontend\\app\\(site)\\app\\reativar\\lib\\__tests__\\test-window.test.ts": {
+    "mtime": 1788174680.5216348,
+    "ast_hash": "0e75f494a5e8eff1707fa741b5809fef",
+    "semantic_hash": ""
+  },
+  "C:\\TECH\\BRAIN\\secretarIA-frontend\\docs\\CHECKPOINT_agenda_datas_reais.md": {
+    "mtime": 1788143502.7486613,
+    "ast_hash": "34382f858df98f60337b3375aad1125e",
+    "semantic_hash": ""
+  },
+  "C:\\TECH\\BRAIN\\secretarIA-frontend\\docs\\CHECKPOINT_fontes_self_hosted.md": {
+    "mtime": 1788174997.720733,
+    "ast_hash": "64355bf0b4a526085d7e7d905d0db111",
     "semantic_hash": ""
   }
 }

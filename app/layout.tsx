@@ -1,4 +1,12 @@
 import type { Metadata } from "next";
+import {
+  DM_Sans,
+  Hanken_Grotesk,
+  Instrument_Serif,
+  Inter,
+  Newsreader,
+  Space_Grotesk,
+} from "next/font/google";
 
 // RootLayout — the single <html>/<body> shell for the whole secretarIA app.
 // It deliberately imports NO component CSS: each route group imports its own
@@ -12,11 +20,94 @@ export const metadata: Metadata = {
     "A secretarIA atende os pacientes da sua clínica no WhatsApp: responde, agenda, remarca e cuida da agenda de todos os profissionais.",
 };
 
-// Fonts for BOTH design systems: the ported PreCheck auth chrome (Space Grotesk /
-// DM Sans / Instrument Serif / Inter / JetBrains Mono) used by the entry screen,
-// and the Brain brand-ds (Newsreader / Hanken Grotesk) used by every portal screen.
-const FONTS_HREF =
-  "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500;1,6..72,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap";
+// ── Fonts ───────────────────────────────────────────────────────────────────
+// Self-hosted through next/font/google: the files are fetched at BUILD time and
+// emitted into _next/static/media, so a visitor's browser never contacts
+// fonts.googleapis.com or fonts.gstatic.com. That kills two problems at once —
+// a render-blocking third-party stylesheet on every page, and the visitor's IP
+// reaching Google before any consent. This is a health product whose public
+// entry screen ("/") is reachable by patients, so the second one matters most.
+// The rule this encodes: no third-party network resource may load
+// unconditionally from the root layout.
+//
+// Fonts for BOTH design systems, which never share a page: the ported PreCheck
+// auth chrome (Space Grotesk / DM Sans / Inter / Instrument Serif) used by the
+// entry screen, and the Brain brand-ds (Newsreader / Hanken Grotesk) used by
+// every portal screen. JetBrains Mono was in the old stylesheet URL but no rule
+// ever referenced it — dropped rather than ported.
+//
+// Each family is exposed only as a CSS variable; the design-system tokens that
+// used to name the family literally now point at these (see globals.css,
+// auth-shell.css and brand-ds.css). Weights are left unset on the variable
+// fonts so the full axis ships in one file per style, a superset of the
+// 400/500/600/700 the old URL requested.
+//
+// preload:false is deliberate, not an oversight. Declaring the fonts here puts
+// them on every route, so preloading would pull the OTHER design system's files
+// on every page. Left off, the browser fetches a family only when a rule
+// actually matches it — the same per-route set of files as before, minus the
+// third-party round trip. display:"swap" (matching the old &display=swap) plus
+// next/font's size-adjusted fallback keep first paint immediate and CLS at zero.
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
+  variable: "--font-space-grotesk",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  axes: ["opsz"],
+  display: "swap",
+  preload: false,
+  variable: "--font-dm-sans",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
+  variable: "--font-inter",
+});
+
+// Instrument Serif is not a variable font: weight and both styles are explicit.
+// The italic is real usage — `.topbar-brand em` in globals.css.
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  display: "swap",
+  preload: false,
+  variable: "--font-instrument-serif",
+});
+
+// Italic is real usage here too — `.wa-ava` and `.mini-line .mk` in brand-ds.
+const newsreader = Newsreader({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  axes: ["opsz"],
+  display: "swap",
+  preload: false,
+  variable: "--font-newsreader",
+});
+
+const hankenGrotesk = Hanken_Grotesk({
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
+  variable: "--font-hanken-grotesk",
+});
+
+// Declared on <html> so the variables land on :root, where globals.css and
+// brand-ds.css define their font tokens.
+const FONT_VARIABLES = [
+  spaceGrotesk.variable,
+  dmSans.variable,
+  inter.variable,
+  instrumentSerif.variable,
+  newsreader.variable,
+  hankenGrotesk.variable,
+].join(" ");
 
 // Path-aware theme bootstrap, applied before first paint to avoid a theme flash.
 // localStorage key `secretaria_theme` — must stay in sync with STORAGE_KEY in
@@ -32,11 +123,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang="pt-BR" className={FONT_VARIABLES} suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href={FONTS_HREF} rel="stylesheet" />
         {/* Applies the stored / path-default theme before first paint. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>

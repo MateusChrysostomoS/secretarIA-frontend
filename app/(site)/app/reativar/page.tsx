@@ -3,7 +3,7 @@
 // /app/reativar — activation test-window screen (Task 2). Reads GET
 // /doctor/onboarding/test-window and renders one of: loading, load error (with
 // retry), "doesn't apply to your plan", "already connected", an active window
-// (deadline + days_total), or an expired window with a "Reiniciar período de
+// (days left + deadline + days_total), or an expired window with a "Reiniciar período de
 // teste" action. Sibling route to /app/onboarding — same dash-header/dash-main
 // chrome; guarded via usePortalGuard (clinic roles only: doctor, manager,
 // secretary), mirroring ../onboarding/page.tsx's guard+shell pattern exactly.
@@ -17,6 +17,7 @@ import { clearSession, isSessionExpired, usePortalGuard } from "../../_component
 import { PortalAccessNotice } from "../../_components/PortalAccessNotice";
 import { PORTAL_HOME } from "@/lib/portal-routes";
 import { getTestWindow, logout, type TestWindow } from "@/lib/manage-api";
+import { daysRemaining, daysRemainingLabel, formatDays } from "./lib/test-window";
 import { RestartButton } from "./_components/RestartButton";
 import "../dashboard-shell.css";
 import "./reativar.css";
@@ -88,6 +89,13 @@ export default function ReativarPage() {
   // nowhere to redirect them, so the guard hands back a message to show in place.
   if (accessDenied) return <PortalAccessNotice message={accessDenied} />;
   if (!ready || !session) return null;
+
+  // The countdown is derived here: GET /doctor/onboarding/test-window sends
+  // deadline_at but no days_remaining. Reading the clock during render is safe
+  // under `output: "export"` because the stats only exist once `data` has come
+  // back from the client-side fetch — the prerendered HTML holds no build-time
+  // date to drift from. Null (no/!unparseable deadline) falls back to the total.
+  const remaining = data ? daysRemaining(data.deadline_at, new Date(), data.days_total) : null;
 
   return (
     <>
@@ -194,13 +202,21 @@ export default function ReativarPage() {
                   </p>
                 </div>
                 <div className="rtv-stats">
+                  {remaining === null ? (
+                    <div>
+                      <div className="rtv-stat-value">{data.days_total}</div>
+                      <div className="rtv-stat-label">Dias de teste</div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="rtv-stat-value">{remaining}</div>
+                      <div className="rtv-stat-label">{daysRemainingLabel(remaining)}</div>
+                      <div className="rtv-stat-sub">de {formatDays(data.days_total)} de teste</div>
+                    </div>
+                  )}
                   <div>
                     <div className="rtv-stat-value">{formatDate(data.deadline_at)}</div>
                     <div className="rtv-stat-label">Prazo final</div>
-                  </div>
-                  <div>
-                    <div className="rtv-stat-value">{data.days_total}</div>
-                    <div className="rtv-stat-label">Dias de teste</div>
                   </div>
                   {data.started_at && (
                     <div>

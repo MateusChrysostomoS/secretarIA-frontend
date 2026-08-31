@@ -120,8 +120,14 @@ headers de nginx → guarda de sessão → o resto.
 - ~~`PROMPT_AUDIT_FRONTEND_BUILD_HIGIENE.md`~~ — **EXECUTADO 2026-08-30.** Next 15.1.6 →
   15.5.24 (31 advisories em `next` → 0) e o script `lint` morto removido. Os números de
   `npm audit` da auditoria original ("27 critical") estavam errados — eram 2 critical.
-- `PROMPT_AUDIT_FRONTEND_FONTES_LGPD.md` — 7 famílias de fonte do Google carregadas sem
-  gate de consentimento (ponto de LGPD num app de saúde); migrar para `next/font/google`.
+- ~~`PROMPT_AUDIT_FRONTEND_FONTES_LGPD.md`~~ — **EXECUTADO 2026-08-31** — ver
+  `docs/CHECKPOINT_fontes_self_hosted.md`. As fontes agora são self-hosted por
+  `next/font/google` (baixadas no build, servidas do próprio domínio): zero requisição a
+  terceiro e zero IP vazado ao Google, provado em Chrome real contra o `out/`. Eram 7
+  famílias mas só 6 tokens de fonte existem — **JetBrains Mono não era referenciada por
+  nada** e foi removida. **Não deployado** (exige rebuild da imagem). O `brain-frontend`
+  tem o mesmo `<link>` e ficou de fora, por escopo. Duas origens do Google viraram
+  permissão morta na CSP do `nginx.conf`.
 - `PROMPT_AUDIT_FRONTEND_REQUISICOES_DUPLICADAS.md` — `GET /doctor/professionals` duplicado
   em `/configuracao` (e provavelmente também em `/agenda`/`/inicio` via `ConfigGapBanner`,
   não confirmado pela auditoria original). Corrige também uma causa errada que a auditoria

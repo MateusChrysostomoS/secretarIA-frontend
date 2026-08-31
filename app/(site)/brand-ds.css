@@ -5,8 +5,9 @@
    ===================================================================== */
 
 :root{
-  --font-serif:'Newsreader',Georgia,'Times New Roman',serif;
-  --font-sans:'Hanken Grotesk',-apple-system,system-ui,sans-serif;
+  /* Families are self-hosted by next/font in app/layout.tsx. */
+  --font-serif:var(--font-newsreader),Georgia,'Times New Roman',serif;
+  --font-sans:var(--font-hanken-grotesk),-apple-system,system-ui,sans-serif;
   --r-sm:8px; --r-md:12px; --r-lg:18px; --r-xl:26px; --r-2xl:34px;
   --ease:cubic-bezier(.22,.61,.36,1);
   --container:1180px;

@@ -26,8 +26,10 @@
   --grn-bg:      #0d2d1a;
   --grn-border:  #1a5c2a;
   --radius:      12px;
-  --font-title:  'Space Grotesk', system-ui, sans-serif;
-  --font-body:   'DM Sans', system-ui, sans-serif;
+  /* Families are self-hosted by next/font in app/layout.tsx, which puts
+     --font-space-grotesk / --font-dm-sans on :root. */
+  --font-title:  var(--font-space-grotesk), system-ui, sans-serif;
+  --font-body:   var(--font-dm-sans), system-ui, sans-serif;
 }
 
 body {
@@ -206,7 +208,7 @@ body::after {
   flex-shrink: 0;
 }
 .topbar-brand {
-  font-family: var(--font-serif, 'Instrument Serif', Georgia, serif);
+  font-family: var(--font-serif, var(--font-instrument-serif), Georgia, serif);
   font-size: 22px;
   font-weight: 400;
   letter-spacing: -0.02em;

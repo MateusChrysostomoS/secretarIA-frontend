@@ -30,8 +30,9 @@ main.login-page {
   --success-bd: rgba(91, 140, 90, .26);
   --success-fg: #3e6b3d;
   --radius-lg:  20px;
-  --font-ui:    'Inter', system-ui, -apple-system, sans-serif;
-  --font-serif: 'Instrument Serif', Georgia, serif;
+  /* Families are self-hosted by next/font in app/layout.tsx. */
+  --font-ui:    var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-instrument-serif), Georgia, serif;
   --shadow:     0 2px 8px rgba(11, 31, 42, .05), 0 8px 24px rgba(11, 31, 42, .06);
 
   position: relative;

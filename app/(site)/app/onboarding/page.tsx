@@ -23,6 +23,7 @@ import {
   type DoctorOnboarding,
   type OnboardingBlockerReason,
 } from "@/lib/manage-api";
+import { attemptFailureSuffix } from "./lib/attempt-error";
 import { StateTimeline } from "./_components/StateTimeline";
 import { ActivateButton } from "./_components/ActivateButton";
 import { PauseToggles } from "./_components/PauseToggles";
@@ -219,8 +220,8 @@ export default function OnboardingPage() {
               <p className="onb-attempt-line">
                 Última tentativa: {formatDateTime(data.last_attempt.created_at)} —{" "}
                 {ATTEMPT_RESULT_LABEL[data.last_attempt.result] ?? data.last_attempt.result}
-                {data.last_attempt.result === "fail" && data.last_attempt.error_code
-                  ? ` (${data.last_attempt.error_code})`
+                {data.last_attempt.result === "fail"
+                  ? attemptFailureSuffix(data.last_attempt.error_code)
                   : ""}
               </p>
             )}
