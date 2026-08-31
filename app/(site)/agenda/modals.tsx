@@ -4,7 +4,7 @@
 // Exports: NewApptModal, EditApptModal, RescheduleModal, CancelModal, BlockModal.
 // Internal: Modal shell, MessagePreview, Select, Toggle, TIME_OPTS.
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useId } from "react";
 import type { CSSProperties, ReactNode, ChangeEvent } from "react";
 import {
   Icon,
@@ -85,16 +85,23 @@ function Select({
   onChange,
   children,
   style,
+  label,
 }: {
   value: string | number;
   onChange: (e: ChangeEvent<HTMLSelectElement>) => void;
   children: ReactNode;
   style?: CSSProperties;
+  /** Accessible name. Required rather than inherited from the surrounding
+      <Field>: a wrapping <label> binds to its FIRST labelable descendant, so
+      the day this Field gains a `tip` (a HelpTip <button>) every select under
+      it would silently lose its name. An explicit aria-label cannot be stolen. */
+  label: string;
 }) {
   const [foc, setFoc] = useState(false);
   return (
     <div style={{ position: "relative" }}>
       <select
+        aria-label={label}
         value={value}
         onChange={onChange}
         onFocus={() => setFoc(true)}
@@ -134,10 +141,27 @@ function Select({
 /**
  * Simple binary toggle control.
  * Used for the "Enviar confirmação no WhatsApp" option in NewApptModal.
+ *
+ * The thumb is a decorative <span> and nothing here wraps this in a <label>,
+ * so `label` is required — without it the control reaches a screen reader as an
+ * unnamed button. role/aria-checked are what make it a switch rather than a
+ * button whose on/off state is conveyed by colour alone.
  */
-function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
+function Toggle({
+  on,
+  onChange,
+  label,
+}: {
+  on: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+}) {
   return (
     <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      aria-label={label}
       onClick={() => onChange(!on)}
       style={{
         width: 44,
@@ -340,6 +364,9 @@ function MessagePreview({
   value: string;
   onChange: (v: string) => void;
 }) {
+  // MessagePreview is mounted by more than one modal, so the id has to be
+  // per-instance rather than a constant.
+  const msgFieldId = useId();
   return (
     <div>
       {/* label row */}
@@ -423,8 +450,10 @@ function MessagePreview({
 
       {/* editable textarea below the bubble */}
       <div style={{ marginTop: 10 }}>
-        <div
+        <label
+          htmlFor={msgFieldId}
           style={{
+            display: "block",
             fontSize: 12,
             fontWeight: 600,
             color: "var(--ink-faint)",
@@ -432,9 +461,10 @@ function MessagePreview({
           }}
         >
           Mensagem (editável antes de enviar)
-        </div>
+        </label>
         <textarea
           className="scroll"
+          id={msgFieldId}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           rows={4}
@@ -565,7 +595,7 @@ export function NewApptModal({
           style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr 1fr", gap: 14 }}
         >
           <Field label="Dia">
-            <Select value={date} onChange={(e) => setDate(e.target.value)}>
+            <Select value={date} onChange={(e) => setDate(e.target.value)} label="Dia">
               {days.map((d) => (
                 <option key={d.iso} value={d.iso}>
                   {dayLabelFromKey(d.iso)}
@@ -574,7 +604,7 @@ export function NewApptModal({
             </Select>
           </Field>
           <Field label="Início">
-            <Select value={start} onChange={(e) => setStart(+e.target.value)}>
+            <Select value={start} onChange={(e) => setStart(+e.target.value)} label="Início">
               {TIME_OPTS.map((t) => (
                 <option key={t} value={t}>
                   {fmtTime(t)}
@@ -583,7 +613,7 @@ export function NewApptModal({
             </Select>
           </Field>
           <Field label="Duração">
-            <Select value={dur} onChange={(e) => setDur(+e.target.value)}>
+            <Select value={dur} onChange={(e) => setDur(+e.target.value)} label="Duração">
               {DURATIONS.map((d) => (
                 <option key={d} value={d}>
                   {d} min
@@ -595,7 +625,7 @@ export function NewApptModal({
 
         {/* appointment type */}
         <Field label="Tipo de consulta">
-          <Select value={type} onChange={(e) => setType(e.target.value)}>
+          <Select value={type} onChange={(e) => setType(e.target.value)} label="Tipo de consulta">
             {APPT_TYPES.map((t) => (
               <option key={t} value={t}>
                 {t}
@@ -625,7 +655,7 @@ export function NewApptModal({
             border: "1px solid var(--line)",
           }}
         >
-          <Toggle on={send} onChange={setSend} />
+          <Toggle on={send} onChange={setSend} label="Enviar confirmação no WhatsApp" />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink)" }}>
               Enviar confirmação no WhatsApp
@@ -696,7 +726,7 @@ export function EditApptModal({
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           <Field label="Início">
-            <Select value={start} onChange={(e) => setStart(+e.target.value)}>
+            <Select value={start} onChange={(e) => setStart(+e.target.value)} label="Início">
               {TIME_OPTS.map((t) => (
                 <option key={t} value={t}>
                   {fmtTime(t)}
@@ -705,7 +735,7 @@ export function EditApptModal({
             </Select>
           </Field>
           <Field label="Duração">
-            <Select value={dur} onChange={(e) => setDur(+e.target.value)}>
+            <Select value={dur} onChange={(e) => setDur(+e.target.value)} label="Duração">
               {DURATIONS.map((d) => (
                 <option key={d} value={d}>
                   {d} min
@@ -716,7 +746,7 @@ export function EditApptModal({
         </div>
 
         <Field label="Tipo">
-          <Select value={type} onChange={(e) => setType(e.target.value)}>
+          <Select value={type} onChange={(e) => setType(e.target.value)} label="Tipo">
             {APPT_TYPES.map((t) => (
               <option key={t} value={t}>
                 {t}
@@ -841,7 +871,7 @@ export function RescheduleModal({
         {/* new slot selectors */}
         <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 14 }}>
           <Field label="Novo dia">
-            <Select value={date} onChange={(e) => setDate(e.target.value)}>
+            <Select value={date} onChange={(e) => setDate(e.target.value)} label="Novo dia">
               {days.map((d) => (
                 <option key={d.iso} value={d.iso}>
                   {dayLabelFromKey(d.iso)}
@@ -850,7 +880,7 @@ export function RescheduleModal({
             </Select>
           </Field>
           <Field label="Novo horário">
-            <Select value={start} onChange={(e) => setStart(+e.target.value)}>
+            <Select value={start} onChange={(e) => setStart(+e.target.value)} label="Novo horário">
               {TIME_OPTS.map((t) => (
                 <option key={t} value={t}>
                   {fmtTime(t)}
@@ -1219,7 +1249,7 @@ export function BlockModal({
           style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr", gap: 14 }}
         >
           <Field label="Dia">
-            <Select value={date} onChange={(e) => setDate(e.target.value)}>
+            <Select value={date} onChange={(e) => setDate(e.target.value)} label="Dia">
               {days.map((d) => (
                 <option key={d.iso} value={d.iso}>
                   {dayLabelFromKey(d.iso)}
@@ -1228,7 +1258,7 @@ export function BlockModal({
             </Select>
           </Field>
           <Field label="Início">
-            <Select value={start} onChange={(e) => setStart(+e.target.value)}>
+            <Select value={start} onChange={(e) => setStart(+e.target.value)} label="Início">
               {TIME_OPTS.map((t) => (
                 <option key={t} value={t}>
                   {fmtTime(t)}
@@ -1237,7 +1267,7 @@ export function BlockModal({
             </Select>
           </Field>
           <Field label="Duração">
-            <Select value={dur} onChange={(e) => setDur(+e.target.value)}>
+            <Select value={dur} onChange={(e) => setDur(+e.target.value)} label="Duração">
               {[30, 60, 90, 120, 180].map((d) => (
                 <option key={d} value={d}>
                   {d} min

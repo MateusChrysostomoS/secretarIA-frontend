@@ -2,15 +2,25 @@
 // CToggle — pill toggle switch component.
 // Renders a 44×26px pill button that slides a white thumb left/right.
 // Uses CSS transitions so the motion is smooth without JS animation.
+//
+// The thumb is a decorative <span>, so this <button role="switch"> has no
+// text of its own to be named from. A wrapping <label> is not a fix either:
+// it does name the button, but with the label's ENTIRE text content (title
+// plus description run together), which is what a screen reader then reads
+// out. Hence `label` is required, not optional — every call site must say,
+// in a few words, what this switch turns on.
 
 type CToggleProps = {
   on: boolean;
   onChange: (value: boolean) => void;
   disabled?: boolean;
+  /** Accessible name. Required: the thumb is decorative, so without this the
+      switch has no name at all (or an unusably long one from a wrapping label). */
+  label: string;
 };
 
 // Pill-style boolean toggle; calls onChange with the next boolean value.
-export function CToggle({ on, onChange, disabled }: CToggleProps) {
+export function CToggle({ on, onChange, disabled, label }: CToggleProps) {
   return (
     <button
       type="button"
@@ -32,6 +42,7 @@ export function CToggle({ on, onChange, disabled }: CToggleProps) {
       }}
       aria-checked={on}
       role="switch"
+      aria-label={label}
     >
       {/* white thumb — slides via justify-content on parent */}
       <span style={{

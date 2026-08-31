@@ -69,10 +69,17 @@ type DayRowProps = {
   day: DayConfig;
   onChange: (updated: DayConfig) => void;
   readOnly?: boolean;
+  /** The owning grid's title. This screen shows TWO week grids (the clinic's
+      and the professional's) with identical day names, so every control here
+      folds it into its accessible name to stay distinguishable by voice. */
+  groupLabel: string;
 };
 
 // Renders the day label toggle and its list of time-range pickers.
-function DayRow({ day, onChange, readOnly }: DayRowProps) {
+function DayRow({ day, onChange, readOnly, groupLabel }: DayRowProps) {
+  // Shared suffix for every accessible name inside this row.
+  const scope = day.label + " — " + groupLabel;
+
   const addRange = () =>
     onChange({ ...day, ranges: [...day.ranges, { start: 14 * 60, end: 18 * 60 }] });
 
@@ -92,7 +99,12 @@ function DayRow({ day, onChange, readOnly }: DayRowProps) {
         display: "flex", alignItems: "center", gap: 11,
         width: 150, flexShrink: 0, paddingTop: 6,
       }}>
-        <CToggle on={day.on} onChange={v => onChange({ ...day, on: v })} disabled={readOnly} />
+        <CToggle
+          on={day.on}
+          onChange={v => onChange({ ...day, on: v })}
+          disabled={readOnly}
+          label={"Atender " + scope}
+        />
         <span style={{
           fontSize: 14.5, fontWeight: 600,
           color: day.on ? "var(--ink)" : "var(--ink-faint)",
@@ -120,6 +132,7 @@ function DayRow({ day, onChange, readOnly }: DayRowProps) {
                   onChange={e => setRange(i, { ...r, start: +e.target.value })}
                   style={{ width: 108 }}
                   disabled={readOnly}
+                  label={"Início da faixa " + (i + 1) + " — " + scope}
                 >
                   {TIME_LIST.map(t => (
                     <option key={t} value={t}>{fmtHM(t)}</option>
@@ -134,6 +147,7 @@ function DayRow({ day, onChange, readOnly }: DayRowProps) {
                   onChange={e => setRange(i, { ...r, end: +e.target.value })}
                   style={{ width: 108 }}
                   disabled={readOnly}
+                  label={"Fim da faixa " + (i + 1) + " — " + scope}
                 >
                   {TIME_LIST.map(t => (
                     <option key={t} value={t}>{fmtHM(t)}</option>
@@ -228,6 +242,7 @@ function WeekGrid({
           day={d}
           onChange={nd => onChange(days.map((x, j) => (j === i ? nd : x)))}
           readOnly={readOnly}
+          groupLabel={label}
         />
       ))}
     </div>
@@ -390,6 +405,7 @@ export function AvailabilitySection({
             value={prefs.defaultDur}
             onChange={e => setPref("defaultDur", +e.target.value)}
             disabled={tenantReadOnly}
+            label="Duração padrão"
           >
             {[20, 30, 40, 50, 60].map(d => (
               <option key={d} value={d}>{d} min</option>

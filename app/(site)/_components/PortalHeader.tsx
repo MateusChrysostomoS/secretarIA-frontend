@@ -30,7 +30,22 @@ type PortalHeaderProps = {
   portalLabel: string;
   // Identity shown on the right (admin email or clinic name).
   userLabel: string;
-  onLogout: () => void;
+  // Logging out. OPTIONAL, and that is the whole gate on the "Sair" button:
+  // /agenda and /configuracao render this same header for a session-less demo
+  // VISITOR (see useSecretariaHub — a missing session there means "stay in demo
+  // mode", not "leave"), and offering "Sair" to someone who never signed in
+  // names an account state that does not exist. Omit the handler and the button
+  // is not rendered.
+  //
+  // Modelled as an absent handler rather than a `showLogout` flag beside a
+  // required one: two props can disagree, one cannot. There is no way to render
+  // a "Sair" that logs nobody out, and no way to pass a logout that never shows.
+  //
+  // Do NOT re-derive this from a session inside the header. /inicio's
+  // accessDenied branch has a real session in sessionStorage but a null
+  // `session` in state (usePortalGuard only populates it on the allowed path),
+  // and that screen is exactly where "Sair" is the only way out.
+  onLogout?: () => void;
   // Which product backs the current screen. Omit on screens that aren't
   // product-specific — on this domain that means /inicio, whose subject is the
   // clinic itself rather than any one product (in brain-frontend: the doctor
@@ -58,12 +73,16 @@ export function PortalHeader({
   return (
     <header className={`portal-header${sticky ? "" : " portal-header--flow"}`}>
       <div className="portal-brand-row">
-        {/* PORTAL_HOME, not "/": on this domain "/" is the LOGIN form (there is
-            no marketing home here, unlike brain-frontend) AND it does not redirect
-            an existing session anywhere — resolvePostLogin runs inside its submit
-            handler, not on mount — so clicking the brand used to drop a signed-in
-            user on a login screen. This is the one way back to /inicio; "Sair"
-            beside it is still how you leave.
+        {/* PORTAL_HOME, not "/": on this domain "/" is the LOGIN form — there is
+            no marketing home here, unlike brain-frontend — so pointing the brand
+            at the root used to drop a signed-in user on a login screen. As of
+            2026-08-31 "/" does bounce a session it serves back here on mount
+            (resolveEntryRedirect), so that would now merely be a round trip; the
+            link stays on PORTAL_HOME because one navigation beats two, and
+            because it is still correct for a session "/" deliberately refuses to
+            route (a platform admin, whose decision is `denied` — /inicio at least
+            explains that in place). This is the one way back to /inicio; "Sair"
+            beside it is still how you leave, when there is a session to leave.
             Not every render of this header is behind a session: /agenda and
             /configuracao also serve a session-less VISITOR in demo mode (see
             useSecretariaHub / HubNotice). For that visitor the link now costs one
@@ -86,9 +105,11 @@ export function PortalHeader({
           <span className="portal-user-label">{userLabel}</span>
         </span>
         {headerActions}
-        <button type="button" className="btn btn--outline btn--sm" onClick={onLogout}>
-          Sair
-        </button>
+        {onLogout && (
+          <button type="button" className="btn btn--outline btn--sm" onClick={onLogout}>
+            Sair
+          </button>
+        )}
       </div>
     </header>
   );

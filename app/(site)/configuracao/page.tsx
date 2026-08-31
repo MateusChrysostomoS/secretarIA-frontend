@@ -1084,7 +1084,10 @@ export default function ConfiguracaoPage() {
       <PortalHeader
         portalLabel="Clínica"
         userLabel={session?.email || (tenantEditable ? ctx.clinicName : "Brain")}
-        onLogout={() => signOut((path) => router.push(path))}
+        // Only with a session: this screen doubles as a demo showcase for a
+        // visitor who never signed in, and "Sair" is an account affordance with
+        // no account behind it. Absent handler = no button (see PortalHeader).
+        onLogout={session ? () => signOut((path) => router.push(path)) : undefined}
         product="secretaria"
         // The screen below is a height:100vh flex column with its own internal
         // scroll area, so the header is already pinned without `position: sticky`.

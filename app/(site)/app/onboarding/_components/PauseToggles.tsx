@@ -46,6 +46,7 @@ export function PauseToggles({
           on={retryPaused}
           disabled={saving === "retries"}
           onToggle={(next) => toggle("retries", next)}
+          label="Pausar lembretes de tentativa de conexão"
         />
       </div>
       <div className="onb-toggle-row">
@@ -56,6 +57,7 @@ export function PauseToggles({
           on={configReminderPaused}
           disabled={saving === "config_reminders"}
           onToggle={(next) => toggle("config_reminders", next)}
+          label="Pausar lembretes de configuração pendente"
         />
       </div>
     </div>
@@ -64,20 +66,29 @@ export function PauseToggles({
 
 // Switch — small pill toggle local to this page (mirrors secretarIA's CToggle
 // visually without reaching across route groups for a 15-line component).
+//
+// It carries the same label contract as CToggle, and for the same reason: the
+// thumb is a decorative <span>, so without an explicit `label` this reaches a
+// screen reader as an unnamed button. The visible text sits in a sibling
+// <span>, which names nothing on its own.
 function Switch({
   on,
   disabled,
   onToggle,
+  label,
 }: {
   on: boolean;
   disabled?: boolean;
   onToggle: (next: boolean) => void;
+  /** Accessible name — required, see the note above. */
+  label: string;
 }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={on}
+      aria-label={label}
       disabled={disabled}
       onClick={() => onToggle(!on)}
       className={"onb-switch" + (on ? " on" : "")}

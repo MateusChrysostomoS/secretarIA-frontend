@@ -90,10 +90,18 @@ headers de nginx → guarda de sessão → o resto.
   bug é maior do que a auditoria percebeu (`dayFull()`, `NowLine`, `MonthView` também
   hardcoded) e o mecanismo do bug de domingo é diferente do relatado (evento é buscado e
   descartado no mapeamento, não excluído da janela de busca).
-- `PROMPT_AUDIT_FRONTEND_A11Y_CTOGGLE_CSELECT.md` — `CToggle`/`CSelect` sem nome acessível;
-  existem 4 implementações independentes do mesmo controle de toggle sem label no repo.
-  `CToggle` e `CSelect` têm causas raiz diferentes (só um dos dois pode ser resolvido por
-  `<label>` envolvendo).
+- ~~`PROMPT_AUDIT_FRONTEND_A11Y_CTOGGLE_CSELECT.md`~~ — **EXECUTADO 2026-08-31** — ver
+  `docs/CHECKPOINT_a11y_nomes_acessiveis.md`. Todo controle escrito à mão agora exige
+  `label` obrigatório: **0** controles sem nome nas 3 superfícies, provado em Chrome real
+  (nome acessível lido do próprio browser via CDP) + axe-core. **Não deployado** (exige
+  rebuild da imagem). Três correções ao diagnóstico original: (1) das 3 chamadas de
+  `CSelect` dentro de `<Field>`, só **1** tinha nome — um `<label>` envolvente prende no
+  **primeiro** descendente rotulável, e o `<button>` do `HelpTip` vem antes dos filhos
+  sempre que o `Field` tem `tip`; (2) `<label>` envolvendo **nomeia sim** um
+  `<button role=switch>` — com o texto inteiro do label, ~300 caracteres, que é outro bug;
+  (3) os 4 `<select>` do modal "Nova consulta" já tinham nome — o defeito ali era o
+  `Toggle` local e um `<textarea>`. O axe **passa** o caso (1), então não serve sozinho
+  como prova. Padrão virou a skill `custom-control-accessible-name`.
 - `PROMPT_AUDIT_FRONTEND_A11Y_CONTRASTE_LANDMARKS.md` — contraste insuficiente (3 tokens/CSS
   diferentes, não 1 como a hipótese original) e landmarks ausentes em `/configuracao`; a
   alegação sobre o progressbar do cadastro estava desatualizada (os `aria-value*` já
@@ -109,10 +117,18 @@ headers de nginx → guarda de sessão → o resto.
   arquitetura **documentada** pela skill `front-brain` ("nunca em cookie"), não descuido.
   Prompt pede decisão de escopo antes de qualquer mudança — migrar para cookie httpOnly é
   cross-repo (brain-api + brain-frontend), não um patch local.
-- `PROMPT_AUDIT_FRONTEND_GUARDA_SESSAO.md` — botão "Sair" aparece sem sessão no modo demo de
-  `/agenda`/`/configuracao` (bug real) + `/` não redireciona sessão já autenticada. **NÃO**
-  unificar as 5 telas sob guard único — a skill `portal-role-home` documenta a demo como
-  decisão de produto deliberada, não bug.
+- ~~`PROMPT_AUDIT_FRONTEND_GUARDA_SESSAO.md`~~ — **EXECUTADO 2026-08-31.** ARQ-2 (botão
+  "Sair" fantasma no modo demo) e ARQ-5 (`/` não redireciona sessão já autenticada)
+  corrigidos; ARQ-3 (guard só client-side) ficou **deliberadamente de fora** — um script
+  inline pré-hidratação duplicaria papéis/`PORTAL_HOME`/rotas protegidas de
+  `portal-routes.ts`, o mesmo risco de divergência que a skill `portal-role-home` §2 já
+  existe pra evitar. Armadilha que o prompt não previu: no ramo `accessDenied` de
+  `/inicio`, `usePortalGuard` devolve `session: null` mesmo com sessão real em
+  `sessionStorage` — gatear "Sair" só por esse campo apagaria a única saída justo ali; por
+  isso as 2 telas de demo condicionam o botão a `session`, e as 2 chamadas de `/inicio` o
+  mostram incondicionalmente. **Pendência:** confirmar se `/app/onboarding` e
+  `/app/reativar` (as outras 2 telas de `usePortalGuard`) têm o mesmo ramo de acesso negado
+  com sessão real e precisam da mesma exceção — não verificado ainda.
 - `PROMPT_AUDIT_FRONTEND_API_CLIENTS_DIVERGENTES.md` — `manage-api.ts`/`secretaria-hub.ts`
   divergem de `brain-frontend`; a divergência real de `secretaria-hub.ts` é ~161 linhas, não
   as "1739" da auditoria (era mismatch de line-ending LF/CRLF entre os repos). Pede decisão

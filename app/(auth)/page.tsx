@@ -29,13 +29,17 @@
 // Reads ?reset=success (set by /esqueci_senha/atualizar_senha's redirect back
 // here) to show a confirmation banner — which means this component now reads
 // URL state, so it needs the Suspense boundary static export requires.
+//
+// It also answers a third question before either of those: is someone already
+// signed in? See the mount effect below — until 2026-08-31 it did not, and a
+// signed-in user who opened "/" got the login form as if they were a stranger.
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
-import { login } from "@/lib/manage-api";
-import { SIGNUP_HREF, resolvePostLogin } from "@/lib/portal-routes";
+import { getSession, login } from "@/lib/manage-api";
+import { SIGNUP_HREF, resolveEntryRedirect, resolvePostLogin } from "@/lib/portal-routes";
 
 import { AuthShell } from "./_shared/AuthShell";
 import { PasswordField } from "./_shared/PasswordField";
@@ -57,6 +61,9 @@ function EntryInner() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // False until the mount effect below has looked for an existing session. While
+  // false this screen renders the Suspense fallback rather than the form.
+  const [entryChecked, setEntryChecked] = useState(false);
 
   // --- Derived ---
   // Shown when /esqueci_senha/atualizar_senha redirects here after a finished reset.
@@ -64,6 +71,37 @@ function EntryInner() {
   const success = justReset
     ? "Senha redefinida com sucesso. Entre com a nova senha."
     : "";
+
+  // --- Effects ---
+  // A session that already exists when this screen mounts belongs in the app, not
+  // in front of a login form. resolvePostLogin used to run ONLY inside
+  // handleSubmit below, which meant it fired for a login performed in THIS page
+  // load and never for a session that was already there: a bookmarked "/", the
+  // back button after signing in, or any link still pointing at the root all
+  // showed the form as if nobody were signed in. resolveEntryRedirect owns the
+  // rule — including the `denied` case, which stays on this screen on purpose —
+  // so it is testable without a DOM. See lib/portal-routes.ts.
+  //
+  // The fallback stays up while redirecting instead of flashing the form: with
+  // `output: "export"` the prerendered index.html for this route IS
+  // <EntryFallback />, because useSearchParams above forces the Suspense
+  // bail-out. So holding it one extra tick shows a visitor nothing they were not
+  // already looking at, and spares a signed-in user a login screen they are about
+  // to lose. (If this route ever stops reading URL state, re-check that: the
+  // prerendered HTML would then be the form, and the gate would cost a flash
+  // instead of saving one.)
+  //
+  // Mount-only, and replace() rather than push(): the question is "who is signed
+  // in right now", and the form must not sit in history behind the app, where
+  // "back" would land on a form that immediately bounces forward again.
+  useEffect(() => {
+    const to = resolveEntryRedirect(getSession());
+    if (to) {
+      router.replace(to);
+      return;
+    }
+    setEntryChecked(true);
+  }, [router]);
 
   // --- Handlers ---
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -99,6 +137,11 @@ function EntryInner() {
       setLoading(false);
     }
   }
+
+  // Still deciding whether this visitor is already signed in — or already
+  // redirecting one. Same fallback the Suspense boundary renders, so the swap is
+  // invisible either way.
+  if (!entryChecked) return <EntryFallback />;
 
   return (
     <AuthShell

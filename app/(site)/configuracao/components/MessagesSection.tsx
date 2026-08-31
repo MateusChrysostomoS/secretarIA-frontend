@@ -135,6 +135,7 @@ export function MessagesSection({ v, set, readOnly }: MessagesSectionProps) {
             onChange={e => set("language", e.target.value)}
             disabled={readOnly}
             style={{ maxWidth: 320 }}
+            label="Idioma de atendimento"
           >
             {LANGUAGE_OPTIONS.map(o => (
               <option key={o.value} value={o.value}>{o.label}</option>

@@ -11,6 +11,7 @@ import {
   UNKNOWN_ROLE_MESSAGE,
   canManageClinic,
   isSamePath,
+  resolveEntryRedirect,
   resolvePostLogin,
 } from "../portal-routes";
 
@@ -82,6 +83,57 @@ describe("resolvePostLogin", () => {
     for (const role of PORTAL_ROLES) {
       const decision = resolvePostLogin(role);
       expect(decision.kind === "navigate" && decision.to).toBe(PORTAL_HOME);
+    }
+  });
+});
+
+// What "/" does with a session that is ALREADY there when it mounts. Until
+// 2026-08-31 the answer was "nothing": resolvePostLogin was only ever called from
+// the entry screen's submit handler, so a bookmarked "/", the back button after
+// signing in, or a stale tab all showed the login form to a signed-in user. The
+// rule lives here rather than in that component because the component cannot be
+// rendered by this (node-environment) test setup at all.
+describe("resolveEntryRedirect", () => {
+  it("leaves a visitor with no session on the login screen", () => {
+    expect(resolveEntryRedirect(null)).toBeNull();
+    expect(resolveEntryRedirect(undefined)).toBeNull();
+  });
+
+  it("ignores a stored session that carries no token", () => {
+    // Storage can hold a half-written or legacy shape. usePortalGuard tests the
+    // same `?.token` rather than mere presence, and the two must agree — or a
+    // tokenless session bounces between "/" and the guard forever.
+    expect(resolveEntryRedirect({ role: "doctor" })).toBeNull();
+    expect(resolveEntryRedirect({ role: "doctor", token: "" })).toBeNull();
+  });
+
+  it("sends every clinic role straight to the portal home", () => {
+    for (const role of PORTAL_ROLES) {
+      expect(resolveEntryRedirect({ role, token: "jwt" })).toBe(PORTAL_HOME);
+    }
+  });
+
+  it("does NOT redirect a platform admin — that is the loop", () => {
+    // An admin holds a valid token, so /inicio's guard would bounce them right
+    // back to "/", which would bounce them again. `denied` means stay put, and
+    // the login form is a real way out: sign in as someone else.
+    expect(resolveEntryRedirect({ role: "admin", token: "jwt" })).toBeNull();
+  });
+
+  it("does not redirect a role this app does not know", () => {
+    expect(resolveEntryRedirect({ role: "auditor", token: "jwt" })).toBeNull();
+    expect(resolveEntryRedirect({ role: "Doctor", token: "jwt" })).toBeNull();
+  });
+
+  it("reads resolvePostLogin instead of forming a second opinion", () => {
+    // Two functions answering "where does this session belong" is exactly how a
+    // redirect loop is born (see the module header) — this one must stay a thin
+    // read of the other.
+    for (const role of [...PORTAL_ROLES, "admin", "auditor", ""]) {
+      const decision = resolvePostLogin(role);
+      expect(resolveEntryRedirect({ role, token: "jwt" })).toBe(
+        decision.kind === "navigate" ? decision.to : null,
+      );
     }
   });
 });

@@ -13,15 +13,21 @@ type CSelectProps = {
   children: ReactNode;
   style?: CSSProperties;
   disabled?: boolean;
+  /** Accessible name. Required even inside a <Field>: a wrapping <label> binds
+      to its FIRST labelable descendant, and Field renders a HelpTip <button>
+      before its children whenever `tip` is set — which silently leaves the
+      select with no name at all. An explicit aria-label cannot be stolen. */
+  label: string;
 };
 
 // Wraps a native select with the shared inputStyle and a chevron indicator.
-export function CSelect({ value, onChange, children, style, disabled }: CSelectProps) {
+export function CSelect({ value, onChange, children, style, disabled, label }: CSelectProps) {
   const [focused, setFocused] = useState(false);
 
   return (
     <div style={{ position: "relative" }}>
       <select
+        aria-label={label}
         value={value}
         onChange={onChange}
         onFocus={() => setFocused(true)}

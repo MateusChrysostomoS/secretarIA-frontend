@@ -129,7 +129,12 @@ export default function InicioPage() {
 
   // A valid session this app has no screen for (a platform admin, or a role the
   // frontend does not know). Rendered in place — every route here would bounce
-  // them straight back — but keeping the header, so "Sair" stays reachable. The
+  // them straight back — but keeping the header, so "Sair" stays reachable.
+  // onLogout is passed UNCONDITIONALLY here even though `session` is null in this
+  // branch: usePortalGuard leaves it null while reporting accessDenied, yet the
+  // session is real and in storage, and logging out is the only exit this screen
+  // has. Gating it on `session` (as /agenda and /configuracao do, for the
+  // opposite reason) would strand the user. The
   // page head is deliberately dropped: "Sua clínica / Bem-vindo(a)" over a notice
   // saying this is not their portal would be the app contradicting itself.
   if (accessDenied) {

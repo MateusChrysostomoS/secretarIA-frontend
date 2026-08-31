@@ -75,6 +75,10 @@ function NumberField({ label, tip, hint, value, onCommit, min, max, readOnly }: 
   return (
     <Field label={label} tip={tip} hint={hint}>
       <TextInput
+        // Field's <label> binds to its FIRST labelable descendant, and that is the
+        // HelpTip <button> whenever `tip` is set — so this input would be left
+        // with no accessible name. Name it directly instead.
+        aria-label={label}
         type="number"
         inputMode="numeric"
         min={min}
@@ -173,6 +177,7 @@ export function PixSection({ v, set, readOnly }: PixSectionProps) {
               value={v.retentionPolicy}
               onChange={e => set("retentionPolicy", e.target.value as PixDeposit["retentionPolicy"])}
               disabled={readOnly}
+              label="Política de retenção"
             >
               <option value="total">Retenção total (sem reembolso)</option>
               <option value="partial">Reembolso parcial</option>

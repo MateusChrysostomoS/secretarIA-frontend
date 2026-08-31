@@ -295,6 +295,7 @@ function CatalogRowCard({
             onChange={(e) => onPatch({ dur: +e.target.value })}
             style={{ width: 116 }}
             disabled={readOnly}
+            label={"Duração de " + row.name}
           >
             {DURATION_OPTIONS.map((d) => (
               <option key={d} value={d}>{d} min</option>

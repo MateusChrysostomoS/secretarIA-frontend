@@ -58,6 +58,32 @@ export function resolvePostLogin(role: string): PostLoginDecision {
   return { kind: "denied", message: UNKNOWN_ROLE_MESSAGE };
 }
 
+// What "/" — the entry screen — should do with a session that ALREADY exists when
+// it mounts: a bookmarked root, the back button after signing in, a link that
+// still points at "/". Returns the path to replace with, or null for "stay here
+// and render the login form".
+//
+// Split out of that screen for the reason at the top of this file. The entry
+// screen is a React component, and the node-environment vitest setup cannot
+// render one — so a rule that lives inside it is a rule with no test. This
+// particular rule was already wrong once: resolvePostLogin ran ONLY inside the
+// submit handler, so it fired for a login performed in that page load and never
+// for a session that was already there, and "/" showed a login form to someone
+// who was signed in. The guard against that returning has to be callable.
+//
+// `denied` collapses into the same null as "no session at all", because both
+// mean stay. A session this app has no screen for still holds a valid token, so
+// every route would bounce it straight back here — redirecting it is an infinite
+// loop, not an error (see resolvePostLogin above). Rendering the login form is
+// the honest answer, and signing in as someone else is a real way out of it.
+export function resolveEntryRedirect(
+  session: { token?: string; role: string } | null | undefined,
+): string | null {
+  if (!session?.token) return null;
+  const decision = resolvePostLogin(session.role);
+  return decision.kind === "navigate" ? decision.to : null;
+}
+
 // "Does this session administer the clinic?" — the ONE authorization boundary the
 // clinic portal actually has. Every PORTAL_ROLES member can open every screen
 // here; owner-only affordances (team invites, subscription, onboarding pause) are
