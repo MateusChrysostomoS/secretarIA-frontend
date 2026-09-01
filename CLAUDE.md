@@ -153,21 +153,24 @@ headers de nginx → guarda de sessão → o resto.
   nada** e foi removida. **Não deployado** (exige rebuild da imagem). O `brain-frontend`
   tem o mesmo `<link>` e ficou de fora, por escopo. Duas origens do Google viraram
   permissão morta na CSP do `nginx.conf`.
-- ~~`PROMPT_AUDIT_FRONTEND_REQUISICOES_DUPLICADAS.md`~~ — **EXECUTADO 2026-08-31**, uncommitted.
-  `getDoctorProfessionals` (`lib/manage-api.ts`) ganhou cache+single-flight por sessão
-  (molde do `getHubToken`), TTL de 5s, e `prefetch={false}` nos 2 `<Link>` de
-  `app/(auth)/page.tsx`. Correção ao diagnóstico: **era 1 tela, não 3** — medido ao vivo em
-  produção (Resource Timing API), só `/configuracao` duplicava (2 chamadas, 19ms de
-  intervalo); `/agenda` e `/inicio` só têm o `ConfigGapBanner` como consumidor, então nunca
-  houve o que deduplicar lá. Bug pego só por mutation test: só derrubar o in-flight não
-  bastava — uma request antiga (iniciada antes de uma mutação) podia resolver DEPOIS da
-  nova e sobrescrever o roster fresco; a correção usa o mesmo `generationRef`/epoch que
-  `hydrate()` já usa. PERF-3: confirmado que `/doctor/onboarding` não passa por
-  `getHubToken` (endpoint errado no relatório original), e `Access-Control-Max-Age: 600`
-  **já está setado** no brain-api — não é item aberto. **Não dá pra provar o 2→1
-  localmente** (brain-api rejeita `Origin: http://localhost:*`); só depois do deploy. Rodou
-  em paralelo com a sessão de A11Y-2/3 na mesma working tree, sem colisão real —
-  ver [[parallel-sessions-same-worktree]] antes de commitar.
+- ~~`PROMPT_AUDIT_FRONTEND_REQUISICOES_DUPLICADAS.md`~~ — **EXECUTADO, COMMITADO E
+  DEPLOYADO 2026-08-31** (junto com A11Y_CONTRASTE_LANDMARKS, mesma working tree, sem
+  colisão real). `getDoctorProfessionals` (`lib/manage-api.ts`) ganhou cache+single-flight
+  por sessão (molde do `getHubToken`), TTL de 5s, `invalidateDoctorProfessionals` no topo
+  de `reloadRoster()`, e `prefetch={false}` nos 2 `<Link>` de `app/(auth)/page.tsx`.
+  Correção ao diagnóstico: **era 1 tela, não 3** — só `/configuracao` duplicava
+  `/doctor/professionals`; `/agenda` e `/inicio` só têm o `ConfigGapBanner` como
+  consumidor, nunca houve o que deduplicar lá. Bug pego só por mutation test: derrubar o
+  in-flight sozinho não bastava — uma request antiga (iniciada antes de uma mutação) podia
+  resolver DEPOIS da nova e sobrescrever o roster fresco; a correção usa o mesmo
+  `generationRef`/epoch que `hydrate()` já usa. PERF-3: confirmado que `/doctor/onboarding`
+  não passa por `getHubToken` (endpoint errado no relatório original), e
+  `Access-Control-Max-Age: 600` já estava setado — não era item aberto. **Provado ao vivo
+  em produção** (clínica real): `/configuracao` 2→1 (8→7 chamadas por mount, load duro e
+  navegação client-side), `/agenda`/`/inicio` seguem em 1 sem regressão; as 4 propriedades
+  do cache (single-flight, TTL, invalidação, imutabilidade do array) foram testadas contra
+  o bundle minificado deployado sem mutar dado de clínica nenhuma. Padrão virou convenção
+  documentada em `front-brain` §4.
 - `PROMPT_AUDIT_FRONTEND_UX_ONBOARDING.md` — código de erro cru da Meta em
   `/app/onboarding` (ex.: "auth_cancelled"); `/app/reativar` não mostra dias restantes,
   só total e prazo final.

@@ -40,9 +40,12 @@ import { GREETING_PREVIEW_PLACEHOLDER } from "../../../../lib/secretaria-hub";
 // per-clinic and arrives on the wire as `clinicDescriptionMax`.
 const GREETING_MESSAGE_MAX_LENGTH = 1024;
 
-// Fixed product-level WhatsApp greeting buttons — see header comment. Order
-// matches the deterministic routing the backend documents.
-const FIXED_GREETING_BUTTONS = ["Agendar", "Gerenciar consulta", "Outro"];
+// Fixed product-level WhatsApp action buttons — see header comment. These are
+// what a patient with NO upcoming appointment sees; someone who already has one
+// gets [Remarcar] [Cancelar] [Outro] instead (workers/tasks.py::
+// _greeting_buttons_for). The calendar emoji on Agendar is rendered by the
+// backend and mirrored here so this preview matches the real message.
+const FIXED_GREETING_BUTTONS = ["🗓️ Agendar", "Outro"];
 
 const LANGUAGE_OPTIONS: { value: string; label: string }[] = [
   { value: "pt-BR", label: "Português (Brasil)" },
@@ -71,7 +74,7 @@ function GreetingButtonsPreview() {
       <span style={{
         fontSize: 12.5, fontWeight: 600, color: "var(--ink-soft)", letterSpacing: ".01em",
       }}>
-        Botões da primeira mensagem
+        Botões do menu de atendimento
       </span>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
         {FIXED_GREETING_BUTTONS.map(label => (
@@ -91,8 +94,10 @@ function GreetingButtonsPreview() {
         ))}
       </div>
       <span style={{ fontSize: 11.5, color: "var(--ink-faint)", lineHeight: 1.5 }}>
-        Estes são os botões que seus pacientes veem na primeira mensagem — Agendar e Gerenciar
-        consulta iniciam os fluxos automáticos, e Outro abre a conversa livre com a assistente.
+        Estes botões aparecem depois que o paciente aceita os termos, na mensagem “O que você
+        precisa?” — Agendar inicia o fluxo automático de marcação e Outro abre a conversa livre
+        com a assistente. A mensagem de boas-vindas em si vai sem botões, de propósito: antes do
+        aceite não há como atender.
       </span>
     </div>
   );
@@ -197,9 +202,15 @@ function GreetingComposer({ v, set, readOnly }: MessagesSectionProps) {
         <span style={{ fontSize: 11.5, color: "var(--ink-faint)", lineHeight: 1.5 }}>
           O texto em cinza é padrão da secretarIA e não pode ser editado — ele avisa o paciente
           que está falando com um assistente automatizado, que nenhuma orientação médica é dada
-          por ali e o que fazer em emergência. Em seguida a esta mensagem, o paciente recebe
-          automaticamente uma segunda com os Termos de Uso e a Política de Privacidade e um
-          botão “✅ Concordo”, exigido pela LGPD.
+          por ali e o que fazer em emergência.
+        </span>
+
+        <span style={{ fontSize: 11.5, color: "var(--ink-faint)", lineHeight: 1.5 }}>
+          <strong>Como a conversa começa:</strong> esta mensagem sai primeiro, sem botões. Logo
+          depois o paciente recebe uma segunda com os Termos de Uso e a Política de Privacidade e
+          um botão “✅ Concordo”, exigido pela LGPD. Só após o aceite a secretarIA abre o
+          atendimento — nenhum agendamento acontece antes disso, e o momento do aceite fica
+          registrado.
         </span>
       </div>
     </div>
