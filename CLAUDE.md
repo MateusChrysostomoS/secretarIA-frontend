@@ -123,7 +123,8 @@ headers de nginx → guarda de sessão → o resto.
   `/app/onboarding` ainda injeta o SDK da Meta em runtime. O padrão virou a skill
   `static-export-nginx-hardening`; o `brain-frontend` tem o mesmo problema e NÃO foi tocado.
 - ~~`PROMPT_AUDIT_FRONTEND_SEC_TOKEN_STORAGE.md`~~ — **EXECUTADO 2026-09-01, COMMITADO,
-  NÃO DEPLOYADO.** O refresh token saiu do `sessionStorage` e virou cookie
+  NÃO DEPLOYADO** — ver `docs/CHECKPOINT_sessao_cookie_httponly.md` (cobre os 3 repos, a
+  ordem de deploy e o checklist pós-deploy). O refresh token saiu do `sessionStorage` e virou cookie
   `__Host-refresh_token` (`HttpOnly; Secure; SameSite=Lax; Path=/`) emitido pelo brain-api;
   o access token virou variável de módulo em `lib/manage-api.ts`. **Não há mais nada de
   sessão em `sessionStorage`/`localStorage`** — um teste de fonte trava isso.
