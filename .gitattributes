@@ -1,0 +1,33 @@
+# Line endings — added 2026-09-01.
+#
+# WHY THIS FILE EXISTS. Both repos already store every text file as LF in git
+# (core.autocrlf=true converts on checkout), so the COMMITTED content has never
+# diverged. The working tree is another matter: tools here write different
+# endings, so at the time of writing brain-frontend held 65 CRLF files next to
+# 85 LF ones, and secretarIA-frontend 37 next to 92. Nothing is broken by that
+# on its own — but it makes a cross-repo `diff` of the same file report EVERY
+# line as changed, because a plain diff treats the trailing \r as content.
+#
+# That is not hypothetical. The 2026-08-30 frontend audit compared
+# lib/secretaria-hub.ts across the two repos, hit exactly this, and reported a
+# "1739-line divergence" that was really 792 + 947 — the two files' whole
+# lengths added together, i.e. "delete all of A, add all of B". The real
+# divergence was a couple hundred lines. A finding was escalated on a number
+# that measured the encoding, not the code.
+#
+# `text=auto eol=lf` pins the working tree to LF regardless of core.autocrlf,
+# so the next such comparison measures the code.
+* text=auto eol=lf
+
+# Binary — never touch these.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.pdf binary

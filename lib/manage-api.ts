@@ -51,7 +51,10 @@ export type Session = {
   tenantId: string;
   email: string;
   // Decoded from the JWT `role` claim at login — drives post-login portal routing
-  // (see lib/portal-routes.ts: every clinic role -> /agenda; admin is denied). Legacy
+  // (see lib/portal-routes.ts: every clinic role -> PORTAL_HOME; admin is denied).
+  // PORTAL_HOME is /inicio since 2026-08-23 — read it from there rather than
+  // naming a route here, which is how this comment came to say /agenda for a
+  // week after the home moved. Legacy
   // tokens minted before the role-taxonomy migration may still carry
   // tenant_owner/tenant_staff — gates accept both during the transition window.
   role: string;
