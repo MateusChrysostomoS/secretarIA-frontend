@@ -64,7 +64,16 @@ describe("/ hands an already-signed-in user to the app (ARQ-5)", () => {
 
   it("checks for a session on mount, not only after a login", () => {
     expect(beforeSubmit).toContain("useEffect(");
-    expect(beforeSubmit).toContain("resolveEntryRedirect(getSession())");
+    expect(beforeSubmit).toContain("resolveEntryRedirect(");
+  });
+
+  it("asks the refresh cookie too, not just what is already in memory", () => {
+    // Since the session moved out of sessionStorage, a fresh page load starts
+    // with EMPTY memory even for a signed-in user — the session exists only as
+    // an HttpOnly cookie until something spends it. getSession() alone would
+    // therefore answer "nobody is signed in" and re-open the ARQ-5 hole this
+    // block exists to keep closed, on exactly the load that matters most.
+    expect(beforeSubmit).toContain("ensureSession()");
   });
 
   it("navigates only when that rule returned a destination", () => {

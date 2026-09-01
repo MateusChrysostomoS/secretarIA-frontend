@@ -122,10 +122,37 @@ headers de nginx → guarda de sessão → o resto.
   é inviável aqui, são 43 blocos inline com um build id que muda a cada `next build`, e o
   `/app/onboarding` ainda injeta o SDK da Meta em runtime. O padrão virou a skill
   `static-export-nginx-hardening`; o `brain-frontend` tem o mesmo problema e NÃO foi tocado.
-- `PROMPT_AUDIT_FRONTEND_SEC_TOKEN_STORAGE.md` — `refreshToken` em `sessionStorage` é
-  arquitetura **documentada** pela skill `front-brain` ("nunca em cookie"), não descuido.
-  Prompt pede decisão de escopo antes de qualquer mudança — migrar para cookie httpOnly é
-  cross-repo (brain-api + brain-frontend), não um patch local.
+- ~~`PROMPT_AUDIT_FRONTEND_SEC_TOKEN_STORAGE.md`~~ — **EXECUTADO 2026-09-01, COMMITADO,
+  NÃO DEPLOYADO.** O refresh token saiu do `sessionStorage` e virou cookie
+  `__Host-refresh_token` (`HttpOnly; Secure; SameSite=Lax; Path=/`) emitido pelo brain-api;
+  o access token virou variável de módulo em `lib/manage-api.ts`. **Não há mais nada de
+  sessão em `sessionStorage`/`localStorage`** — um teste de fonte trava isso.
+  - O cookie só é first-party porque o `nginx.conf` agora faz proxy reverso do brain-api em
+    `location /api/` e `NEXT_PUBLIC_MANAGE_API_BASE_URL` virou **`/api`**, um path. A
+    versão ingênua da auditoria (`SameSite=None` cross-origin) teria quebrado o refresh
+    silencioso em Safari/Firefox por ITP/ETP — em silêncio, só pra parte dos usuários.
+  - Guarda CSRF: `X-Brain-Client: web`, exigido pelo brain-api **só** onde o cookie é a
+    credencial (`/auth/refresh`) e **antes** da rotação. De propósito ausente no
+    `/auth/logout`: um 403 ali deixaria o cookie vivo depois do portal já ter largado a
+    sessão em memória, e o próximo reload religaria o usuário.
+  - **A consequência que mais pega:** depois de um reload `getSession()` começa `null` pra
+    quem está logado. Toda tela que decide na montagem passou a aguardar `ensureSession()`
+    (`usePortalGuard`, `useSecretariaHub`, `/`, `/checkout/sucesso`, `SummaryStep`).
+  - Armadilha encontrada que o prompt não previa: o "Modo médico" **não** tem perna de
+    refresh própria — o cookie continua sendo o do admin. Sem `refreshable: false` na
+    sessão impersonada, o primeiro 401 devolveria uma sessão de admin com a identidade do
+    médico, em silêncio. Efeito colateral aceito: o Modo médico não sobrevive mais a um
+    reload (o stash do admin saiu do `sessionStorage`).
+  - Bug latente corrigido de passagem: `exchangeOnboardingToken`/`exchangeInviteToken` liam
+    `email` de uma claim que o brain-api **nunca** emitiu, então a sessão trocada sempre
+    ficava sem e-mail. Agora vem no corpo (`TokenResponse.email`).
+  - Provado contra um nginx real (imagem Docker desta branch): `nginx -t` ok, `/api/health`
+    responde do brain-api de PRODUÇÃO através do proxy com TLS verificado + SNI, os headers
+    de segurança sobrevivem nas respostas `/api/`, 404 e `robots.txt` intactos, e o bundle
+    não tem mais nenhuma referência à origem do brain-api.
+  - **Falta deployar**, nesta ordem: brain-api → secretarIA-frontend → brain-frontend. A
+    perna `refresh_token` no corpo JSON continua viva de propósito (aditivo) até os dois
+    frontends estarem estáveis em produção; removê-la é sessão futura.
 - ~~`PROMPT_AUDIT_FRONTEND_GUARDA_SESSAO.md`~~ — **EXECUTADO 2026-08-31.** ARQ-2 (botão
   "Sair" fantasma no modo demo) e ARQ-5 (`/` não redireciona sessão já autenticada)
   corrigidos; ARQ-3 (guard só client-side) ficou **deliberadamente de fora** — um script
@@ -154,8 +181,8 @@ headers de nginx → guarda de sessão → o resto.
   tem o mesmo `<link>` e ficou de fora, por escopo. Duas origens do Google viraram
   permissão morta na CSP do `nginx.conf`.
 - ~~`PROMPT_AUDIT_FRONTEND_REQUISICOES_DUPLICADAS.md`~~ — **EXECUTADO, COMMITADO E
-  DEPLOYADO 2026-08-31** (junto com A11Y_CONTRASTE_LANDMARKS, mesma working tree, sem
-  colisão real). `getDoctorProfessionals` (`lib/manage-api.ts`) ganhou cache+single-flight
+  DEPLOYADO 2026-08-31** — ver `docs/CHECKPOINT_requisicoes_duplicadas.md`. Rodou junto com
+  A11Y_CONTRASTE_LANDMARKS, mesma working tree, sem colisão real. `getDoctorProfessionals` (`lib/manage-api.ts`) ganhou cache+single-flight
   por sessão (molde do `getHubToken`), TTL de 5s, `invalidateDoctorProfessionals` no topo
   de `reloadRoster()`, e `prefetch={false}` nos 2 `<Link>` de `app/(auth)/page.tsx`.
   Correção ao diagnóstico: **era 1 tela, não 3** — só `/configuracao` duplicava

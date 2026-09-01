@@ -26,7 +26,13 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { getSession, ManageApiError, type Session, clearSession } from "@/lib/manage-api";
+import {
+  ensureSession,
+  getSession,
+  ManageApiError,
+  type Session,
+  clearSession,
+} from "@/lib/manage-api";
 import { PORTAL_HOME, isSamePath, resolvePostLogin } from "@/lib/portal-routes";
 
 export function usePortalGuard(allowed: string[]): {
@@ -44,34 +50,48 @@ export function usePortalGuard(allowed: string[]): {
   const allowedKey = allowed.join(",");
 
   useEffect(() => {
-    const current = getSession();
-    if (!current?.token) {
-      // No session at all — the entry screen (/) is both login and signup.
-      router.replace("/");
-      return;
-    }
-    if (!allowed.includes(current.role)) {
-      const decision = resolvePostLogin(current.role);
-      // Nowhere to send them inside this app — say so in place. Also covers the
-      // case where the ONLY destination is the screen they are already on: this
-      // app has a single home, so redirecting there from there would loop.
-      if (
-        decision.kind === "denied" ||
-        isSamePath(window.location.pathname, decision.to)
-      ) {
-        setAccessDenied(
-          decision.kind === "denied"
-            ? decision.message
-            : "Esta conta não tem acesso a esta tela.",
-        );
+    // ASYNC ON PURPOSE, and the reason is easy to miss: since the refresh token
+    // moved to an HttpOnly cookie, a signed-in user who RELOADS arrives here with
+    // nothing in memory. A synchronous getSession() would read null and bounce
+    // them to the login screen they were already past. ensureSession() spends the
+    // cookie once (single-flight, shared with every other mount) and answers who
+    // they are. `cancelled` guards the unmount that a StrictMode double-invoke —
+    // or a fast navigation — makes routine.
+    let cancelled = false;
+    void (async () => {
+      const current = getSession() ?? (await ensureSession());
+      if (cancelled) return;
+      if (!current?.token) {
+        // No session at all — the entry screen (/) is both login and signup.
+        router.replace("/");
         return;
       }
-      // Right user, wrong screen — route to the one home this app has.
-      router.replace(decision.to);
-      return;
-    }
-    setSession(current);
-    setReady(true);
+      if (!allowed.includes(current.role)) {
+        const decision = resolvePostLogin(current.role);
+        // Nowhere to send them inside this app — say so in place. Also covers the
+        // case where the ONLY destination is the screen they are already on: this
+        // app has a single home, so redirecting there from there would loop.
+        if (
+          decision.kind === "denied" ||
+          isSamePath(window.location.pathname, decision.to)
+        ) {
+          setAccessDenied(
+            decision.kind === "denied"
+              ? decision.message
+              : "Esta conta não tem acesso a esta tela.",
+          );
+          return;
+        }
+        // Right user, wrong screen — route to the one home this app has.
+        router.replace(decision.to);
+        return;
+      }
+      setSession(current);
+      setReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router, allowedKey]);
 

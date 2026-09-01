@@ -55,7 +55,6 @@ function seedSession(overrides: Partial<Session> = {}): Session {
     tenantId: "t1",
     email: "doc@clinic.com",
     role: "doctor",
-    refreshToken: "r1",
     ...overrides,
   };
   api.saveSession(session);
@@ -75,13 +74,14 @@ describe("signOut (secretarIA Header 'Sair')", () => {
     expect(navigate).toHaveBeenCalledTimes(1);
     expect(navigate).toHaveBeenCalledWith("/");
 
-    // Best-effort revocation fired with the refresh token.
+    // Best-effort revocation fired. No body: the refresh token lives in the
+    // HttpOnly cookie, so `credentials: "include"` is what carries it, and
+    // brain-api both revokes it and expires it in the browser.
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe("/auth/logout");
-    expect(JSON.parse((init as RequestInit).body as string)).toEqual({
-      refresh_token: "r1",
-    });
+    expect((init as RequestInit).body).toBeUndefined();
+    expect((init as RequestInit).credentials).toBe("include");
   });
 
   it("still clears and routes when the revocation network call fails", async () => {
@@ -97,15 +97,22 @@ describe("signOut (secretarIA Header 'Sair')", () => {
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
   });
 
-  it("routes to /login without a network call when no session exists (demo mode)", async () => {
+  it("still calls the server with no session in memory", async () => {
+    // CHANGED with the cookie migration, on purpose. There is no local refresh
+    // token left to decide on, and the browser can be holding a live cookie with
+    // nothing in memory to show for it — a probe that failed offline does exactly
+    // that. A logout has to be thorough, so it always asks; brain-api answers 204
+    // either way (no token-existence oracle). The cost is one wasted request in
+    // demo mode, where the "Sair" button is not even rendered (ARQ-2).
+    fetchMock.mockResolvedValue({ ok: true, status: 204, json: async () => ({}) });
     const navigate = vi.fn();
 
     signOutMod.signOut(navigate);
-    await Promise.resolve();
 
     expect(navigate).toHaveBeenCalledTimes(1);
     expect(navigate).toHaveBeenCalledWith("/");
-    expect(fetchMock).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(fetchMock.mock.calls[0][0]).toBe("/auth/logout");
   });
 });
 

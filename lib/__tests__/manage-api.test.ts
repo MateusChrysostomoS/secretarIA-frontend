@@ -75,13 +75,16 @@ function makeJwt(payload: Record<string, unknown>): string {
   return `${header}.${body}.signature`;
 }
 
+// No refresh token here any more: it lives in the HttpOnly cookie the browser
+// attaches on its own, which this code cannot read by design. `refreshable`
+// stays undefined, meaning "renewable" — only the impersonated doctor session
+// sets it false.
 function makeSession(overrides: Partial<Session> = {}): Session {
   return {
     token: "old",
     tenantId: "t1",
     email: "doc@clinic.com",
     role: "doctor",
-    refreshToken: "r1",
     ...overrides,
   };
 }
@@ -129,7 +132,7 @@ async function expectManageError(
 
 describe("manageFetch refresh-and-retry", () => {
   it("1. happy retry: 401 -> refresh 200 -> retried call 200; session updated", async () => {
-    const session = makeSession({ token: "old", refreshToken: "r1" });
+    const session = makeSession({ token: "old" });
     api.saveSession(session);
 
     fetchMock
@@ -156,19 +159,25 @@ describe("manageFetch refresh-and-retry", () => {
     const call2 = fetchMock.mock.calls[1];
     expect(call2[0]).toBe("/auth/refresh");
     expect(call2[1].method).toBe("POST");
-    expect(JSON.parse(call2[1].body)).toEqual({ refresh_token: "r1" });
+    // NO BODY: the cookie is the credential, and this code cannot read it. The
+    // custom header is what brain-api requires in exchange (CONTRACTS 2.1c) —
+    // a cross-site form can send the cookie but never the header.
+    expect(call2[1].body).toBeUndefined();
+    expect(call2[1].credentials).toBe("include");
+    expect(call2[1].headers["X-Brain-Client"]).toBe("web");
 
     const call3 = fetchMock.mock.calls[2];
     expect(call3[0]).toBe("/entitlements");
     expect(call3[1].headers.Authorization).toBe("Bearer new-jwt");
 
-    const stored = JSON.parse(sessionStorage.getItem(api.SESSION_KEY)!);
-    expect(stored.token).toBe("new-jwt");
-    expect(stored.refreshToken).toBe("r2");
+    expect(api.getSession()!.token).toBe("new-jwt");
+    // The whole point of the round: nothing about the session reaches a store
+    // that page scripts can read.
+    expect(sessionStorage.length).toBe(0);
   });
 
   it("2. refresh rejection: 401 -> refresh 401 -> clears session, redirects to /login", async () => {
-    const session = makeSession({ token: "old", refreshToken: "r1" });
+    const session = makeSession({ token: "old" });
     api.saveSession(session);
 
     fetchMock
@@ -178,13 +187,13 @@ describe("manageFetch refresh-and-retry", () => {
     await expectManageError(api.getEntitlements(session), 401);
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(sessionStorage.getItem(api.SESSION_KEY)).toBeNull();
-    expect(sessionStorage.getItem(api.IMPERSONATION_KEY)).toBeNull();
+    expect(api.getSession()).toBeNull();
+    expect(api.getImpersonation()).toBeNull();
     expect((window as any).location.assign).toHaveBeenCalledWith("/");
   });
 
   it("3. retry-once: 401 -> refresh 200 -> retried call 401 again -> rejects, no second refresh", async () => {
-    const session = makeSession({ token: "old", refreshToken: "r1" });
+    const session = makeSession({ token: "old" });
     api.saveSession(session);
 
     fetchMock
@@ -203,8 +212,12 @@ describe("manageFetch refresh-and-retry", () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
-  it("4. no refresh token -> no refresh attempt", async () => {
-    const session = makeSession({ token: "old", refreshToken: undefined });
+  it("4. a non-renewable session never spends the cookie", async () => {
+    // refreshable:false is the impersonated "Modo médico" doctor. The cookie in
+    // this browser is still the ADMIN's, so renewing here would answer with an
+    // admin session wearing the doctor's identity — silently swapping who the
+    // browser is. The plain 401 is the correct outcome.
+    const session = makeSession({ token: "old", refreshable: false });
     api.saveSession(session);
 
     fetchMock.mockResolvedValueOnce(mockResponse(401, { detail: "token_expired" }));
@@ -214,7 +227,7 @@ describe("manageFetch refresh-and-retry", () => {
   });
 
   it("5. single-flight: two concurrent 401s share one /auth/refresh call", async () => {
-    const session = makeSession({ token: "old", refreshToken: "r1" });
+    const session = makeSession({ token: "old" });
     api.saveSession(session);
 
     let resolveRefresh!: (res: Response) => void;
@@ -259,11 +272,11 @@ describe("manageFetch refresh-and-retry", () => {
   });
 
   it("6. token mismatch guard: passed session token != current stored token -> no refresh", async () => {
-    const oldSession = makeSession({ token: "old", refreshToken: "r1" });
+    const oldSession = makeSession({ token: "old" });
     api.saveSession(oldSession);
-    // A different session was saved afterwards (e.g. another tab/flow refreshed
-    // or replaced it) — the stored session's token no longer matches oldSession.
-    const newSession = makeSession({ token: "different-token", refreshToken: "r2" });
+    // A different session was saved afterwards (e.g. another flow refreshed or
+    // replaced it) — the active session's token no longer matches oldSession.
+    const newSession = makeSession({ token: "different-token" });
     api.saveSession(newSession);
 
     fetchMock.mockResolvedValueOnce(mockResponse(401, { detail: "token_expired" }));
@@ -278,7 +291,7 @@ describe("manageFetch refresh-and-retry", () => {
 // ---------------------------------------------------------------------------
 
 describe("login / logout", () => {
-  it("7. login stores refreshToken and decodes tenant_id/role from the JWT", async () => {
+  it("7. login keeps the access token in memory and decodes tenant_id/role from the JWT", async () => {
     const jwt = makeJwt({ tenant_id: "tenant-1", role: "doctor", sub: "user-1" });
     fetchMock.mockResolvedValueOnce(
       mockResponse(200, {
@@ -292,7 +305,10 @@ describe("login / logout", () => {
     const session = await api.login("doc@clinic.com", "hunter2");
 
     expect(session.token).toBe(jwt);
-    expect(session.refreshToken).toBe("rtok-1");
+    // The refresh token exists on the wire but is NOT carried on the session:
+    // the only copy this browser keeps is the HttpOnly cookie brain-api set on
+    // this very response, which page scripts cannot read.
+    expect((session as Record<string, unknown>).refreshToken).toBeUndefined();
     expect(session.tenantId).toBe("tenant-1");
     expect(session.role).toBe("doctor");
     // Role-taxonomy claims default to false when absent from the JWT.
@@ -307,8 +323,10 @@ describe("login / logout", () => {
       password: "hunter2",
     });
 
-    const stored = JSON.parse(sessionStorage.getItem(api.SESSION_KEY)!);
-    expect(stored.refreshToken).toBe("rtok-1");
+    expect(api.getSession()!.token).toBe(jwt);
+    // Nothing at all in a store a page script can read — the invariant this
+    // whole round exists to establish.
+    expect(sessionStorage.length).toBe(0);
   });
 
   it("7b. login decodes is_owner/is_manager claims when present", async () => {
@@ -335,22 +353,26 @@ describe("login / logout", () => {
   });
 
   it("8. logout clears session synchronously and best-effort revokes even on network failure", async () => {
-    const session = makeSession({ token: "old", refreshToken: "r1" });
+    const session = makeSession({ token: "old" });
     api.saveSession(session);
 
     fetchMock.mockRejectedValueOnce(new Error("network down"));
 
     const logoutPromise = api.logout();
 
-    // Session must be cleared IMMEDIATELY — before the network call settles.
-    expect(sessionStorage.getItem(api.SESSION_KEY)).toBeNull();
+    // Session must be cleared IMMEDIATELY — before the network call settles, so
+    // a dead network can never leave the user stuck signed in.
+    expect(api.getSession()).toBeNull();
 
     await expect(logoutPromise).resolves.toBeUndefined();
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const call = fetchMock.mock.calls[0];
     expect(call[0]).toBe("/auth/logout");
-    expect(JSON.parse(call[1].body)).toEqual({ refresh_token: "r1" });
+    // No body, and credentials included: the cookie is what gets revoked, and
+    // brain-api expires it in the browser on the way out.
+    expect(call[1].body).toBeUndefined();
+    expect(call[1].credentials).toBe("include");
   });
 });
 
@@ -791,7 +813,7 @@ describe("registerSignup", () => {
 
     expect(result.intentId).toBe("intent-1");
     expect(result.session.token).toBe(jwt);
-    expect(result.session.refreshToken).toBe("rtok-1");
+    expect((result.session as Record<string, unknown>).refreshToken).toBeUndefined();
     expect(result.session.tenantId).toBe("tenant-1");
     expect(result.session.role).toBe("doctor");
     expect(result.session.isOwner).toBe(true);
@@ -813,7 +835,7 @@ describe("registerSignup", () => {
     });
 
     // Unlike login(), registerSignup does NOT persist — the caller (wizard) saves it.
-    expect(sessionStorage.getItem(api.SESSION_KEY)).toBeNull();
+    expect(api.getSession()).toBeNull();
   });
 
   it("14b. 409 email_already_registered -> ManageApiError 409", async () => {
@@ -1004,20 +1026,24 @@ describe("getOnboardingStatus", () => {
 describe("exchangeOnboardingToken", () => {
   it("17a. decodes tenant_id/role from the JWT, does NOT call saveSession", async () => {
     // Post-checkout onboarding also mints the clinic's owner.
-    const jwt = makeJwt({ tenant_id: "tenant-9", role: "doctor", is_owner: true, email: "new@clinic.com" });
+    const jwt = makeJwt({ tenant_id: "tenant-9", role: "doctor", is_owner: true });
     fetchMock.mockResolvedValueOnce(
       mockResponse(200, {
         access_token: jwt,
         token_type: "bearer",
         refresh_token: "rtok-9",
         expires_in: 1800,
+        // On the RESPONSE, not in the JWT. This used to be read from a `email`
+        // claim that brain-api has never minted, so the exchanged session always
+        // carried an empty address; the field is now part of TokenResponse.
+        email: "new@clinic.com",
       }),
     );
 
     const session = await api.exchangeOnboardingToken("onb-tok-1");
 
     expect(session.token).toBe(jwt);
-    expect(session.refreshToken).toBe("rtok-9");
+    expect((session as Record<string, unknown>).refreshToken).toBeUndefined();
     expect(session.tenantId).toBe("tenant-9");
     expect(session.role).toBe("doctor");
     expect(session.isOwner).toBe(true);
@@ -1028,7 +1054,7 @@ describe("exchangeOnboardingToken", () => {
     expect(JSON.parse(call[1].body)).toEqual({ token: "onb-tok-1" });
 
     // Unlike login(), this must NOT persist the session — the caller decides.
-    expect(sessionStorage.getItem(api.SESSION_KEY)).toBeNull();
+    expect(api.getSession()).toBeNull();
   });
 
   it("17b. 401 invalid_onboarding_token -> ManageApiError 401", async () => {
@@ -1657,5 +1683,149 @@ describe("submitLaunchWaitlist", () => {
     await expect(
       api.submitLaunchWaitlist({ name: "Dr. A", email: "a@clinica.com.br" }),
     ).rejects.toThrow("network down");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ensureSession — resuming a session from the HttpOnly refresh cookie
+//
+// This is the piece that replaces sessionStorage. Every screen that decides
+// anything on mount depends on it, and every failure mode here is silent: get it
+// wrong and a signed-in doctor is bounced to the login form after a reload, or
+// two mounts spend the same rotate-on-use cookie and brain-api revokes the whole
+// refresh family as suspected theft.
+// ---------------------------------------------------------------------------
+
+function tokenBody(access: string, extra: Record<string, unknown> = {}) {
+  return {
+    access_token: access,
+    token_type: "bearer",
+    refresh_token: "rotated",
+    expires_in: 1800,
+    ...extra,
+  };
+}
+
+describe("ensureSession", () => {
+  it("resumes the session from the cookie when memory is empty", async () => {
+    const jwt = makeJwt({ tenant_id: "tenant-1", role: "doctor", is_owner: true });
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(200, tokenBody(jwt, { email: "doc@clinic.com" })),
+    );
+
+    const session = await api.ensureSession();
+
+    expect(session).not.toBeNull();
+    expect(session!.token).toBe(jwt);
+    expect(session!.tenantId).toBe("tenant-1");
+    expect(session!.isOwner).toBe(true);
+    // There was no login form to read the address from — it has to come off the
+    // response, which is why brain-api returns it.
+    expect(session!.email).toBe("doc@clinic.com");
+    // ...and it is now the ACTIVE session, so synchronous reads work afterwards.
+    expect(api.getSession()!.token).toBe(jwt);
+
+    const call = fetchMock.mock.calls[0];
+    expect(call[0]).toBe("/auth/refresh");
+    expect(call[1].credentials).toBe("include");
+    expect(call[1].headers["X-Brain-Client"]).toBe("web");
+  });
+
+  it("returns null WITHOUT redirecting when there is no valid cookie", async () => {
+    // Half this app is reachable signed-out (the entry screen, /cadastro, the
+    // demo agenda). Redirecting here would put a visitor into a loop.
+    fetchMock.mockResolvedValueOnce(mockResponse(401, { detail: "invalid" }));
+
+    expect(await api.ensureSession()).toBeNull();
+    expect((window as any).location.assign).not.toHaveBeenCalled();
+  });
+
+  it("probes the cookie at most once per page load", async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse(401, { detail: "invalid" }));
+
+    expect(await api.ensureSession()).toBeNull();
+    expect(await api.ensureSession()).toBeNull();
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("shares ONE request between concurrent callers", async () => {
+    // The reason this matters is not performance. brain-api rotates on use and
+    // treats a second presentation of an already-rotated token as theft, revoking
+    // the user's whole refresh family — so two mounts racing would sign the user
+    // out of everything. Needs a race to reproduce; would never show up by hand.
+    const jwt = makeJwt({ tenant_id: "tenant-1", role: "doctor" });
+    let release!: (r: Response) => void;
+    const deferred = new Promise<Response>((resolve) => {
+      release = resolve;
+    });
+    fetchMock.mockImplementation(async () => deferred);
+
+    const a = api.ensureSession();
+    const b = api.ensureSession();
+    release(mockResponse(200, tokenBody(jwt)));
+
+    const [ra, rb] = await Promise.all([a, b]);
+    expect(ra!.token).toBe(jwt);
+    expect(rb!.token).toBe(jwt);
+    expect(fetchMock.mock.calls.filter((c: any[]) => c[0] === "/auth/refresh")).toHaveLength(1);
+  });
+
+  it("cannot race the 401 renewal path, by construction", async () => {
+    // The other way two rotations of one cookie could happen: a screen mounting
+    // while an authenticated call 401s. It cannot, and this pins WHY rather than
+    // relying on both paths happening to share the same single-flight variable.
+    //
+    // Before a session exists nothing holds an access token, so nothing can 401;
+    // once one exists ensureSession short-circuits on memory and never asks. And
+    // once the session is CLEARED — a sign-out, or a refresh the server rejected
+    // — asking again would resurrect the screen the user just left.
+    api.saveSession(makeSession({ token: "old" }));
+    api.clearSession();
+
+    expect(await api.ensureSession()).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("short-circuits when a session is already in memory", async () => {
+    const session = makeSession({ token: "live" });
+    api.saveSession(session);
+
+    expect((await api.ensureSession())!.token).toBe("live");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("does not re-probe after a logout", async () => {
+    // The cookie was just revoked and expired. Re-probing would buy a guaranteed
+    // 401 on the next mount — and, worse, a race that could resurrect the screen
+    // the user just left.
+    api.saveSession(makeSession());
+    fetchMock.mockResolvedValueOnce(mockResponse(204, null));
+    await api.logout();
+
+    expect(await api.ensureSession()).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns null on a network failure instead of rejecting", async () => {
+    fetchMock.mockRejectedValueOnce(new TypeError("offline"));
+    expect(await api.ensureSession()).toBeNull();
+  });
+});
+
+describe("no session credential reaches a store page scripts can read", () => {
+  it("manage-api.ts never writes to sessionStorage or localStorage", async () => {
+    // The one assertion that would have caught the original finding. Runtime
+    // tests only cover the paths they exercise; this covers the file.
+    const { readFileSync } = await import("node:fs");
+    const src = readFileSync("lib/manage-api.ts", "utf8");
+    for (const write of [
+      "sessionStorage.setItem",
+      "localStorage.setItem",
+      "sessionStorage.getItem",
+      "localStorage.getItem",
+    ]) {
+      expect(src).not.toContain(write);
+    }
   });
 });

@@ -26,7 +26,12 @@
 // configuracao/lib/hydration.ts).
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getSession, ManageApiError, type Session } from "@/lib/manage-api";
+import {
+  ensureSession,
+  getSession,
+  ManageApiError,
+  type Session,
+} from "@/lib/manage-api";
 import { getHubToken, hubConfigured } from "@/lib/secretaria-hub";
 
 export type UseSecretariaHubResult = {
@@ -122,14 +127,23 @@ export function useSecretariaHub(): UseSecretariaHubResult {
   }, [session, runCycle]);
 
   useEffect(() => {
-    const current = getSession();
-    setSession(current);
-    if (!current) {
-      setReady(true);
-      return;
-    }
-    runCycle(current);
+    // Async for the same reason as usePortalGuard: since the refresh token moved
+    // to an HttpOnly cookie, a RELOAD leaves nothing in memory, and reading the
+    // session synchronously here would answer "no session" — dropping a paying
+    // clinic into the demo view of its own agenda, silently and every time.
+    let cancelled = false;
+    void (async () => {
+      const current = getSession() ?? (await ensureSession());
+      if (cancelled) return;
+      setSession(current);
+      if (!current) {
+        setReady(true);
+        return;
+      }
+      runCycle(current);
+    })();
     return () => {
+      cancelled = true;
       // Unmounting (or a StrictMode dev double-invoke) mid-cycle: supersede
       // any in-flight attempt's .then/.catch and clear pending timers.
       generationRef.current++;

@@ -38,7 +38,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
-import { getSession, login } from "@/lib/manage-api";
+import { ensureSession, getSession, login } from "@/lib/manage-api";
 import { SIGNUP_HREF, resolveEntryRedirect, resolvePostLogin } from "@/lib/portal-routes";
 
 import { AuthShell } from "./_shared/AuthShell";
@@ -95,12 +95,23 @@ function EntryInner() {
   // in right now", and the form must not sit in history behind the app, where
   // "back" would land on a form that immediately bounces forward again.
   useEffect(() => {
-    const to = resolveEntryRedirect(getSession());
-    if (to) {
-      router.replace(to);
-      return;
-    }
-    setEntryChecked(true);
+    // Async since the session moved to an HttpOnly cookie: on a fresh load there
+    // is nothing in memory yet, and answering synchronously would show the login
+    // form to someone who is already signed in — precisely the ARQ-5 regression
+    // this effect exists to prevent.
+    let cancelled = false;
+    void (async () => {
+      const to = resolveEntryRedirect(getSession() ?? (await ensureSession()));
+      if (cancelled) return;
+      if (to) {
+        router.replace(to);
+        return;
+      }
+      setEntryChecked(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   // --- Handlers ---

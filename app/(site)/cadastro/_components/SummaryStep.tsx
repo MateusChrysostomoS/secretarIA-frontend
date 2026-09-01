@@ -17,6 +17,7 @@ import { StepHeading, StepActions } from "./WizardShell";
 import {
   attachSignupIntake,
   createPublicCheckoutSession,
+  ensureSession,
   getSession,
   ManageApiError,
 } from "@/lib/manage-api";
@@ -72,7 +73,10 @@ export function SummaryStep({ answers, plan, intentId, onBack }: SummaryStepProp
     try {
       // Best-effort: attach the eligibility answers so the webhook can seed onboarding
       // state. A failure here must never block payment, so it's swallowed.
-      const session = getSession();
+      // ensureSession, not getSession alone: the wizard survives a mid-flow
+      // reload now that registration plants a refresh cookie, and the intake
+      // attach should survive it too.
+      const session = getSession() ?? (await ensureSession());
       if (session && answers.whatsappUsage && answers.priorApi && answers.fbPage) {
         try {
           await attachSignupIntake(session, {

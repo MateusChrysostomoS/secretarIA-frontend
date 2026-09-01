@@ -19,6 +19,7 @@ import { BrandGlyph } from "../../_components/BrandGlyph";
 import {
   exchangeOnboardingToken,
   getOnboardingStatus,
+  ensureSession,
   getSession,
   ManageApiError,
   saveSession,
@@ -95,9 +96,11 @@ function CheckoutSucessoInner() {
         if (status.status === "ready") {
           stop();
           setView("ready-secretaria");
-          // Fast path: registration already saved a session in this browser — just
-          // route into the portal (the entitlement is now active).
-          if (getSession()) {
+          // Fast path: this browser already has a session — from the wizard, or
+          // resumed from the refresh cookie after Stripe bounced the tab back.
+          // That second case is why this awaits: the redirect through Stripe is a
+          // full page load, so memory is empty on the way back.
+          if (getSession() ?? (await ensureSession())) {
             router.replace("/configuracao");
           } else if (status.onboarding_token) {
             // Fallback (different browser/tab): trade the LATEST one-time token for a

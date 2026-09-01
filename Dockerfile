@@ -13,10 +13,22 @@ COPY . .
 # domain never calls; see docs/CHECKPOINT_secretaria_frontend.md).
 #
 # NEXT_PUBLIC_MANAGE_API_BASE_URL → brain-api base (login /auth/token, /auth/me,
-#   /entitlements, /billing/checkout, /public/signup-intents). Set to the deployed
-#   brain-api origin via --build-arg; empty makes calls same-origin and they won't
-#   reach brain-api.
-ARG NEXT_PUBLIC_MANAGE_API_BASE_URL=https://secretaria-brain-api.cpux9k.easypanel.host
+#   /entitlements, /billing/checkout, /public/signup-intents).
+#
+#   A PATH, NOT AN ORIGIN, since 2026-08-31 — and that is the point. nginx.conf
+#   reverse-proxies `location /api/` to the real brain-api, so the browser sees a
+#   single origin and the session's refresh token can be a first-party HttpOnly
+#   cookie (`__Host-refresh_token`). Pointing this back at the brain-api origin
+#   would make that cookie third-party again: Safari's ITP and Firefox's ETP would
+#   be free to drop it, and the silent refresh would fail for a slice of real
+#   users with nothing failing loudly. Change it here only together with the
+#   `location /api/` block in nginx.conf; app/__tests__/nginx-hardening.test.ts
+#   asserts the pair.
+#
+#   For LOCAL dev against a brain-api on another port, set the full origin
+#   (e.g. http://localhost:8000): localhost is same-SITE across ports, so the
+#   cookie still works there.
+ARG NEXT_PUBLIC_MANAGE_API_BASE_URL=/api
 ENV NEXT_PUBLIC_MANAGE_API_BASE_URL=${NEXT_PUBLIC_MANAGE_API_BASE_URL}
 # NEXT_PUBLIC_SECRETARIA_HUB_BASE_URL → secretarIA hub base (/tenants/me/config,
 #   /tenants/me/calendar/*). Read by lib/secretaria-hub.ts; empty makes
@@ -44,6 +56,10 @@ RUN npm run build
 
 # ── Stage 2: serve the static files with nginx ──────────────────────
 FROM nginx:1.27-alpine
+# Needed by `proxy_ssl_verify on` in nginx.conf: without a CA bundle on disk
+# nginx refuses to start, so this is not optional decoration — the /api/ proxy
+# hop to brain-api is authenticated, not just encrypted.
+RUN apk add --no-cache ca-certificates
 COPY --from=build /app/out /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80

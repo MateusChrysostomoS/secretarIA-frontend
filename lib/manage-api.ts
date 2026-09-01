@@ -55,10 +55,15 @@ export type Session = {
   // tokens minted before the role-taxonomy migration may still carry
   // tenant_owner/tenant_staff — gates accept both during the transition window.
   role: string;
-  // Opaque revocable refresh token (CONTRACTS §2.1a). Optional: sessions stored
-  // before this field existed — and the impersonated "Modo médico" doctor session,
-  // which deliberately has no refresh leg — simply can't auto-refresh.
-  refreshToken?: string;
+  // Whether this session may be renewed from the `__Host-refresh_token` cookie
+  // (CONTRACTS §2.1c). Absent/true for every normally minted session — the token
+  // itself is never held here, so there is nothing to store.
+  //
+  // FALSE for exactly one case, and it matters: the impersonated "Modo médico"
+  // doctor session has no refresh leg of its own, while the cookie still holds
+  // the ADMIN's. Renewing it would hand back an admin session under the doctor's
+  // identity — silently changing who the browser is, mid-request.
+  refreshable?: boolean;
   // Decoded from the JWT `professional_id` claim (Onboarding & Multi-Professional
   // contract §6) — set when this user is bound to a specific secretarIA
   // professional (a non-owner invitee, or an owner who self-bound). null/absent
@@ -157,36 +162,74 @@ export const MANAGE_API_BASE = (
   process.env.NEXT_PUBLIC_MANAGE_API_BASE_URL ?? ""
 ).replace(/\/+$/, "");
 
-// sessionStorage key holding the logged-in Session (set by login, read by /app).
-export const SESSION_KEY = "brain.session";
-// "Modo médico" (admin doctor-mode) keys: a marker describing the active impersonation, and
-// a stash of the admin's own Session so "Voltar ao admin" can restore it without re-login.
+// --- Where the session lives, and why it is not a browser store -------------
+//
+// It used to be `sessionStorage`, key `brain.session`, holding BOTH legs: the
+// 30-minute access token and the 14-day refresh token. Any script on the page
+// could read that, so a single XSS anywhere in the portal was worth two weeks of
+// re-mintable sessions — a far bigger prize than the access token beside it.
+//
+// Now the two legs live apart:
+//   refresh -> `__Host-refresh_token`, HttpOnly, written by brain-api
+//              (CONTRACTS §2.1c). This file never sees it, and cannot. That IS
+//              the mitigation; everything else here follows from it.
+//   access  -> the module variable below. It dies with the page — and the cookie
+//              is what brings the session back on the next load.
+//
+// CONSEQUENCE FOR CALLERS, and the one thing easy to get wrong: after a reload
+// `getSession()` starts null even for a signed-in user, because the cookie has
+// not been spent yet. A screen that decides anything on mount must await
+// `ensureSession()` first. `getSession()` stays synchronous and is still correct
+// AFTER that, or anywhere inside a guarded screen.
+
+let activeSession: Session | null = null;
+// True once this page load has either been handed a session or asked the cookie
+// for one. Keeps a signed-out visitor from re-probing on every mount, and keeps
+// a logout from being undone by the next component that mounts.
+let sessionProbed = false;
+// "Modo médico" (admin doctor-mode) state, in memory for the same reason as the
+// session itself — the stash holds the admin's own live access token.
 // See enterDoctorMode / exitDoctorMode below and CONTRACTS §11.4.
-export const IMPERSONATION_KEY = "brain.impersonation";
-const ADMIN_STASH_KEY = "brain.admin_session";
+let adminStash: Session | null = null;
+let impersonation: ImpersonationMarker | null = null;
 
 export function saveSession(session: Session): void {
-  if (typeof window === "undefined") return;
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  activeSession = session;
+  sessionProbed = true;
 }
 
 export function getSession(): Session | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = sessionStorage.getItem(SESSION_KEY);
-    return raw ? (JSON.parse(raw) as Session) : null;
-  } catch {
-    return null;
-  }
+  return activeSession;
 }
 
 export function clearSession(): void {
-  if (typeof window === "undefined") return;
-  // A full logout also leaves doctor-mode: drop the marker + the stashed admin session so no
-  // impersonation state outlives the session it belonged to.
-  sessionStorage.removeItem(SESSION_KEY);
-  sessionStorage.removeItem(IMPERSONATION_KEY);
-  sessionStorage.removeItem(ADMIN_STASH_KEY);
+  activeSession = null;
+  // A full logout also leaves doctor-mode: drop the marker + the stashed admin
+  // session so no impersonation state outlives the session it belonged to.
+  adminStash = null;
+  impersonation = null;
+  // Deliberately left TRUE: the cookie has just been revoked (or was never
+  // there), so re-probing would buy nothing but a guaranteed 401 on the next
+  // mount — and, worse, a race that could resurrect the screen we just left.
+  sessionProbed = true;
+}
+
+// Resolve the session for a screen that is deciding something on mount: the one
+// already in memory, or one resumed from the refresh cookie. Resolves to null for
+// a genuinely signed-out visitor.
+//
+// NEVER redirects, unlike the 401 path below. Half the screens in this app are
+// reachable signed-out (the entry screen, /cadastro, the demo agenda), and for
+// them "no session" is a normal answer, not an error.
+export function ensureSession(): Promise<Session | null> {
+  if (activeSession) return Promise.resolve(activeSession);
+  if (typeof window === "undefined" || sessionProbed) return Promise.resolve(null);
+  return refreshFromCookie().then((outcome) => {
+    // Latch AFTER the attempt, so concurrent mounts share the single-flight
+    // request rather than the first one short-circuiting the rest to null.
+    sessionProbed = true;
+    return outcome.kind === "ok" ? outcome.session : null;
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -206,6 +249,13 @@ export class ManageApiError extends Error {
   }
 }
 
+// Sent on every request, and required by brain-api on the one route where the
+// refresh COOKIE is the credential (CONTRACTS §2.1c). A constant in a header is
+// not security theatre here: a cross-site <form>, <img> or navigation cannot set
+// a request header at all, and a cross-site fetch() that tries is stopped by the
+// CORS preflight. That is what makes a forged /auth/refresh useless.
+const CLIENT_HEADER = { "X-Brain-Client": "web" };
+
 async function rawManageFetch(
   path: string,
   opts: RequestInit = {},
@@ -213,8 +263,14 @@ async function rawManageFetch(
 ): Promise<Response> {
   return fetch(MANAGE_API_BASE + path, {
     ...opts,
+    // The refresh cookie rides on this. Same-origin in production (nginx proxies
+    // brain-api under /api on this very origin), so "include" only matters for a
+    // local dev build pointed at a separate brain-api host — where it is exactly
+    // what makes the cookie work.
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      ...CLIENT_HEADER,
       ...(token ? { Authorization: "Bearer " + token } : {}),
       ...(opts.headers || {}),
     },
@@ -234,59 +290,78 @@ async function parseManageResponse<T>(res: Response): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-// --- Transparent refresh-on-401 (CONTRACTS §2.1a) -------------------------
+// --- Renewing the session from the refresh cookie (CONTRACTS §2.1a/§2.1c) ---
 //
-// When an authenticated call 401s with the CURRENT stored session's access token
-// and that session has a refresh token, rotate the pair once (single-flight so
-// concurrent 401s share one /auth/refresh call) and retry the original request
-// exactly once with the new access token. A second 401 propagates — never loop.
-// A rejected refresh (revoked/reused/expired) clears the session and routes to
-// /login; a NETWORK failure on refresh just lets the original 401 surface
-// (transient outage shouldn't force a logout — callers already bounce on 401).
+// ONE mechanism, TWO entry points, and they must stay one call:
+//
+//   ensureSession()  — on mount, when memory is empty after a reload.
+//   manageFetch      — when an authenticated call 401s on an expired access token.
+//
+// Sharing a single-flight is not just deduplication here. brain-api rotates on
+// use and treats a SECOND presentation of an already-rotated token as theft: it
+// revokes the user's entire refresh family. Two concurrent renewals would spend
+// the same cookie twice and log the user out of everything. That failure needs a
+// race to appear, so it would never show up in a manual test.
+//
+// The request carries no body — the cookie is the credential, and this file
+// cannot read it (that is the whole point). A rejected renewal (revoked, reused,
+// expired, 429) means the revocable leg is dead; a NETWORK failure means nothing
+// at all, and must not be mistaken for one, which is why the outcome below is
+// three-valued rather than `Session | null`.
 
-let refreshInFlight: Promise<Session | null> | null = null;
+type RefreshOutcome =
+  | { kind: "ok"; session: Session }
+  // The server refused: the refresh leg is gone for good.
+  | { kind: "rejected" }
+  // We could not ask. Says NOTHING about whether the session is still valid.
+  | { kind: "offline" };
+
+let refreshInFlight: Promise<RefreshOutcome> | null = null;
 
 function redirectToLogin(): void {
   if (typeof window !== "undefined") window.location.assign("/");
 }
 
-async function doRefresh(current: Session): Promise<Session | null> {
-  let res: Response;
-  try {
-    res = await rawManageFetch("/auth/refresh", {
-      method: "POST",
-      body: JSON.stringify({ refresh_token: current.refreshToken }),
-    });
-  } catch {
-    return null; // network blip — don't destroy the session
-  }
-  if (!res.ok) {
-    // Rotate-on-use rejection (revoked, reused, expired, 429): the revocable leg
-    // is dead. Clear locally and send the user to log in again.
-    clearSession();
-    redirectToLogin();
-    return null;
-  }
-  const data = (await res.json()) as TokenResponse;
-  // Re-decode professional_id from the FRESH token rather than carrying over
-  // `current`'s — an owner can self-bind (or a staff invite can be re-issued)
-  // mid-session, and the next refresh is the first chance to pick that up.
+// Build a Session from a freshly minted token pair. Every identity field is
+// re-derived from the NEW token rather than carried over: an owner can self-bind
+// to a professional (or a staff invite be re-issued) mid-session, and a renewal
+// is the first chance to notice.
+function sessionFromTokenResponse(
+  data: TokenResponse,
+  fallbackEmail = "",
+): Session {
   const claims = decodeJwtPayload(data.access_token);
-  const session: Session = {
-    ...current,
+  return {
     token: data.access_token,
-    refreshToken: data.refresh_token ?? current.refreshToken,
+    tenantId: typeof claims?.tenant_id === "string" ? (claims.tenant_id as string) : "",
+    // The access token carries no email claim by design (identity, not display
+    // data), so it comes off the response. `fallbackEmail` covers the one caller
+    // that already knows it: the login form.
+    email: data.email ?? fallbackEmail,
+    role: typeof claims?.role === "string" ? (claims.role as string) : "",
+    refreshable: true,
     professionalId: readProfessionalIdClaim(claims),
     isOwner: readBoolClaim(claims, "is_owner"),
     isManager: readBoolClaim(claims, "is_manager"),
   };
-  saveSession(session);
-  return session;
 }
 
-function refreshCurrentSession(current: Session): Promise<Session | null> {
+async function performRefresh(): Promise<RefreshOutcome> {
+  let res: Response;
+  try {
+    res = await rawManageFetch("/auth/refresh", { method: "POST" });
+  } catch {
+    return { kind: "offline" };
+  }
+  if (!res.ok) return { kind: "rejected" };
+  const session = sessionFromTokenResponse((await res.json()) as TokenResponse);
+  saveSession(session);
+  return { kind: "ok", session };
+}
+
+function refreshFromCookie(): Promise<RefreshOutcome> {
   if (!refreshInFlight) {
-    refreshInFlight = doRefresh(current).finally(() => {
+    refreshInFlight = performRefresh().finally(() => {
       refreshInFlight = null;
     });
   }
@@ -305,16 +380,26 @@ async function manageFetch<T>(
 ): Promise<T> {
   const res = await rawManageFetch(path, opts, token);
   if (res.status === 401 && token && !NO_REFRESH_PATHS.has(path)) {
-    // Only refresh for the STORED session's own token — a stale/impersonated/
-    // foreign token isn't ours to rotate (the "Modo médico" doctor session has
-    // no refreshToken and correctly falls through to the plain 401).
+    // Only renew for the ACTIVE session's own token — a stale or foreign token
+    // isn't ours to rotate. `refreshable === false` is the "Modo médico" doctor
+    // session: the cookie belongs to the ADMIN, so renewing here would answer
+    // with an admin session under the doctor's identity instead of the plain 401
+    // this case is supposed to produce.
     const current = getSession();
-    if (current && current.token === token && current.refreshToken) {
-      const refreshed = await refreshCurrentSession(current);
-      if (refreshed) {
+    if (current && current.token === token && current.refreshable !== false) {
+      const outcome = await refreshFromCookie();
+      if (outcome.kind === "ok") {
         return parseManageResponse<T>(
-          await rawManageFetch(path, opts, refreshed.token),
+          await rawManageFetch(path, opts, outcome.session.token),
         );
+      }
+      if (outcome.kind === "rejected") {
+        // The revocable leg is dead. Clear locally and send them to log in
+        // again. An "offline" outcome deliberately falls through instead: a
+        // transient outage must not force a logout, and callers already bounce
+        // on the original 401.
+        clearSession();
+        redirectToLogin();
       }
     }
   }
@@ -345,8 +430,18 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
 type TokenResponse = {
   access_token: string;
   token_type: string;
+  // Still returned by brain-api (CONTRACTS §2.1) but no longer read here: the
+  // same token arrives in the HttpOnly `__Host-refresh_token` cookie, which is
+  // the only copy this app is allowed to have. Kept in the type so the shape
+  // still documents the wire, and so nobody "restores" the field by accident.
   refresh_token?: string;
   expires_in?: number;
+  // Additive identity fields. `email` is the one a cookie-resumed session depends
+  // on — there was never a login form to read it from, and the access token
+  // carries no email claim.
+  name?: string;
+  email?: string;
+  professional_id?: string | null;
 };
 
 // MANAGE-API CALL SITE #1 — unified login. POST /auth/token { email, password }.
@@ -357,20 +452,11 @@ export async function login(email: string, password: string): Promise<Session> {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
-  const claims = decodeJwtPayload(data.access_token);
-  const tenantId =
-    typeof claims?.tenant_id === "string" ? (claims.tenant_id as string) : "";
-  const role = typeof claims?.role === "string" ? (claims.role as string) : "";
-  const session: Session = {
-    token: data.access_token,
-    tenantId,
-    email,
-    role,
-    refreshToken: data.refresh_token,
-    professionalId: readProfessionalIdClaim(claims),
-    isOwner: readBoolClaim(claims, "is_owner"),
-    isManager: readBoolClaim(claims, "is_manager"),
-  };
+  // The response also planted the __Host-refresh_token cookie, so there is no
+  // refresh leg to keep here — only the access token and the identity decoded
+  // from it. `email` is passed as the fallback for the one moment the client
+  // knows it before the server echoes it back.
+  const session = sessionFromTokenResponse(data, email);
   saveSession(session);
   return session;
 }
@@ -405,27 +491,19 @@ function readBoolClaim(
 // refresh token when logging out from inside "Modo médico" — otherwise that
 // (more privileged) revocable leg would silently outlive the logout.
 export async function logout(): Promise<void> {
-  const tokens: string[] = [];
-  if (typeof window !== "undefined") {
-    const current = getSession();
-    if (current?.refreshToken) tokens.push(current.refreshToken);
-    try {
-      const stash = sessionStorage.getItem(ADMIN_STASH_KEY);
-      const admin = stash ? (JSON.parse(stash) as Session) : null;
-      if (admin?.refreshToken) tokens.push(admin.refreshToken);
-    } catch {
-      // unreadable stash — nothing to revoke
-    }
-  }
   clearSession();
-  await Promise.all(
-    tokens.map((refresh_token) =>
-      rawManageFetch("/auth/logout", {
-        method: "POST",
-        body: JSON.stringify({ refresh_token }),
-      }).catch(() => undefined),
-    ),
-  );
+  if (typeof window === "undefined") return;
+  // No body: the cookie IS the credential, and brain-api both revokes it and
+  // expires it in the browser. This used to revoke two tokens — the session's and
+  // the admin's stashed one — because "Modo médico" left a second, MORE
+  // privileged refresh leg alive. There is only one cookie per origin now, and
+  // in doctor mode it is still the admin's, so the single call covers both.
+  //
+  // Fired unconditionally, even with no session in memory: the point of a logout
+  // is that nothing survives it, and a probe that failed offline can leave a live
+  // cookie with no session to show for it. The server answers 204 either way (no
+  // token-existence oracle).
+  await rawManageFetch("/auth/logout", { method: "POST" }).catch(() => undefined);
 }
 
 // GET /auth/me — authenticated identity (no secrets). Optional helper.
@@ -619,23 +697,11 @@ export async function registerSignup(
     "/public/signup-intents",
     { method: "POST", body: JSON.stringify(payload) },
   );
-  const claims = decodeJwtPayload(data.session.access_token);
-  const tenantId =
-    typeof claims?.tenant_id === "string" ? (claims.tenant_id as string) : "";
-  const role = typeof claims?.role === "string" ? (claims.role as string) : "";
   return {
     intentId: data.intent_id,
-    session: {
-      token: data.session.access_token,
-      tenantId,
-      // The access token carries no email claim; use the one just submitted.
-      email: payload.email,
-      role,
-      refreshToken: data.session.refresh_token,
-      professionalId: readProfessionalIdClaim(claims),
-      isOwner: readBoolClaim(claims, "is_owner"),
-      isManager: readBoolClaim(claims, "is_manager"),
-    },
+    // Registration IS a login: brain-api planted the refresh cookie on this very
+    // response, so the wizard survives a reload mid-checkout.
+    session: sessionFromTokenResponse(data.session, payload.email),
   };
 }
 
@@ -721,22 +787,10 @@ export async function exchangeOnboardingToken(token: string): Promise<Session> {
       body: JSON.stringify({ token }),
     },
   );
-  const claims = decodeJwtPayload(data.access_token);
-  const tenantId =
-    typeof claims?.tenant_id === "string" ? (claims.tenant_id as string) : "";
-  const role = typeof claims?.role === "string" ? (claims.role as string) : "";
-  const email =
-    typeof claims?.email === "string" ? (claims.email as string) : "";
-  return {
-    token: data.access_token,
-    tenantId,
-    email,
-    role,
-    refreshToken: data.refresh_token,
-    professionalId: readProfessionalIdClaim(claims),
-    isOwner: readBoolClaim(claims, "is_owner"),
-    isManager: readBoolClaim(claims, "is_manager"),
-  };
+  // The exchange planted the refresh cookie too, so this session is renewable
+  // like any other. `email` now comes off the response body — it was read from a
+  // JWT claim that brain-api never actually mints, so it was always "".
+  return sessionFromTokenResponse(data);
 }
 
 // POST /auth/exchange-invite-token — trades a professional-invite token (from
@@ -751,22 +805,10 @@ export async function exchangeInviteToken(token: string): Promise<Session> {
     method: "POST",
     body: JSON.stringify({ token }),
   });
-  const claims = decodeJwtPayload(data.access_token);
-  const tenantId =
-    typeof claims?.tenant_id === "string" ? (claims.tenant_id as string) : "";
-  const role = typeof claims?.role === "string" ? (claims.role as string) : "";
-  const email =
-    typeof claims?.email === "string" ? (claims.email as string) : "";
-  return {
-    token: data.access_token,
-    tenantId,
-    email,
-    role,
-    refreshToken: data.refresh_token,
-    professionalId: readProfessionalIdClaim(claims),
-    isOwner: readBoolClaim(claims, "is_owner"),
-    isManager: readBoolClaim(claims, "is_manager"),
-  };
+  // The exchange planted the refresh cookie too, so this session is renewable
+  // like any other. `email` now comes off the response body — it was read from a
+  // JWT claim that brain-api never actually mints, so it was always "".
+  return sessionFromTokenResponse(data);
 }
 
 // POST /auth/set-password — sets the real password for a session minted via
@@ -1012,6 +1054,11 @@ async function fetchImpersonationDoctor(
     tenantId: data.tenant_id,
     email: data.email,
     role: data.role,
+    // NOT renewable, and this flag is what keeps it that way. The route mints no
+    // refresh leg of its own, so the cookie in this browser is still the ADMIN's:
+    // a transparent renewal on the first 401 would answer with an admin session
+    // wearing the doctor's identity. Without the flag that swap is silent.
+    refreshable: false,
     isOwner: readBoolClaim(claims, "is_owner"),
     isManager: readBoolClaim(claims, "is_manager"),
   };
@@ -1026,24 +1073,22 @@ async function fetchImpersonationDoctor(
 export async function enterDoctorMode(adminSession: Session): Promise<void> {
   const { session, clinicName } = await fetchImpersonationDoctor(adminSession);
   if (typeof window === "undefined") return;
-  sessionStorage.setItem(ADMIN_STASH_KEY, JSON.stringify(adminSession));
+  adminStash = adminSession;
   saveSession(session);
-  const marker: ImpersonationMarker = {
-    clinicName,
-    adminEmail: adminSession.email,
-  };
-  sessionStorage.setItem(IMPERSONATION_KEY, JSON.stringify(marker));
+  impersonation = { clinicName, adminEmail: adminSession.email };
 }
 
-// The active impersonation, or null. Read AFTER mount (sessionStorage is client-only).
+// The active impersonation, or null.
+//
+// BEHAVIOUR CHANGE (2026-08-31): doctor mode no longer survives a page reload.
+// The stash held the admin's live access token, which is exactly what stopped
+// being written to a browser store — and the alternative is worse than the
+// inconvenience: after a reload the refresh cookie resumes the ADMIN's session
+// while a persisted marker would still claim "you are the doctor", i.e. the UI
+// lying about who it is acting as. A reload now simply lands back on the admin,
+// and "Modo médico" is one click away again.
 export function getImpersonation(): ImpersonationMarker | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = sessionStorage.getItem(IMPERSONATION_KEY);
-    return raw ? (JSON.parse(raw) as ImpersonationMarker) : null;
-  } catch {
-    return null;
-  }
+  return impersonation;
 }
 
 // Leave "Modo médico": restore the stashed admin session and clear the doctor session +
@@ -1051,20 +1096,15 @@ export function getImpersonation(): ImpersonationMarker | null {
 // false if there was nothing to restore (caller falls back to /login).
 export function exitDoctorMode(): boolean {
   if (typeof window === "undefined") return false;
-  const raw = sessionStorage.getItem(ADMIN_STASH_KEY);
-  sessionStorage.removeItem(IMPERSONATION_KEY);
-  sessionStorage.removeItem(ADMIN_STASH_KEY);
-  if (!raw) {
+  const admin = adminStash;
+  impersonation = null;
+  adminStash = null;
+  if (!admin) {
     clearSession();
     return false;
   }
-  try {
-    saveSession(JSON.parse(raw) as Session);
-    return true;
-  } catch {
-    clearSession();
-    return false;
-  }
+  saveSession(admin);
+  return true;
 }
 
 // ---------------------------------------------------------------------------

@@ -59,10 +59,79 @@ describe("nginx security headers (SEC-1)", () => {
     // the browser blocks every API call and the server never sees a request.
     const conf = read(CONF);
     const csp = conf.slice(conf.indexOf("add_header Content-Security-Policy"));
-    for (const [, origin] of read("Dockerfile").matchAll(
+    for (const [, value] of read("Dockerfile").matchAll(
       /^ARG NEXT_PUBLIC_(?:MANAGE_API|SECRETARIA_HUB)_BASE_URL=(\S+)$/gm,
     )) {
-      expect(csp).toContain(origin);
+      // A PATH (brain-api, proxied under this origin at /api) is same-origin by
+      // construction, so 'self' is what has to be there — not the path. What
+      // must exist for it is the proxy, asserted in its own block below.
+      if (value.startsWith("/")) {
+        expect(csp).toContain("'self'");
+        continue;
+      }
+      expect(csp).toContain(value);
+    }
+  });
+});
+
+// SEC-2 — the refresh token moved to an HttpOnly cookie, and the ONLY reason
+// that cookie can be first-party (SameSite=Lax, immune to ITP/ETP eviction) is
+// this proxy. Every assertion here fails invisibly in production if it is wrong:
+// nothing in the React code changes, and nothing errors at build time.
+describe("brain-api is proxied under this origin (SEC-2)", () => {
+  const manageBase = () =>
+    read("Dockerfile").match(/^ARG NEXT_PUBLIC_MANAGE_API_BASE_URL=(\S+)$/m)![1];
+
+  const proxyBlock = () => {
+    const conf = read(CONF);
+    const start = conf.indexOf(`location ${manageBase()}/ {`);
+    expect(start).toBeGreaterThan(-1);
+    // The block ends at the first close-brace back at `location` indentation.
+    const end = conf.indexOf("\n    }", start);
+    return conf.slice(start, end);
+  };
+
+  it("bakes a same-origin PATH, not the brain-api origin", () => {
+    // Point this back at an origin and the cookie is third-party again: Safari's
+    // ITP and Firefox's ETP become free to drop it, and the silent refresh dies
+    // for a slice of real users with nothing failing loudly.
+    expect(manageBase()).toMatch(/^\/[a-z0-9-]+$/);
+  });
+
+  it("proxies that exact prefix to one https upstream, with SNI", () => {
+    const block = proxyBlock();
+    // The trailing slash strips the prefix: /api/auth/token -> /auth/token.
+    expect(block).toMatch(/proxy_pass\s+https:\/\/\S+\/;/);
+    // Without SNI the TLS terminator in front of brain-api cannot tell which
+    // vhost is meant and answers with the wrong certificate.
+    expect(block).toContain("proxy_ssl_server_name on;");
+  });
+
+  it("sends the UPSTREAM host, never this frontend's", () => {
+    // EasyPanel's ingress routes by Host, so $host would land on the wrong
+    // service — and it is also the name the certificate is verified against.
+    expect(proxyBlock()).toContain("proxy_set_header Host $proxy_host;");
+    expect(proxyBlock()).not.toContain("proxy_set_header Host $host;");
+  });
+
+  it("appends to X-Forwarded-For instead of replacing it", () => {
+    // brain-api rate-limits per client IP off the FIRST hop of that header.
+    // Replace it and every clinic in the country shares one 10-per-minute auth
+    // budget, which presents as a login that randomly stops working.
+    expect(proxyBlock()).toContain("$proxy_add_x_forwarded_for");
+  });
+
+  it("declares no add_header of its own", () => {
+    // Same trap as the server-level list above: one add_header here strips every
+    // security header from every /api/ response.
+    expect(proxyBlock()).not.toContain("add_header");
+  });
+
+  it("ships the CA bundle whenever it verifies the upstream certificate", () => {
+    // nginx refuses to START if proxy_ssl_trusted_certificate names a file that
+    // is not there — a whole-site outage, not a degraded API.
+    if (proxyBlock().includes("proxy_ssl_verify on;")) {
+      expect(read("Dockerfile")).toContain("ca-certificates");
     }
   });
 });
