@@ -271,8 +271,99 @@
   text-align: right;
 }
 
+/* Cupom de cortesia — o link fica discreto de propósito: um campo de cupom em
+   destaque faz todo visitante parar para procurar um código antes de pagar. */
+.cad-cupom {
+  margin: 18px 0 4px;
+}
+
+.cad-cupom-link {
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink-faint);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+}
+.cad-cupom-link:hover {
+  color: var(--brand);
+  border-color: var(--brand);
+}
+
+.cad-cupom-box {
+  padding: 14px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.cad-cupom-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.cad-cupom-row {
+  display: flex;
+  gap: 10px;
+}
+
+.cad-cupom-input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 13px;
+  font: inherit;
+  font-size: 14px;
+  /* Cupons são sempre em maiúsculas; mostrar assim evita o susto de digitar
+     minúsculo e ver outra coisa (o backend normaliza dos dois lados). */
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  outline: none;
+}
+.cad-cupom-input:focus {
+  border-color: var(--brand);
+}
+.cad-cupom-input:disabled {
+  opacity: .6;
+}
+
+/* `--on-brand`, NÃO `#fff` — é a diferença deste repo para o brain-frontend, que
+   fixa branco aqui. No tema escuro daqui `--brand` é #28b3a6 e branco em cima dá
+   ~2.6:1, abaixo do mínimo AA de 4.5:1. `--on-brand` é o token que existe
+   exatamente para isso (#fff no claro, quase-preto no escuro) e é o que
+   .btn--primary já usa. */
+.cad-cupom-btn {
+  flex-shrink: 0;
+  padding: 11px 20px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--on-brand);
+  background: var(--brand);
+  border: 1px solid var(--brand);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.cad-cupom-btn:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
 @media (max-width: 560px) {
   .cad-actions {
     flex-direction: column-reverse;
+  }
+  .cad-cupom-row {
+    flex-direction: column;
   }
 }

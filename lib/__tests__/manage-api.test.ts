@@ -1023,6 +1023,76 @@ describe("getOnboardingStatus", () => {
   });
 });
 
+// Ativação por cupom de cortesia. Portado do brain-frontend em 2026-09-01, onde
+// era inalcançável para secretarIA: lá o gate de lançamento devolve a lista de
+// espera ANTES do wizard renderizar para qualquer plano secretarIA-bearing, então
+// a tela do cupom nunca aparecia para este produto. Aqui é o funil que vende.
+describe("redeemCourtesyCoupon", () => {
+  it("posts { intent_id, code } and passes the OnboardingStatus through", async () => {
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(200, {
+        status: "ready",
+        products: { secretaria: true, precheck: false },
+        onboarding_token: "onb-tok-courtesy",
+      }),
+    );
+
+    const result = await api.redeemCourtesyCoupon("intent-1", "AMIGOS10");
+
+    // Mesma forma que o polling devolve — é o que deixa a entrada dali em diante
+    // idêntica à do caminho pago.
+    expect(result).toEqual({
+      status: "ready",
+      products: { secretaria: true, precheck: false },
+      onboarding_token: "onb-tok-courtesy",
+    });
+    const call = fetchMock.mock.calls[0];
+    expect(call[0]).toBe("/public/courtesy-redemptions");
+    expect(call[1].method).toBe("POST");
+    expect(JSON.parse(call[1].body)).toEqual({
+      intent_id: "intent-1",
+      code: "AMIGOS10",
+    });
+  });
+
+  it("sends the code VERBATIM — normalising is the backend's job", async () => {
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(200, { status: "ready", products: null, onboarding_token: null }),
+    );
+
+    // courtesy.normalize() faz strip + upper no servidor e compara assim. Se o
+    // cliente também transformasse, um cupom com caixa mista viraria duas formas
+    // diferentes dependendo de quem normalizou por último.
+    await api.redeemCourtesyCoupon("intent-1", " amigos10 ");
+
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).code).toBe(" amigos10 ");
+  });
+
+  it("422 coupon_invalid -> ManageApiError 422 (fail-closed: one reason for all)", async () => {
+    // O backend devolve este MESMO detail para inexistente, expirado, esgotado e
+    // desativado, de propósito — distinguir ensinaria quais códigos existem.
+    fetchMock.mockResolvedValueOnce(mockResponse(422, { detail: "coupon_invalid" }));
+
+    await expectManageError(
+      api.redeemCourtesyCoupon("intent-1", "EXPIRADO"),
+      422,
+      "coupon_invalid",
+    );
+  });
+
+  it("409 intent_not_pending -> ManageApiError 409 (no second free clinic)", async () => {
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(409, { detail: "intent_not_pending" }),
+    );
+
+    await expectManageError(
+      api.redeemCourtesyCoupon("intent-1", "AMIGOS10"),
+      409,
+      "intent_not_pending",
+    );
+  });
+});
+
 describe("exchangeOnboardingToken", () => {
   it("17a. decodes tenant_id/role from the JWT, does NOT call saveSession", async () => {
     // Post-checkout onboarding also mints the clinic's owner.

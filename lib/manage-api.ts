@@ -19,6 +19,7 @@
 //   POST /doctor/onboarding/intake       -> attach wizard intake     (attachSignupIntake)
 //   POST /public/checkout-sessions       -> Stripe Checkout URL      (createPublicCheckoutSession)
 //   GET  /public/onboarding-status       -> async webhook activation (getOnboardingStatus)
+//   POST /public/courtesy-redemptions    -> ativação por cupom       (redeemCourtesyCoupon)
 //   POST /auth/exchange-onboarding-token -> real session, one-time   (exchangeOnboardingToken)
 //   GET  /doctor/onboarding/test-window          -> activation test-window state (getTestWindow)
 //   POST /doctor/onboarding/test-window/restart  -> restart the test window      (restartTestWindow)
@@ -775,6 +776,31 @@ export async function getOnboardingStatus(
   return manageFetch<OnboardingStatus>(
     `/public/onboarding-status?session_id=${encodeURIComponent(sessionId)}`,
   );
+}
+
+// POST /public/courtesy-redemptions — ativa a clínica com um cupom de cortesia,
+// sem cartão e sem assinatura no Stripe. Devolve a MESMA forma de OnboardingStatus
+// que o polling devolve quando fica pronto (inclusive o token de onboarding), para
+// a entrada dali em diante ser idêntica à do caminho pago — mesma troca de token,
+// mesmo destino.
+//
+// O cupom decide o plano, não o `?plan=` que trouxe o visitante até aqui: o resgate
+// sobrescreve `intent.catalog_ids` com o plano do cupom e descarta os add-ons
+// selecionados (brain-api services/courtesy.py — senão bastaria escolher o plano
+// mais caro antes de resgatar um cupom do básico). Por isso a tela de resgate não
+// deve repetir ao visitante o plano que ele marcou na etapa anterior.
+//
+// Falha fechada por design: TODA recusa (inexistente, expirado, esgotado, inativo)
+// volta como 422 com o mesmo `coupon_invalid`. Não tente distinguir os motivos na
+// UI — o backend não os revela de propósito, para não ensinar quais códigos existem.
+export async function redeemCourtesyCoupon(
+  intentId: string,
+  code: string,
+): Promise<OnboardingStatus> {
+  return manageFetch<OnboardingStatus>("/public/courtesy-redemptions", {
+    method: "POST",
+    body: JSON.stringify({ intent_id: intentId, code }),
+  });
 }
 
 // POST /auth/exchange-onboarding-token — trades the one-time onboarding token

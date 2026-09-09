@@ -57,19 +57,27 @@ function CheckoutSucessoInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
+  // Cortesia: veio de um cupom resgatado, não de um pagamento. Não existe
+  // Checkout Session para consultar — a clínica JÁ está ativa quando esta tela
+  // abre —, então o polling é pulado e vamos direto ao portal, o mesmo destino
+  // do caminho pago. Sem isto, `?courtesy=1` cairia em "missing-session": a
+  // clínica ativa e o cliente olhando para uma tela de erro.
+  const cortesia = searchParams.get("courtesy") === "1";
 
   const [view, setView] = useState<ViewState>(
-    sessionId ? "polling" : "missing-session",
+    sessionId || cortesia ? "polling" : "missing-session",
   );
   // Only meaningful in the "ready-secretaria" view: the status poll succeeded
   // but exchanging the onboarding token (or saving the session) failed.
   const [exchangeFailed, setExchangeFailed] = useState(false);
 
   useEffect(() => {
-    if (!sessionId) return;
+    if (!sessionId && !cortesia) return;
     // Narrowed to a plain `string` for the closures below — TS does not carry
-    // the `if (!sessionId) return` narrowing into nested function scopes.
-    const sid: string = sessionId;
+    // the `if (!sessionId) return` narrowing into nested function scopes. No
+    // caminho de cortesia `tick()` nunca roda, então a string vazia não vaza
+    // para onboarding-status (ela tomaria 404 e a tela viraria "failed").
+    const sid: string = sessionId ?? "";
 
     let cancelled = false;
     let busy = false; // guards against overlapping ticks if a fetch is slow
@@ -141,6 +149,30 @@ function CheckoutSucessoInner() {
       }
     }
 
+    // Cortesia: o resgate do cupom já ativou tudo de forma síncrona, e a sessão
+    // do brain existe neste navegador desde o cadastro (registerSignup devolve
+    // uma). Não há o que consultar — só entrar. Sem Checkout Session, `tick()`
+    // chamaria onboarding-status com string vazia e tomaria 404 para sempre.
+    if (cortesia) {
+      // Async porque a sessão pode existir só como o cookie de refresh aqui: o
+      // resgate é uma navegação inteira, então nada sobrevive em memória.
+      void (async () => {
+        const session = getSession() ?? (await ensureSession());
+        if (cancelled) return;
+        if (session === null) {
+          // Cadastro feito em outro navegador: aqui não há sessão para trocar, e
+          // o token de onboarding do resgate ficou na aba anterior.
+          setView("ready-already-claimed");
+        } else {
+          setView("ready-secretaria");
+          router.replace("/configuracao");
+        }
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }
+
     const intervalId = setInterval(tick, POLL_INTERVAL_MS);
     tick(); // check immediately instead of waiting the first interval
 
@@ -148,7 +180,7 @@ function CheckoutSucessoInner() {
       cancelled = true;
       clearInterval(intervalId);
     };
-  }, [sessionId, router]);
+  }, [sessionId, cortesia, router]);
 
   return <CheckoutShell>{renderView(view, exchangeFailed)}</CheckoutShell>;
 }

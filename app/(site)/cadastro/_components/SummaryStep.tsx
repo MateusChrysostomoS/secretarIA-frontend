@@ -13,10 +13,12 @@
 // doesn't send it again.
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { StepHeading, StepActions } from "./WizardShell";
 import {
   attachSignupIntake,
   createPublicCheckoutSession,
+  redeemCourtesyCoupon,
   ensureSession,
   getSession,
   ManageApiError,
@@ -58,8 +60,14 @@ type SummaryStepProps = {
 };
 
 export function SummaryStep({ answers, plan, intentId, onBack }: SummaryStepProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Cupom de cortesia: fica escondido atrás de um link. Um campo de cupom sempre
+  // visível convida todo visitante a procurar um código antes de pagar.
+  const [cupomAberto, setCupomAberto] = useState(false);
+  const [cupom, setCupom] = useState("");
+  const [resgatando, setResgatando] = useState(false);
 
   async function handleSubmit() {
     if (!intentId) {
@@ -71,23 +79,7 @@ export function SummaryStep({ answers, plan, intentId, onBack }: SummaryStepProp
     setError(null);
     setSubmitting(true);
     try {
-      // Best-effort: attach the eligibility answers so the webhook can seed onboarding
-      // state. A failure here must never block payment, so it's swallowed.
-      // ensureSession, not getSession alone: the wizard survives a mid-flow
-      // reload now that registration plants a refresh cookie, and the intake
-      // attach should survive it too.
-      const session = getSession() ?? (await ensureSession());
-      if (session && answers.whatsappUsage && answers.priorApi && answers.fbPage) {
-        try {
-          await attachSignupIntake(session, {
-            whatsapp_usage: answers.whatsappUsage,
-            prior_api: answers.priorApi,
-            fb_page: answers.fbPage,
-          });
-        } catch {
-          // Non-fatal — the tenant just starts in the default onboarding state.
-        }
-      }
+      await attachIntakeBestEffort();
 
       const { checkout_url } = await createPublicCheckoutSession(intentId);
       window.location.assign(checkout_url);
@@ -104,6 +96,69 @@ export function SummaryStep({ answers, plan, intentId, onBack }: SummaryStepProp
         setError("Não foi possível continuar agora. Tente novamente.");
       }
       setSubmitting(false);
+    }
+  }
+
+  // Best-effort: attach the eligibility answers so onboarding starts in the state
+  // the visitor just described. A failure here must never block activation, so it
+  // is swallowed. ensureSession, not getSession alone: the wizard survives a
+  // mid-flow reload now that registration plants a refresh cookie, and the intake
+  // attach should survive it too.
+  //
+  // Chamado pelos DOIS caminhos de saída — pagar e resgatar cupom. Neste app todo
+  // cadastro passa pelas três telas de elegibilidade (não há o desvio de PreCheck
+  // que existe no brain-frontend), então deixar isto de fora da cortesia jogaria
+  // fora respostas que a pessoa acabou de dar e a clínica começaria no estado
+  // padrão. Cortesia é o caminho pago com o pagamento pulado, nada mais.
+  async function attachIntakeBestEffort() {
+    const session = getSession() ?? (await ensureSession());
+    if (!session || !answers.whatsappUsage || !answers.priorApi || !answers.fbPage) {
+      return;
+    }
+    try {
+      await attachSignupIntake(session, {
+        whatsapp_usage: answers.whatsappUsage,
+        prior_api: answers.priorApi,
+        fb_page: answers.fbPage,
+      });
+    } catch {
+      // Non-fatal — the tenant just starts in the default onboarding state.
+    }
+  }
+
+  async function resgatarCupom() {
+    if (!intentId) {
+      setError("Sua sessão de cadastro expirou. Recomece o cadastro.");
+      return;
+    }
+    const codigo = cupom.trim();
+    if (!codigo) return;
+    setError(null);
+    setResgatando(true);
+    try {
+      // Antes do resgate, como no caminho pago: depois dele o intent sai de
+      // `pending_payment` e a clínica já está ativa.
+      await attachIntakeBestEffort();
+      await redeemCourtesyCoupon(intentId, codigo);
+      // A clínica já está ativa. `?courtesy=1` diz à tela de sucesso para pular o
+      // polling (não há Checkout Session para consultar) e ir direto ao portal —
+      // o mesmo destino do caminho pago.
+      router.push("/checkout/sucesso?courtesy=1");
+    } catch (e) {
+      const status = e instanceof ManageApiError ? e.status : 0;
+      if (status === 422) {
+        // O backend responde `coupon_invalid` para TODO motivo de recusa
+        // (inexistente, expirado, esgotado, desativado) de propósito — não há o
+        // que distinguir aqui sem ensinar quais códigos existem.
+        setError("Cupom inválido ou já utilizado.");
+      } else if (status === 409) {
+        setError("Este cadastro já foi finalizado. Atualize a página e entre na sua conta.");
+      } else if (status === 429) {
+        setError("Muitas tentativas. Aguarde um instante e tente de novo.");
+      } else {
+        setError("Não foi possível validar o cupom agora. Tente novamente.");
+      }
+      setResgatando(false);
     }
   }
 
@@ -146,11 +201,60 @@ export function SummaryStep({ answers, plan, intentId, onBack }: SummaryStepProp
           for the already-registered intent and redirects straight there. */}
       <CheckoutTrialNotice catalogIds={plan.catalogIds} />
 
+      {/* Cortesia: ativa na hora, sem cartão e sem assinatura no Stripe. Fica
+          atrás de um link porque um campo sempre visível faz todo visitante
+          parar para procurar um código antes de pagar. */}
+      <div className="cad-cupom">
+        {!cupomAberto ? (
+          <button
+            type="button"
+            className="cad-cupom-link"
+            onClick={() => setCupomAberto(true)}
+          >
+            Tenho um cupom
+          </button>
+        ) : (
+          <div className="cad-cupom-box">
+            <label className="cad-cupom-label" htmlFor="cad-cupom-input">
+              Cupom de acesso
+            </label>
+            <div className="cad-cupom-row">
+              <input
+                id="cad-cupom-input"
+                className="cad-cupom-input"
+                value={cupom}
+                onChange={(e) => setCupom(e.target.value)}
+                placeholder="Digite seu cupom"
+                autoFocus
+                autoCapitalize="characters"
+                autoComplete="off"
+                spellCheck={false}
+                disabled={resgatando || submitting}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    resgatarCupom();
+                  }
+                }}
+              />
+              <button
+                type="button"
+                className="cad-cupom-btn"
+                onClick={resgatarCupom}
+                disabled={resgatando || submitting || !cupom.trim()}
+              >
+                {resgatando ? "Validando…" : "Ativar"}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
       <StepActions
         onBack={onBack}
         onNext={handleSubmit}
         nextLabel={submitting ? "Processando…" : "Ir para pagamento"}
-        nextDisabled={submitting}
+        nextDisabled={submitting || resgatando}
       />
     </div>
   );
