@@ -60,6 +60,21 @@ com o usuário) ficam em `TECH/BRAIN/z_prompts/` — convenção compartilhada e
 Brain, não uma pasta deste repo. Cole o conteúdo inteiro numa sessão nova quando for a hora
 de executar:
 
+- ~~`z_prompts/PROMPT_SECRETARIA_CONFIG_PROFISSIONAIS_NAO_CARREGA.md`~~ — **EXECUTADO
+  2026-09-12, CORRIGIDO EM PRODUÇÃO E PROVADO AO VIVO.** Causa raiz: **nenhuma das 4 pistas
+  do prompt.** O `CORS_ALLOW_ORIGINS` do serviço `secretaria_api` estava em formato JSON
+  (`["https://a","https://b"]`), formato que o brain-api aceita desde `46b4eb3` mas que o
+  parser da secretarIA — `split(",")` puro — partia em `["https://…` e `…"]`. Nenhuma das
+  duas casa com o header `Origin`, então o hub respondia **400 `Disallowed CORS origin` a
+  toda origem**. As três chamadas de `/tenants/me/*` morriam no preflight (sem status HTTP:
+  `TypeError: Failed to fetch`, logado como `{"event":"config_load_failed","status":null}`),
+  e como o roster é `Promise.all([getDoctorProfessionals, getProfessionals])`
+  (`page.tsx:551`), o `getDoctorProfessionals` — que estava 200 — foi arrastado junto.
+  **Nenhum código deste repo foi alterado**: a correção foi o valor do env em
+  `secretaria_api`/`secretaria-worker` (formato vírgula) mais o parser da secretarIA passando
+  a aceitar os dois formatos. Ver `secretarIA/docs/CHECKPOINT_cors_json_array_hub.md`.
+  Lição para este repo: `status: null` num `config_load_failed` significa preflight/CORS,
+  nunca um erro de aplicação — não procure o bug no cliente HTTP.
 - `z_prompts/PROMPT_FABLE_secretaria_frontend_home_inicio.md` — cria a rota `/inicio` como
   nova home única do app (troca `/agenda` no papel de `PORTAL_HOME`), com cards de navegação
   pro resto do site (Agenda, Configuração) e ao menos um elemento de conteúdo liberado por
