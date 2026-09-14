@@ -630,6 +630,41 @@ export function disconnectCalendar(
   );
 }
 
+// GET /tenants/me/calendar/health — do the stored Google credentials still
+// WORK? Checked live against Google by secretarIA
+// (services/tenant_config.py::calendar_credential_health).
+//
+// Every other Calendar flag this client reads is a PRESENCE flag:
+// TenantConfigWire.calendar_connected, ProfessionalWire.has_calendar and
+// calendar_source all say "a token is stored". A token Google has since expired
+// or revoked is still stored, so all of them stay green while the bot cannot
+// read or book a single slot — which is how a shared_account clinic sat on
+// "Conectado", with no professional row able to do anything about it, while no
+// patient could book (2026-09-12). This is the only read that tells them apart.
+//
+// Slower than the config GETs (one bounded Google call per credential), so it
+// is its own request and never gates hydration. A 404/405 is a backend that
+// predates the route (isLegacyBackend) and means "cannot tell", never "broken".
+// Callers re-check the body before trusting it — a type is erased at runtime
+// (configuracao/lib/calendar-health.ts::normalizeCalendarHealth).
+export type CalendarCredentialStatus = "ok" | "disconnected" | "reconnect_required" | "unavailable";
+
+export type CalendarHealthWire = {
+  // The clinic's own Google account. "disconnected" = no token stored at all.
+  clinic: CalendarCredentialStatus;
+  // Only professionals whose OWN token was checked, which happens in
+  // per_professional mode only. Absent = not checked (shared_account never
+  // books with an own token), never "broken".
+  professionals: {
+    professional_id: string;
+    status: Exclude<CalendarCredentialStatus, "disconnected">;
+  }[];
+};
+
+export function getCalendarHealth(session: Session): Promise<CalendarHealthWire> {
+  return hubFetch<CalendarHealthWire>(session, "/tenants/me/calendar/health");
+}
+
 // ---------------------------------------------------------------------------
 // Professionals (Onboarding & Multi-Professional contract §10) — per-professional
 // config/calendar, consumed by the Configuração page's "Profissionais" section
@@ -830,7 +865,8 @@ export type CreateProfessionalCalendarResult = {
 //   422 HUB_ERROR_CLINIC_CALENDAR_NOT_CONNECTED — the clinic hasn't connected
 //     Google yet (point the caller at GoogleSection's connect flow).
 //   409 HUB_ERROR_GOOGLE_RECONNECT_REQUIRED — the clinic's stored token
-//     predates the calendar-creation scope (point the caller at "Reconectar").
+//     predates the calendar-creation scope, or Google has expired/revoked it
+//     (point the caller at "Reconectar").
 // Callers should branch on `.code`, not `.message` — the message is
 // display-ready pt-BR copy from the backend, but the code is what's stable.
 export function createProfessionalCalendar(

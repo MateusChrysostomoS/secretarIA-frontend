@@ -122,9 +122,15 @@ import {
   type PublishResult,
 } from "./lib/save";
 import {
+  effectiveClinicStatus,
+  normalizeCalendarHealth,
+  ownStatusByProfessional,
+} from "./lib/calendar-health";
+import {
   createProfessionalCalendars,
   createService,
   disconnectCalendar,
+  getCalendarHealth,
   getProfessionals,
   getServices,
   getTenantConfig,
@@ -136,6 +142,7 @@ import {
   updateTenantConfig,
   HubApiError,
   HUB_ERROR_SERVICE_ALREADY_EXISTS,
+  type CalendarHealthWire,
   type HubConfigurationUpdatePayload,
   type ProfessionalCalendarSource,
   type ProfessionalConfigUpdatePayload,
@@ -370,6 +377,13 @@ export default function ConfiguracaoPage() {
   // which is true about the connection and false about what it can do.
   const [calendarBlockedCode, setCalendarBlockedCode] = useState<string | null>(null);
 
+  // LIVE status of the stored Google credentials (GET /tenants/me/calendar/
+  // health), or null while unknown. Every other Calendar flag on this screen
+  // only says a token is STORED; this is what lets Sections 05 and 08 stop
+  // saying "Conectado" over a token Google has revoked (lib/calendar-health.ts).
+  const [calendarHealth, setCalendarHealth] = useState<CalendarHealthWire | null>(null);
+  const calendarHealthGenerationRef = useRef(0);
+
   const [services, setServices] = useState<Service[]>([]);
   const [days, setDays] = useState<DayConfig[]>(closedWeek);
   // The CLINIC's own weekly schedule (tenants.business_hours). Tenant-level,
@@ -507,6 +521,34 @@ export default function ConfiguracaoPage() {
   useEffect(() => {
     loadCatalog();
   }, [loadCatalog]);
+
+  // --- calendar health: its own request, never a hydration gate -------------
+  // One bounded Google call per credential on the backend, so it must not hold
+  // the form hostage: the screen renders from the config GETs and this upgrades
+  // it when it lands. A failure — a 404 from a backend without the route
+  // included — leaves it null, which every consumer reads as "cannot tell".
+  // The generation guard drops a slow answer that a newer request superseded
+  // (e.g. one fired before a save changed the mode).
+  const loadCalendarHealth = useCallback(() => {
+    if (hydration.mode !== "authenticated" || !session || !hubTokenReady) return;
+    const generation = ++calendarHealthGenerationRef.current;
+    getCalendarHealth(session)
+      .then((raw) => {
+        if (calendarHealthGenerationRef.current !== generation) return;
+        setCalendarHealth(normalizeCalendarHealth(raw));
+      })
+      .catch((e) => {
+        if (calendarHealthGenerationRef.current !== generation) return;
+        setCalendarHealth(null);
+        if (!isLegacyBackend(e)) {
+          console.error("secretaria configuracao: failed to check Google Calendar health", e);
+        }
+      });
+  }, [hydration.mode, session, hubTokenReady]);
+
+  useEffect(() => {
+    loadCalendarHealth();
+  }, [loadCalendarHealth]);
 
   // --- authenticated hydration ---
   // One full cycle: tenant config + roster (brain-api rows and hub configs
@@ -886,6 +928,9 @@ export default function ConfiguracaoPage() {
       // changed google_calendar_id — both live in the catalog payload the
       // section reads, so re-read it rather than patching it locally.
       loadCatalog();
+      // The save may have changed the mode (which credentials get checked) or
+      // hit a refused token in its calendar run — re-ask rather than infer.
+      loadCalendarHealth();
       // Cleared by any save whose calendar run was NOT refused — including one
       // that never ran, since leaving per_professional makes the reconnect
       // prompt moot. A successful run is the proof the clinic acted on it.
@@ -1079,6 +1124,16 @@ export default function ConfiguracaoPage() {
       Object.entries(snapshot.professionalsById).map(([id, p]) => [id, p.calendar_source]),
     );
 
+  // --- Derived: whether the stored Google credentials still WORK. The clinic's
+  // status merges the stored-token flag (authoritative for "nothing stored")
+  // with the live check (the only source for "stored but refused"), and stays
+  // undefined until the tenant config has landed. See lib/calendar-health.ts.
+  const clinicCalendarStatus = effectiveClinicStatus({
+    connected: tenantEditable ? gcal.connected : undefined,
+    health: calendarHealth,
+  });
+  const ownCalendarStatusByProfessional = ownStatusByProfessional(calendarHealth);
+
   // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
@@ -1206,6 +1261,8 @@ export default function ConfiguracaoPage() {
                   googleCalendarMode={gcal.mode}
                   googleCalendarIdByProfessional={googleCalendarIdByProfessional}
                   calendarSourceByProfessional={calendarSourceByProfessional}
+                  clinicCalendarStatus={clinicCalendarStatus}
+                  ownCalendarStatusByProfessional={ownCalendarStatusByProfessional}
                   readOnly={!professionalEditable}
                 />
                 <ServicesSection
@@ -1247,6 +1304,7 @@ export default function ConfiguracaoPage() {
                   }
                   onModeChange={setGcalMode}
                   blockedCode={calendarBlockedCode}
+                  clinicStatus={clinicCalendarStatus}
                   readOnly={!tenantEditable}
                 />
               </div>
@@ -1271,14 +1329,27 @@ export default function ConfiguracaoPage() {
           <div style={{
             display: "flex", alignItems: "center", gap: 9,
             fontSize: 13,
-            color: gcal.connected ? "var(--st-attend-ink)" : "var(--ink-faint)",
+            color: clinicCalendarStatus === "reconnect_required"
+              ? "var(--st-miss-ink)"
+              : gcal.connected ? "var(--st-attend-ink)" : "var(--ink-faint)",
           }}>
-            <Icon name={gcal.connected ? "checkCircle" : "clock"} size={16} />
-            {gcal.connected
-              ? "Google Calendar conectado"
-              : gcal.mode === "per_professional"
-                ? "Cada profissional conecta a própria agenda em Profissionais"
-                : "Conecte o Google Calendar para ativar a sincronização"}
+            <Icon
+              name={
+                clinicCalendarStatus === "reconnect_required"
+                  ? "xCircle"
+                  : gcal.connected ? "checkCircle" : "clock"
+              }
+              size={16}
+            />
+            {/* A stored token Google refuses is not "conectado": this bar is
+                the one place visible from every section of the screen. */}
+            {clinicCalendarStatus === "reconnect_required"
+              ? "Reconecte o Google Calendar da clínica"
+              : gcal.connected
+                ? "Google Calendar conectado"
+                : gcal.mode === "per_professional"
+                  ? "Cada profissional conecta a própria agenda em Profissionais"
+                  : "Conecte o Google Calendar para ativar a sincronização"}
           </div>
 
           <div style={{ flex: 1 }} />

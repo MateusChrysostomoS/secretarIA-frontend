@@ -33,6 +33,12 @@
 // `has_calendar` — the latter is equally true for a doctor merely covered by
 // the clinic's fallback credential, and calling that "Conectado" would be a
 // claim about an account they never linked.
+//
+// And every one of those flags only says a token is STORED. On 2026-09-12 a
+// shared_account clinic whose token Google had revoked showed a healthy roster
+// with nothing to press while no patient could book. The live status
+// (GET /tenants/me/calendar/health) now reaches this section, and the whole
+// per-row decision lives in lib/calendar-health.ts::professionalRowAgenda.
 
 import { useCallback, useEffect, useState } from "react";
 import { Avatar, Btn, Field, Icon, TextArea, TextInput } from "../../_shared/ui";
@@ -48,8 +54,10 @@ import {
 } from "@/lib/manage-api";
 import {
   startProfessionalCalendarOauth,
+  type CalendarCredentialStatus,
   type ProfessionalCalendarSource,
 } from "@/lib/secretaria-hub";
+import { professionalRowAgenda, sharedAccountRosterNotice } from "../lib/calendar-health";
 import type { GoogleCalendarMode, ProfessionalProfile } from "../lib/types";
 
 type ProfessionalsSectionProps = {
@@ -80,6 +88,15 @@ type ProfessionalsSectionProps = {
   // row then falls back to the pre-existing has_calendar labels rather than
   // asserting a connection nobody confirmed.
   calendarSourceByProfessional: Record<string, ProfessionalCalendarSource | undefined>;
+  // LIVE status of the clinic's own Google credential
+  // (lib/calendar-health.ts::effectiveClinicStatus). The flags above only say a
+  // token is STORED, and a token Google has revoked is still stored.
+  // `undefined` = not checked / cannot tell, which keeps every row as it was.
+  clinicCalendarStatus?: CalendarCredentialStatus;
+  // Keyed by professional id -> LIVE status of THEIR OWN credential. Only the
+  // ids the backend checked (per_professional mode, own token held); absent =
+  // not checked, never "broken".
+  ownCalendarStatusByProfessional: Record<string, CalendarCredentialStatus>;
   // True until the SELECTED professional's config has hydrated (see
   // lib/hydration.ts). Gates ONLY the three profile fields below — the roster
   // actions (invite, self-bind, calendar) each carry their own guards, and the
@@ -101,6 +118,8 @@ export function ProfessionalsSection({
   googleCalendarMode,
   googleCalendarIdByProfessional,
   calendarSourceByProfessional,
+  clinicCalendarStatus,
+  ownCalendarStatusByProfessional,
   readOnly,
 }: ProfessionalsSectionProps) {
   // null = closed; otherwise which flavour of invite the modal is showing.
@@ -171,6 +190,17 @@ export function ProfessionalsSection({
   }
 
   const selectedName = roster?.find((p) => p.id === selectedId)?.name ?? null;
+
+  // shared_account: every agenda lives inside the clinic's Google account and
+  // rows have no calendar action, so when THAT account is what blocks booking
+  // the fix is named here, next to the doctors it blocks.
+  const rosterNotice = sharedAccountRosterNotice({
+    mode: googleCalendarMode,
+    clinicStatus: clinicCalendarStatus,
+  });
+  const scrollToGoogleSection = () => {
+    document.getElementById("gcal")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <Section
@@ -288,6 +318,18 @@ export function ProfessionalsSection({
         {/* --- Roster --- */}
         {roster && roster.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {rosterNotice && (
+              <div
+                role={rosterNotice.tone === "error" ? "alert" : undefined}
+                className={`alert-line ${rosterNotice.tone === "error" ? "alert-line--red" : "alert-line--amber"}`}
+                style={{ alignItems: "flex-start", flexDirection: "column", gap: 8 }}
+              >
+                <span>{rosterNotice.message}</span>
+                <Btn variant="outline" size="sm" icon="calendar" onClick={scrollToGoogleSection}>
+                  Ir para o Google Calendar
+                </Btn>
+              </div>
+            )}
             {actionError && (
               <p role="alert" style={{ fontSize: 12.5, color: "var(--danger, #c0392b)", margin: 0 }}>
                 {actionError}
@@ -302,6 +344,8 @@ export function ProfessionalsSection({
                 mode={googleCalendarMode}
                 googleCalendarId={googleCalendarIdByProfessional[p.id] ?? null}
                 calendarSource={calendarSourceByProfessional[p.id]}
+                clinicStatus={clinicCalendarStatus}
+                ownStatus={ownCalendarStatusByProfessional[p.id]}
                 onConnectCalendar={() => handleConnectCalendar(p.id)}
                 connecting={connectingId === p.id}
                 canConnect={!!session}
@@ -391,6 +435,8 @@ function ProfessionalRow({
   mode,
   googleCalendarId,
   calendarSource,
+  clinicStatus,
+  ownStatus,
   onConnectCalendar,
   connecting,
   canConnect,
@@ -401,20 +447,26 @@ function ProfessionalRow({
   mode: GoogleCalendarMode;
   googleCalendarId: string | null;
   calendarSource: ProfessionalCalendarSource | undefined;
+  clinicStatus: CalendarCredentialStatus | undefined;
+  ownStatus: CalendarCredentialStatus | undefined;
   onConnectCalendar: () => void;
   connecting: boolean;
   canConnect: boolean;
 }) {
-  const sharedAccount = mode === "shared_account";
-  // "Agenda" chip: per_professional keeps the existing has_calendar semantics
-  // (own token OR clinic fallback); shared_account means a DEDICATED
-  // secondary calendar exists — has_calendar would silently fall back to the
-  // clinic's single calendar, which is not what this chip should promise here.
-  const agendaOk = sharedAccount ? googleCalendarId != null : professional.has_calendar;
-  // THIS doctor linked their own Google account. Deliberately not
-  // `has_calendar`, which is also true when they are merely covered by the
-  // clinic's credential — see the header note.
-  const ownCalendar = calendarSource === "professional";
+  // Chip, explanation and action all come from ONE pure decision
+  // (lib/calendar-health.ts), tested without a DOM. In short: shared_account is
+  // green only while the clinic's account works AND this doctor's dedicated
+  // agenda exists, and never has an action; per_professional shows "Conectado"
+  // only for THIS doctor's own account (`calendar_source`, never `has_calendar`)
+  // that Google has not refused.
+  const agenda = professionalRowAgenda({
+    mode,
+    hasCalendar: professional.has_calendar,
+    googleCalendarId,
+    calendarSource,
+    clinicStatus,
+    ownStatus,
+  });
 
   return (
     <div
@@ -431,7 +483,7 @@ function ProfessionalRow({
       <div style={{ flex: 1, minWidth: 160 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>{professional.name}</div>
         <div style={{ display: "flex", gap: 12, marginTop: 4, flexWrap: "wrap" }}>
-          <CompletenessChip label="Agenda" ok={agendaOk} />
+          <CompletenessChip label="Agenda" ok={agenda.ok} />
           <CompletenessChip label="Serviços" ok={professional.has_services} />
           <CompletenessChip label="Horários" ok={professional.has_hours} />
         </div>
@@ -459,53 +511,59 @@ function ProfessionalRow({
             Sem e-mail vinculado — não recebe aviso de nova consulta nem de configuração pendente
           </div>
         )}
-      </div>
-
-      {/* shared_account: no per-row action at all. The clinic connects one
-          account in Section 08 and saving creates every professional's agenda
-          inside it, so a per-row button here was a second, confusable way to
-          do a thing the row does not own. The "Agenda" chip above already
-          reports whether that agenda exists. */}
-      {!sharedAccount &&
-        (ownCalendar ? (
-          // Nothing left to press: this doctor's own account is linked. A
-          // "Reconectar agenda" button here read as an outstanding task and
-          // invited people to redo a working connection.
-          <span
+        {agenda.note && (
+          <div
             style={{
-              display: "inline-flex", alignItems: "center", gap: 6,
-              padding: "7px 13px", borderRadius: 999,
-              fontSize: 12.5, fontWeight: 600,
-              color: "var(--st-attend-ink, #1a7f4b)",
-              background: "var(--st-attend-bg)", border: "1px solid var(--st-attend-bd)",
+              fontSize: 11.5, marginTop: 4,
+              color:
+                agenda.note.tone === "error"
+                  ? "var(--st-miss-ink, #b42318)"
+                  : "var(--st-pending-ink, #9a6b00)",
             }}
           >
-            <Icon name="checkCircle" size={14} />
-            Conectado
-          </span>
-        ) : (
-          <Btn
-            variant="outline"
-            size="sm"
-            icon="calendar"
-            // Also selects this row (via the card's own onClick, since this
-            // button has no propagation guard) — harmless: connecting a
-            // professional's calendar while also making them the selected one
-            // is sensible UX.
-            onClick={onConnectCalendar}
-            disabled={connecting || !canConnect}
-            title={canConnect ? undefined : "Entre para conectar a agenda"}
-          >
-            {connecting
-              ? "Conectando…"
-              : // `calendar_source === undefined` is a backend that predates the
-                // field: it cannot tell us whose credential this is, so the
-                // pre-existing has_calendar label is kept rather than guessing.
-                calendarSource === undefined && professional.has_calendar
-                ? "Reconectar agenda"
-                : "Conectar Google Calendar"}
-          </Btn>
-        ))}
+            {agenda.note.message}
+          </div>
+        )}
+      </div>
+
+      {/* shared_account: no per-row action at all (agenda.action is "none").
+          The clinic connects one account in Section 08 and saving creates every
+          professional's agenda inside it, so a per-row button here was a
+          second, confusable way to do a thing the row does not own. When that
+          account is what blocks booking, the notice above the roster says so. */}
+      {agenda.action.kind === "connected" && (
+        // Nothing left to press: this doctor's own account is linked and Google
+        // has not refused it. A "Reconectar agenda" button here read as an
+        // outstanding task and invited people to redo a working connection.
+        <span
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "7px 13px", borderRadius: 999,
+            fontSize: 12.5, fontWeight: 600,
+            color: "var(--st-attend-ink, #1a7f4b)",
+            background: "var(--st-attend-bg)", border: "1px solid var(--st-attend-bd)",
+          }}
+        >
+          <Icon name="checkCircle" size={14} />
+          Conectado
+        </span>
+      )}
+      {agenda.action.kind === "connect" && (
+        <Btn
+          variant="outline"
+          size="sm"
+          icon="calendar"
+          // Also selects this row (via the card's own onClick, since this
+          // button has no propagation guard) — harmless: connecting a
+          // professional's calendar while also making them the selected one
+          // is sensible UX.
+          onClick={onConnectCalendar}
+          disabled={connecting || !canConnect}
+          title={canConnect ? undefined : "Entre para conectar a agenda"}
+        >
+          {connecting ? "Conectando…" : agenda.action.label}
+        </Btn>
+      )}
     </div>
   );
 }

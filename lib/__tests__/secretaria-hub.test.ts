@@ -272,6 +272,41 @@ describe("createProfessionalCalendar", () => {
 });
 
 // ---------------------------------------------------------------------------
+// getCalendarHealth — GET /tenants/me/calendar/health
+// ---------------------------------------------------------------------------
+
+describe("getCalendarHealth", () => {
+  it("GETs /tenants/me/calendar/health and passes the categories through", async () => {
+    mockHubTokenMint();
+    const body = {
+      clinic: "reconnect_required",
+      professionals: [{ professional_id: "prof-1", status: "ok" }],
+    };
+    fetchMock.mockResolvedValueOnce(mockResponse(200, body));
+
+    const health = await hub.getCalendarHealth(makeSession());
+
+    expect(health).toEqual(body);
+    const [url, opts] = fetchMock.mock.calls[1];
+    expect(url).toBe("/tenants/me/calendar/health");
+    expect(opts.method).toBeUndefined();
+  });
+
+  it("a backend without the route answers 404: legacy, never a broken connection", async () => {
+    mockHubTokenMint();
+    fetchMock.mockResolvedValueOnce(mockResponse(404, { detail: "Not Found" }));
+
+    let caught: unknown;
+    try {
+      await hub.getCalendarHealth(makeSession());
+    } catch (err) {
+      caught = err;
+    }
+    expect(hub.isLegacyBackend(caught)).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // google_calendar_mode round-trips through the existing config wrappers
 // untouched (no new endpoint — same GET/PUT /tenants/me/config as always).
 // ---------------------------------------------------------------------------

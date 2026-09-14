@@ -8,7 +8,11 @@
 // undefined, the corresponding action is genuinely unavailable — the button
 // renders disabled with an explanatory hint, never a fabricated result.
 //
-// `connected` is the only field mirroring TenantConfigWire.calendar_connected.
+// `connected` is the only field mirroring TenantConfigWire.calendar_connected,
+// and it only says a token is STORED. Whether Google still accepts that token
+// arrives separately as `clinicStatus` (GET /tenants/me/calendar/health): a
+// refused one turns the connected card from "Conectado" into a reconnect
+// prompt, because "Desconectar" used to be the only button a clinic had left.
 // There is no account email, named-calendar list, or two-way-sync
 // preference on the wire today, so none of that is rendered or editable
 // here — inventing values for them would be exactly the kind of fake data
@@ -34,7 +38,9 @@ import { Icon, Btn } from "../../_shared/ui";
 import { RadioPillGroup } from "../../_components/RadioPillGroup";
 import { Section } from "./Section";
 import { GoogleGlyph } from "./GoogleGlyph";
+import { clinicNeedsReconnect } from "../lib/calendar-health";
 import type { GcalState, GoogleCalendarMode } from "../lib/types";
+import type { CalendarCredentialStatus } from "@/lib/secretaria-hub";
 
 type GoogleSectionProps = {
   // Read-only display state — `connected` is owned and updated by the parent
@@ -62,16 +68,23 @@ type GoogleSectionProps = {
   // Nothing in the connected state can reveal that on its own, which is why
   // the save has to hand it down rather than let the section infer it.
   blockedCode?: string | null;
+  // The clinic's own Google credential as the page last verified it LIVE
+  // (lib/calendar-health.ts::effectiveClinicStatus). `gcal.connected` only says
+  // a token is stored, and a token Google has expired or revoked is still
+  // stored. `undefined` = not checked / cannot tell, which leaves this section
+  // exactly as it was.
+  clinicStatus?: CalendarCredentialStatus;
   // True when the secretarIA hub is unreachable right now — disables the
   // selector, same convention as every other section on this page.
   readOnly?: boolean;
 };
 
-// The refusal this section can offer a fix for: the stored clinic token was
-// minted before the `calendar.app.created` scope existed, and a refresh token
-// never gains a scope on its own — only a fresh consent adds it. Reconnecting
-// IS the repair, so the button is the same OAuth handoff as connecting.
-const RECONNECT_REQUIRED = "google_reconnect_required";
+// Reconnecting is the repair for both refusals this section can surface: a
+// stored clinic token minted before the `calendar.app.created` scope existed (a
+// refresh token never gains a scope on its own), and one Google has expired or
+// revoked outright. Either way the button is the same OAuth handoff as
+// connecting, which keeps every saved setting and the bot's activation intact —
+// unlike "Desconectar", which also takes the bot offline.
 
 // Section 08 — Google Calendar OAuth connect/disconnect + real connected status.
 export function GoogleSection({
@@ -81,15 +94,23 @@ export function GoogleSection({
   connectHint = "Conecte-se após entrar na sua conta para ativar a integração.",
   onModeChange,
   blockedCode = null,
+  clinicStatus,
   readOnly,
 }: GoogleSectionProps) {
   // Whether each doctor brings their own Google account (see the header note).
   const perProfessional = gcal.mode === "per_professional";
-  // Reconnecting repairs a scope, so it is only offered while a connection
+  // Reconnecting repairs the stored credential, so it is only offered while one
   // actually exists. Without that guard a disconnect would leave a "Reconectar"
   // button pointing at nothing, next to the connect card that already asks for
   // the same thing in the right words.
-  const reconnectRequired = blockedCode === RECONNECT_REQUIRED && gcal.connected;
+  const reconnectRequired = clinicNeedsReconnect({
+    connected: gcal.connected,
+    clinicStatus,
+    blockedCode,
+  });
+  // Google itself refused the stored token — not merely a save refused for a
+  // missing scope. Until this is fixed nothing reads or books any agenda.
+  const tokenRefused = gcal.connected && clinicStatus === "reconnect_required";
 
   // Scrolls to ProfessionalsSection (Section 05, id="prof") on this same page —
   // where the per-doctor connect actually lives.
@@ -205,9 +226,9 @@ export function GoogleSection({
                 Reconecte a conta do Google da clínica
               </div>
               <div style={{ fontSize: 12.5, color: "var(--ink-soft)", marginTop: 3, lineHeight: 1.5 }}>
-                A conexão atual não tem mais a permissão necessária para criar as agendas
-                dos profissionais, então nenhuma foi criada. Reconectar concede a permissão
-                e não desfaz nada do que já está configurado.
+                {tokenRefused
+                  ? "O Google não aceita mais esta conexão (o acesso expirou ou foi revogado), então a secretarIA não consegue consultar nem marcar horários e nenhum paciente consegue agendar. Reconectar renova o acesso e não desfaz nada do que já está configurado."
+                  : "A conexão atual com o Google não permite mais criar as agendas dos profissionais, então nenhuma foi criada. Reconectar renova o acesso e não desfaz nada do que já está configurado."}
               </div>
             </div>
             <Btn
@@ -322,7 +343,11 @@ export function GoogleSection({
           <div style={{
             display: "flex", alignItems: "center", gap: 14,
             padding: 18, borderRadius: 14,
-            background: "var(--st-attend-bg)", border: "1px solid var(--st-attend-bd)",
+            // A stored token Google refuses is not a connection worth a green
+            // card: the banner above names the fix, and this card stops
+            // contradicting it.
+            background: reconnectRequired ? "var(--surface-2)" : "var(--st-attend-bg)",
+            border: `1px solid ${reconnectRequired ? "var(--st-miss-bd)" : "var(--st-attend-bd)"}`,
           }}>
             <span style={{
               width: 44, height: 44, borderRadius: 12,
@@ -334,10 +359,19 @@ export function GoogleSection({
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 15, fontWeight: 700, color: "var(--st-attend-ink)" }}>
-                  Conectado
+                <span
+                  style={{
+                    fontSize: 15, fontWeight: 700,
+                    color: reconnectRequired ? "var(--st-miss-ink)" : "var(--st-attend-ink)",
+                  }}
+                >
+                  {reconnectRequired ? "Precisa reconectar" : "Conectado"}
                 </span>
-                <Icon name="checkCircle" size={16} style={{ color: "var(--st-attend-ink)" }} />
+                <Icon
+                  name={reconnectRequired ? "xCircle" : "checkCircle"}
+                  size={16}
+                  style={{ color: reconnectRequired ? "var(--st-miss-ink)" : "var(--st-attend-ink)" }}
+                />
               </div>
               {/* Kept visible in per_professional too: the connection is real
                   state. Said out loud, because in this mode it is only a

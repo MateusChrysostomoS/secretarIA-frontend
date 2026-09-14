@@ -149,6 +149,48 @@ cair os outros seis dias na primeira edição.
 
 ---
 
+## 6. Conexão que o Google recusa — "Conectado" que não agenda (2026-09-12)
+
+**BUILT, não commitado, não deployado.** Gates: `tsc --noEmit` limpo, 538 testes (vitest),
+`npm run build` ok. Diagnóstico e backend em `secretarIA/docs/CHECKPOINT_google_calendar_modes.md`
+§10.
+
+Relato: em "Conta única da clínica" nenhum médico precisa (nem consegue) conectar a própria
+agenda, mas o paciente não conseguia marcar com ele. **Não era a regra de modo**: o token da
+clínica tinha sido recusado pelo Google (`invalid_grant`) e a tela inteira seguia verde, porque
+toda flag de agenda aqui é de **presença** (`calendar_connected`, `has_calendar`,
+`calendar_source`, `google_calendar_id`). A Seção 08 dizia "Conectado" e só oferecia "Desconectar"
+(que ainda desativa o bot), e as linhas da Seção 05 não têm ação neste modo.
+
+O que mudou:
+
+- `lib/secretaria-hub.ts::getCalendarHealth` — `GET /tenants/me/calendar/health`, pedido próprio
+  (uma chamada ao Google por credencial no backend), **nunca** gate de hidratação. 404/405 =
+  backend antigo = "não dá pra saber".
+- `configuracao/lib/calendar-health.ts` (puro, 32 testes) concentra a regra:
+  `normalizeCalendarHealth` (reconfere o fio), `effectiveClinicStatus` (sem token gravado é
+  `disconnected` mesmo sobre um "ok" velho; com token, só o probe decide), `clinicNeedsReconnect`,
+  `sharedAccountRosterNotice` e `professionalRowAgenda`. **Desconhecido não é quebrado:**
+  `undefined` e `unavailable` mantêm a tela como era; só `reconnect_required` tira um verde.
+- **Seção 08:** com o token recusado, o card deixa de ser verde ("Precisa reconectar") e o aviso
+  vermelho com **"Reconectar"** — que antes só existia para o 409 de escopo do save — passa a
+  aparecer também pelo probe. Reconectar é o mesmo OAuth de conectar: não desativa o bot.
+- **Seção 05, `shared_account`:** aviso acima da lista quando a conta da clínica está recusada ou
+  desconectada, com "Ir para o Google Calendar"; o chip "Agenda" só fica verde se a conta da
+  clínica não está sabidamente quebrada **e** a agenda dedicada existe; sem agenda dedicada, a
+  linha diz que ela é criada ao salvar. Continua **sem** ação por linha.
+- **Seção 05, `per_professional`:** "Conectado" só para a conta do PRÓPRIO médico que o Google não
+  recusou; recusada → botão "Reconectar agenda". Quem só é coberto pelo fallback da clínica tem o
+  chip seguindo a saúde da clínica.
+- **Barra de salvar:** "Reconecte o Google Calendar da clínica" quando o probe diz recusado.
+- `page.tsx`: `loadCalendarHealth` (com guarda de geração) no mount e depois de cada save.
+
+**Não verificado em tela:** o modo visitante não tem sessão (logo, não há probe) e o backend novo
+ainda não está no ar. Conferir com a clínica real depois do deploy — ela está exatamente no estado
+recusado.
+
+---
+
 ## Decisão de escopo que ficou de fora
 
 O pedido dizia "o médico gestor consiga pôr o horário da clínica". A grade da clínica **não** foi
