@@ -8,22 +8,10 @@ Comece por `docs/CHECKPOINT_secretaria_frontend.md` — mapa de rotas, o que foi
 `brain-frontend` e o que ficou de fora (com o porquê), decisões da separação, lacunas
 conhecidas e o guia de deploy no EasyPanel.
 
-## Documentação — manter em dia (obrigatório)
+## Documentação
 
-Os arquivos em `docs/` são a **fonte de verdade pra entender o projeto** — o objetivo é que uma
-sessão nova do Claude Code (ou qualquer pessoa) entenda tudo, profundamente, só lendo `docs/`.
-Por isso eles **têm que refletir o estado real** do projeto.
-
-**Quando atualizar:** ao fazer mudanças numa sessão, atualize os docs afetados — **não
-necessariamente na hora de cada mudança, mas no FIM da sessão**, depois que tudo foi **validado e
-verificado** (testes passando, deploy/migração confirmados). Documentar antes de validar gera doc
-errado; documentar depois garante que o doc descreve o que realmente está no ar.
-
-**Regras:**
-- Feature grande/multi-camada → um `docs/CHECKPOINT_<FEATURE>.md` (estado, o que entrou onde,
-  deployado/testado, pendências) + 1 linha de ponteiro nos docs relevantes.
-- Cite âncoras estáveis (nome de função/componente), não números de linha frágeis, quando possível.
-- Mantenha o `CHECKPOINT_*` da feature em dia até ela ser 100% concluída/encerrada; aí vira histórico.
+`docs/` é a fonte de verdade deste repo. Regra geral de quando/como atualizar (CHECKPOINT,
+âncoras estáveis) em `AI_WORKFLOW.md` — aqui só o que diverge, se houver.
 
 ## Convenções deste repo
 
