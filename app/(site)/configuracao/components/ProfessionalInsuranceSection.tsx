@@ -19,13 +19,30 @@
 //
 // Like InsuranceSection, every toggle here writes immediately — there is no
 // batching into the page's "Salvar configuração".
+//
+// STALE-RESPONSE GUARD (Reviewer HIGH-1, post-review fix)
+// ---------------------------------------------------------------------------
+// `professionalId` changes on every roster click, and each change fires a
+// NEW `getProfessionalInsurancePlans` GET — this is the first place on the
+// page where selecting a professional triggers a fresh network request
+// rather than a read of already-hydrated data (every other per-professional
+// field is preloaded once by page.tsx's hydrate() into `professionalsById`).
+// Two requests can resolve out of order: clicking B right after A means A's
+// GET can land AFTER B's, and without a guard `setData` would silently paint
+// A's `selectable`/`accepted_plan_ids` while `professionalId` (the prop) is
+// already B's — and a toggle fired in that window derives its PUT body from
+// that now-wrong `data`, corrupting B's real convênio subset with a mix of
+// A's. `requestGenerationRef` is the same epoch pattern page.tsx already
+// uses (`generationRef`/`rosterGenerationRef`) for this exact hazard class —
+// replicated here rather than reinvented, per the front-brain skill §4.
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Btn, Field, TextArea, TextInput } from "../../_shared/ui";
 import { CToggle } from "./CToggle";
 import { ToggleRow } from "./ToggleRow";
-import { INSURANCE_DEPOSIT_SCOPE_NOTE } from "./InsuranceSection";
 import {
+  HUB_ERROR_INSURANCE_MODE_NOT_APPLICABLE,
+  HubApiError,
   createProfessionalCustomInsurancePlan,
   getProfessionalInsurancePlans,
   putProfessionalInsurancePlans,
@@ -33,7 +50,7 @@ import {
   type ProfessionalInsuranceWire,
 } from "@/lib/secretaria-hub";
 import type { Session } from "@/lib/manage-api";
-import { insurancesError } from "@/lib/whatsapp-limits";
+import { MAX_LIST_ROW_TITLE_CHARS, insurancesError } from "@/lib/whatsapp-limits";
 
 type ProfessionalInsuranceSectionProps = {
   session: Session | null;
@@ -60,7 +77,16 @@ export function ProfessionalInsuranceSection({
 }: ProfessionalInsuranceSectionProps) {
   const [data, setData] = useState<ProfessionalInsuranceWire | null>(null);
   const [loadError, setLoadError] = useState(false);
-  const [busyId, setBusyId] = useState<string | null>(null);
+  // Whether ANY membership write (PUT plan_ids/catalog_ids) for THIS
+  // professional is in flight. Disables the WHOLE list, not just the touched
+  // row (Reviewer MEDIUM-1): the PUT is a full-replace built from local
+  // `data.accepted_plan_ids`, so two rows toggled within one round-trip would
+  // race — the second request's body would not yet include the first's
+  // not-applied change, and whichever response lands last silently drops the
+  // other. Disabling the list while a save is in flight makes the second
+  // click impossible until the first has actually landed, which removes the
+  // race rather than narrowing it.
+  const [listSaving, setListSaving] = useState(false);
   const [rowError, setRowError] = useState<string | null>(null);
 
   const [showOtherForm, setShowOtherForm] = useState(false);
@@ -70,18 +96,40 @@ export function ProfessionalInsuranceSection({
   const [otherSaving, setOtherSaving] = useState(false);
   const [otherError, setOtherError] = useState<string | null>(null);
 
+  // Bumped on every professional/mode IDENTITY change (not on every plain
+  // refetch — see the two effects below). A request captures the generation
+  // it was issued under and checks it again before touching state; a
+  // mismatch means "this professional/mode is no longer what's on screen",
+  // and the response is dropped (the write itself already reached the
+  // correct professional server-side — see the two toggle functions).
+  const requestGenerationRef = useRef(0);
+
   const applicable = tenantMode === "clinic_with_exceptions" || tenantMode === "independent";
 
   const load = useCallback(() => {
     if (!session || !professionalId || !applicable) return;
+    const generation = requestGenerationRef.current;
     setLoadError(false);
     getProfessionalInsurancePlans(session, professionalId)
-      .then(setData)
+      .then((res) => {
+        if (requestGenerationRef.current !== generation) return; // superseded
+        setData(res);
+      })
       .catch((e) => {
+        if (requestGenerationRef.current !== generation) return;
         // 409 insurance_mode_not_applicable is a legitimate race (tenant mode
         // changed between the two loads) — treat it the same as "nothing to
-        // show" rather than an error banner.
-        if (e && typeof e === "object" && "status" in e && (e as { status: number }).status === 409) {
+        // show" rather than an error banner. Checked by BOTH `.status` and
+        // `.code`: the contract documents this 409 without the explicit
+        // `{code, message}` shape it spells out for the 422s (§10.5), so the
+        // backend may send either a bare string `detail` (code stays
+        // undefined) or the structured form other hub errors use — matching
+        // only `.code` would silently regress to the ad-hoc check this
+        // replaces if the backend turns out to send the bare-string form.
+        if (
+          e instanceof HubApiError &&
+          (e.status === 409 || e.code === HUB_ERROR_INSURANCE_MODE_NOT_APPLICABLE)
+        ) {
           setData(null);
           return;
         }
@@ -90,23 +138,30 @@ export function ProfessionalInsuranceSection({
       });
   }, [session, professionalId, applicable]);
 
-  // Initial/identity-changed load: resets the form first, so a professional
-  // switch never briefly shows the previous one's data. `tenantMode` is in
-  // this effect's deps (not just `load`'s, via `applicable`) because a mode
-  // SWITCH between "clinic_with_exceptions" and "independent" leaves
+  // Initial/identity-changed load: bumps the generation FIRST (invalidating
+  // any request/mutation still in flight for the professional or mode this
+  // panel is leaving), then resets the form and loads fresh. `tenantMode` is
+  // in this effect's deps (not just `load`'s, via `applicable`) because a
+  // mode SWITCH between "clinic_with_exceptions" and "independent" leaves
   // `applicable` at `true` on both sides of the change — without `tenantMode`
   // itself here, changing the clinic's mode gate would leave this panel
   // showing the PREVIOUS mode's selectable list until something else
   // remounted it.
   useEffect(() => {
+    requestGenerationRef.current++;
     setData(null);
     setShowOtherForm(false);
+    setListSaving(false);
+    setRowError(null);
     load();
   }, [load, tenantMode]);
 
   // A clinic-side plan write (see lib/insurance.ts's plansVersion) — refetch
   // WITHOUT resetting `data`/`showOtherForm` first, so this professional's own
-  // in-progress "Outro" form is not wiped by an unrelated clinic edit.
+  // in-progress "Outro" form is not wiped by an unrelated clinic edit. Does
+  // NOT bump the generation: this is a refresh for the SAME professional/mode
+  // already on screen, not an identity change, so a toggle the user just
+  // fired must not be invalidated by it.
   useEffect(() => {
     if (plansVersion === 0) return; // the initial mount, already covered above
     load();
@@ -141,26 +196,35 @@ export function ProfessionalInsuranceSection({
 
   async function toggleClinicWithExceptions(planId: string, checked: boolean) {
     if (!session || !professionalId || !data) return;
+    const generation = requestGenerationRef.current;
     setRowError(null);
-    setBusyId(planId);
+    setListSaving(true);
     const next = checked
       ? [...data.accepted_plan_ids, planId]
       : data.accepted_plan_ids.filter((id) => id !== planId);
     try {
       const updated = await putProfessionalInsurancePlans(session, professionalId, { plan_ids: next });
+      // The PUT above always targeted the professionalId captured at the top
+      // of this function (correct, whatever was selected at click time) — a
+      // generation mismatch here means the panel has since moved on to a
+      // DIFFERENT professional, so painting `updated` into `data` now would
+      // show that other professional B's screen with A's just-saved result.
+      if (requestGenerationRef.current !== generation) return;
       setData(updated);
     } catch (e) {
+      if (requestGenerationRef.current !== generation) return;
       console.error("secretaria configuracao: failed to update professional insurance plans", e);
       setRowError("Não foi possível salvar essa mudança agora. Tente novamente.");
     } finally {
-      setBusyId(null);
+      if (requestGenerationRef.current === generation) setListSaving(false);
     }
   }
 
   async function toggleIndependentCatalog(catalogId: string, checked: boolean) {
     if (!session || !professionalId || !data) return;
+    const generation = requestGenerationRef.current;
     setRowError(null);
-    setBusyId(catalogId);
+    setListSaving(true);
     // Only catalog-direct ids belong in this body — custom rows are permanent
     // and must not be echoed back here (see the header comment).
     const currentCatalogIds = data.selectable
@@ -172,12 +236,14 @@ export function ProfessionalInsuranceSection({
       : currentCatalogIds.filter((id) => id !== catalogId);
     try {
       const updated = await putProfessionalInsurancePlans(session, professionalId, { catalog_ids: next });
+      if (requestGenerationRef.current !== generation) return; // see the sibling function above
       setData(updated);
     } catch (e) {
+      if (requestGenerationRef.current !== generation) return;
       console.error("secretaria configuracao: failed to update professional insurance plans", e);
       setRowError("Não foi possível salvar essa mudança agora. Tente novamente.");
     } finally {
-      setBusyId(null);
+      if (requestGenerationRef.current === generation) setListSaving(false);
     }
   }
 
@@ -192,6 +258,7 @@ export function ProfessionalInsuranceSection({
       setOtherError("Explique como funciona o pagamento para esse convênio.");
       return;
     }
+    const generation = requestGenerationRef.current;
     setOtherSaving(true);
     setOtherError(null);
     try {
@@ -200,6 +267,11 @@ export function ProfessionalInsuranceSection({
         custom_payment_note: otherNote.trim(),
         charge_deposit: otherDeposit,
       });
+      // The plan was created for the professionalId captured above regardless
+      // of what happens next — but if the panel has since moved on to a
+      // different professional, this form's state belongs to THAT one now,
+      // and clearing/closing it here would stomp on whatever they're doing.
+      if (requestGenerationRef.current !== generation) return;
       // Simpler and safer than merging the single-row response by hand: the
       // full professional payload (selectable + accepted_plan_ids) comes back
       // consistent from one GET.
@@ -209,10 +281,11 @@ export function ProfessionalInsuranceSection({
       setOtherNote("");
       setOtherDeposit(true);
     } catch (e) {
+      if (requestGenerationRef.current !== generation) return;
       console.error("secretaria configuracao: failed to create professional custom insurance plan", e);
       setOtherError("Não foi possível salvar esse convênio agora. Tente novamente.");
     } finally {
-      setOtherSaving(false);
+      if (requestGenerationRef.current === generation) setOtherSaving(false);
     }
   }
 
@@ -248,15 +321,7 @@ export function ProfessionalInsuranceSection({
                     ? toggleClinicWithExceptions(plan.id, v)
                     : toggleIndependentCatalog(plan.catalog_id ?? plan.id, v)
                 }
-                disabled={
-                  readOnly ||
-                  busyId === plan.id ||
-                  // `plan.catalog_id` is `null` for any custom "Outro" row, and
-                  // so is `busyId` outside a request — comparing them directly
-                  // would read `null === null` as "busy" and disable every
-                  // custom-plan toggle at rest, permanently.
-                  (plan.catalog_id !== null && busyId === plan.catalog_id)
-                }
+                disabled={readOnly || listSaving}
                 label={"Aceitar " + plan.name + " — este profissional"}
               />
               <span style={{ fontSize: 13, color: "var(--ink)" }}>{plan.name}</span>
@@ -285,11 +350,14 @@ export function ProfessionalInsuranceSection({
         </p>
       )}
 
-      {data.selectable.length > 0 && (
-        <p style={{ fontSize: 11, color: "var(--ink-faint)", margin: 0, lineHeight: 1.5 }}>
-          {INSURANCE_DEPOSIT_SCOPE_NOTE}
-        </p>
-      )}
+      {/* No "Cobrar sinal (Pix)" disclaimer here (Reviewer MEDIUM-3): unlike
+          InsuranceSection, this panel has NO deposit toggle at all — there is
+          no PATCH endpoint for a professional's own plan `charge_deposit`
+          (Decision 2, header comment). A deposit-scope note next to nothing
+          the reader can act on would raise "cobrar sinal de quê, aqui?"
+          instead of answering it; the deposit policy for these plans is
+          whatever the clinic (or, for a professional's own "Outro", the
+          value picked once at creation below) already set. */}
 
       {/* "Outro" is a professional-scoped affordance only in independent mode
           (SPEC §5.2) — clinic_with_exceptions has no per-professional custom
@@ -307,6 +375,7 @@ export function ProfessionalInsuranceSection({
               value={otherName}
               onChange={(e) => setOtherName(e.target.value)}
               placeholder="Ex.: GEAP"
+              maxLength={MAX_LIST_ROW_TITLE_CHARS}
               disabled={readOnly || otherSaving}
             />
           </Field>

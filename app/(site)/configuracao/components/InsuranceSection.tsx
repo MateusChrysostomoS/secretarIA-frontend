@@ -40,7 +40,7 @@ import {
 } from "@/lib/secretaria-hub";
 import type { Session } from "@/lib/manage-api";
 import type { InsuranceModeState } from "../lib/insurance";
-import { insurancesError } from "@/lib/whatsapp-limits";
+import { MAX_LIST_ROW_TITLE_CHARS, insurancesError } from "@/lib/whatsapp-limits";
 
 // The fixed disclaimer required by SPEC §5.1/§6 — always visible next to the
 // deposit toggles, in both the clinic and the professional widgets.
@@ -88,8 +88,17 @@ export function InsuranceSection({ session, readOnly, insuranceMode }: Insurance
   const [loadError, setLoadError] = useState(false);
   const [search, setSearch] = useState("");
 
-  const [busyCatalogId, setBusyCatalogId] = useState<string | null>(null);
-  const [busyPlanId, setBusyPlanId] = useState<string | null>(null);
+  // Whether ANY write to the catalog-linked plan list (membership PUT or a
+  // per-row "Cobrar sinal" PATCH) is in flight. Disables the WHOLE list, not
+  // just the touched row (Reviewer MEDIUM-1): `toggleCatalogPlan`'s PUT is a
+  // full-replace built from the current in-memory `plans`, including every
+  // OTHER row's `charge_deposit` — a concurrent PATCH on a different row
+  // (or a second membership toggle before the first's response lands) would
+  // race with it, and whichever response lands last would silently overwrite
+  // the other's change. Disabling the whole list while either kind of write
+  // is in flight makes the second action physically impossible until the
+  // first has actually landed, removing the race instead of narrowing it.
+  const [listSaving, setListSaving] = useState(false);
   const [rowError, setRowError] = useState<string | null>(null);
 
   const [showOtherForm, setShowOtherForm] = useState(false);
@@ -144,7 +153,7 @@ export function InsuranceSection({ session, readOnly, insuranceMode }: Insurance
   async function toggleCatalogPlan(entry: InsuranceCatalogEntryWire, checked: boolean) {
     if (!session || !plans) return;
     setRowError(null);
-    setBusyCatalogId(entry.id);
+    setListSaving(true);
     const nextCatalogPlans = (plans ?? [])
       .filter((p) => !p.is_custom && p.catalog_id)
       .filter((p) => p.catalog_id !== entry.id)
@@ -160,14 +169,14 @@ export function InsuranceSection({ session, readOnly, insuranceMode }: Insurance
       console.error("secretaria configuracao: failed to update clinic insurance plans", e);
       setRowError("Não foi possível salvar essa mudança agora. Tente novamente.");
     } finally {
-      setBusyCatalogId(null);
+      setListSaving(false);
     }
   }
 
   async function toggleChargeDeposit(plan: InsurancePlanWire, next: boolean) {
     if (!session) return;
     setRowError(null);
-    setBusyPlanId(plan.id);
+    setListSaving(true);
     try {
       const updated = await patchInsurancePlanDeposit(session, plan.id, next);
       setPlans((prev) => (prev ?? []).map((p) => (p.id === updated.id ? updated : p)));
@@ -175,7 +184,7 @@ export function InsuranceSection({ session, readOnly, insuranceMode }: Insurance
       console.error("secretaria configuracao: failed to toggle charge_deposit", e);
       setRowError("Não foi possível salvar essa mudança agora. Tente novamente.");
     } finally {
-      setBusyPlanId(null);
+      setListSaving(false);
     }
   }
 
@@ -248,10 +257,17 @@ export function InsuranceSection({ session, readOnly, insuranceMode }: Insurance
   // --- gate: no mode chosen yet, or the clinic asked to change it ---
   if (mode === null || changingMode) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink-soft)" }}>
+      // A <fieldset>/<legend> pair — not a bare <div>/<span> — ties the
+      // question to its three radios programmatically (Reviewer MEDIUM-2): a
+      // screen reader's forms/radio-group list (NVDA/JAWS "elements list",
+      // VoiceOver rotor) announces the three option names with no shared
+      // context otherwise, unlike someone reading the page linearly who sees
+      // the question first. `<legend>` accepts the same inline styling as any
+      // other element, so this costs nothing visually.
+      <fieldset style={{ display: "flex", flexDirection: "column", gap: 12, border: "none", margin: 0, padding: 0 }}>
+        <legend style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink-soft)", padding: 0 }}>
           Como sua clínica aceita convênios?
-        </span>
+        </legend>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {MODE_OPTIONS.map((opt) => (
             <label
@@ -308,7 +324,7 @@ export function InsuranceSection({ session, readOnly, insuranceMode }: Insurance
             </Btn>
           )}
         </div>
-      </div>
+      </fieldset>
     );
   }
 
@@ -393,7 +409,7 @@ export function InsuranceSection({ session, readOnly, insuranceMode }: Insurance
                     <CToggle
                       on={checked}
                       onChange={(v) => toggleCatalogPlan(entry, v)}
-                      disabled={readOnly || busyCatalogId === entry.id}
+                      disabled={readOnly || listSaving}
                       label={"Aceitar " + entry.name}
                     />
                     <span style={{ fontSize: 13.5, color: "var(--ink)" }}>{entry.name}</span>
@@ -403,7 +419,7 @@ export function InsuranceSection({ session, readOnly, insuranceMode }: Insurance
                       on={planRow.charge_deposit}
                       onChange={(v) => toggleChargeDeposit(planRow, v)}
                       title={"Cobrar sinal (Pix) — " + entry.name}
-                      disabled={readOnly || busyPlanId === planRow.id}
+                      disabled={readOnly || listSaving}
                     />
                   )}
                 </div>
@@ -438,7 +454,7 @@ export function InsuranceSection({ session, readOnly, insuranceMode }: Insurance
                     on={plan.charge_deposit}
                     onChange={(v) => toggleChargeDeposit(plan, v)}
                     title={"Cobrar sinal (Pix) — " + plan.name}
-                    disabled={readOnly || busyPlanId === plan.id}
+                    disabled={readOnly || listSaving}
                   />
                 </div>
               ))}
@@ -476,6 +492,7 @@ export function InsuranceSection({ session, readOnly, insuranceMode }: Insurance
                   value={otherName}
                   onChange={(e) => setOtherName(e.target.value)}
                   placeholder="Ex.: GEAP"
+                  maxLength={MAX_LIST_ROW_TITLE_CHARS}
                   disabled={readOnly || otherSaving}
                 />
               </Field>
