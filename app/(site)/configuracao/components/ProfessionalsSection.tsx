@@ -58,6 +58,8 @@ import {
   type ProfessionalCalendarSource,
 } from "@/lib/secretaria-hub";
 import { professionalRowAgenda, sharedAccountRosterNotice } from "../lib/calendar-health";
+import { ProfessionalInsuranceSection } from "./ProfessionalInsuranceSection";
+import type { InsuranceModeState } from "../lib/insurance";
 import type { GoogleCalendarMode, ProfessionalProfile } from "../lib/types";
 
 type ProfessionalsSectionProps = {
@@ -97,6 +99,10 @@ type ProfessionalsSectionProps = {
   // ids the backend checked (per_professional mode, own token held); absent =
   // not checked, never "broken".
   ownCalendarStatusByProfessional: Record<string, CalendarCredentialStatus>;
+  // TASK-008: shared with ContextSection/InsuranceSection so both agree on
+  // the tenant's convênio acceptance mode (see lib/insurance.ts) — decides
+  // whether ProfessionalInsuranceSection has anything to show at all.
+  insuranceMode: InsuranceModeState;
   // True until the SELECTED professional's config has hydrated (see
   // lib/hydration.ts). Gates ONLY the three profile fields below — the roster
   // actions (invite, self-bind, calendar) each carry their own guards, and the
@@ -120,6 +126,7 @@ export function ProfessionalsSection({
   calendarSourceByProfessional,
   clinicCalendarStatus,
   ownCalendarStatusByProfessional,
+  insuranceMode,
   readOnly,
 }: ProfessionalsSectionProps) {
   // null = closed; otherwise which flavour of invite the modal is showing.
@@ -312,6 +319,16 @@ export function ProfessionalsSection({
                 disabled={readOnly}
               />
             </Field>
+            {/* TASK-008: convênio subset owned by THIS professional — renders
+                nothing when the tenant mode is null/"shared" (see the
+                component's own header comment). */}
+            <ProfessionalInsuranceSection
+              session={session}
+              professionalId={selectedId}
+              tenantMode={insuranceMode.mode}
+              plansVersion={insuranceMode.plansVersion}
+              readOnly={readOnly}
+            />
           </div>
         )}
 

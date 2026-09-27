@@ -36,7 +36,6 @@ describe("wire → form state", () => {
     const slices = tenantSlicesFromWire(tenantWire());
     expect(slices.ctx.clinicName).toBe("Clínica Exemplo");
     expect(slices.ctx.addressLine).toBe("Rua Exemplo, 1");
-    expect(slices.ctx.insurances).toBe("Convênio Exemplo");
     expect(slices.ctx.collectInsurance).toBe(true);
     expect(slices.messages.clinicDescription).toBe("Oftalmologia e cirurgia refrativa.");
     expect(slices.prefs.defaultDur).toBe(30);
@@ -68,7 +67,6 @@ describe("wire → form state", () => {
     const tenant = emptyTenantSlices();
     expect(tenant.ctx.clinicName).toBe("");
     expect(tenant.ctx.addressLine).toBe("");
-    expect(tenant.ctx.insurances).toBe("");
     expect(tenant.messages.clinicDescription).toBe("");
 
     const professional = emptyProfessionalSlices();
@@ -203,7 +201,6 @@ describe("payload honesty — no visible control is silently dropped", () => {
       state: "SP",
       postal_code: null,
     });
-    expect(payload.insurances).toEqual(["Convênio Exemplo"]);
     expect(payload.collect_insurance).toBe(true);
     expect(payload.clinic_description).toBe("Oftalmologia e cirurgia refrativa.");
     expect(payload.appointment_duration_min).toBe(45);
@@ -238,6 +235,17 @@ describe("payload honesty — no visible control is silently dropped", () => {
 
   it("never sends the read-only asaas_connected flag", () => {
     expect("asaas_connected" in payload).toBe(false);
+  });
+
+  // TASK-008: `insurances` moved off this payload entirely — the clinic's
+  // convênio list is now saved through lib/secretaria-hub.ts's dedicated
+  // insurance-mode/insurance-plans endpoints (see CHECKPOINT_convenio_catalogo
+  // §10.7 — the backend now silently ignores this key if a caller still sends
+  // it). This is the regression guard: `ClinicCtx` no longer even HAS the
+  // field to accidentally resurrect here.
+  it("does not send insurances — convênio has its own endpoints now", () => {
+    expect("insurances" in payload).toBe(false);
+    expect("insurances" in ctx).toBe(false);
   });
 
   it("sends a professional's hours and services under their own scope", () => {

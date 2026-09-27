@@ -320,8 +320,12 @@ export type TenantConfigWire = {
   google_calendar_mode: GoogleCalendarMode;
   // Structured clinic address (Feature 1) — null when never filled in.
   address: AddressWire | null;
-  // Accepted health-insurance plan names (Feature 3).
-  insurances: string[] | null;
+  // `insurances` (free-text string[]) REMOVED here (TASK-008,
+  // CHECKPOINT_convenio_catalogo.md §10.7): the clinic's accepted plans are no
+  // longer a tenant-config field at all — they live in the catalog-backed
+  // `insurance_mode`/`insurance-plans` endpoints below. Sending this key in a
+  // PUT here is silently ignored by the backend (TenantConfigUpdate has no
+  // `extra="forbid"`), so it is not merely unused, it is a dead field.
   // When true, secretarIA asks the patient about their convênio during booking.
   collect_insurance: boolean;
   // Pix deposit policy ("Sinal via Pix" section) — charges a partial deposit
@@ -356,7 +360,6 @@ export type TenantConfigUpdatePayload = Partial<{
   initial_flows: Record<string, unknown>;
   is_active: boolean;
   address: AddressWire | null;
-  insurances: string[] | null;
   collect_insurance: boolean;
   pix_deposit_enabled: boolean;
   pix_deposit_percent: number;
@@ -1004,5 +1007,189 @@ export function createProfessionalCalendars(
     session,
     "/tenants/me/professionals/calendars",
     { method: "POST" },
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Insurance (convênio) — catalog + acceptance modes (TASK-008).
+//
+// Consumes secretarIA's api/hub/insurance.py, contract §10.5 of
+// docs/CHECKPOINT_convenio_catalogo.md. Replaces the free-text
+// `TenantConfigWire.insurances` field removed above: the clinic's accepted
+// plans, its acceptance mode, and each professional's own subset now live on
+// their own dedicated endpoints, saved immediately (like the service
+// catalog's createService/updateService above), never batched into the big
+// `PUT /tenants/me/config` this file already exposes.
+// ---------------------------------------------------------------------------
+
+// Tenant-wide policy for how convênio acceptance is decided. `null` = the
+// clinic has not chosen yet — every convênio UI stays hidden until it does
+// (SPEC §2, "sem modo padrão silencioso").
+//   "shared"                 — one list of plans, shared by every professional.
+//   "clinic_with_exceptions" — the clinic's list is the ceiling; a professional
+//                               may narrow it for themselves.
+//   "independent"            — each professional keeps their own list, picked
+//                               from the whole global catalog.
+export type InsuranceMode = "shared" | "clinic_with_exceptions" | "independent";
+
+export function getInsuranceMode(session: Session): Promise<{ mode: InsuranceMode | null }> {
+  return hubFetch<{ mode: InsuranceMode | null }>(session, "/tenants/me/insurance-mode");
+}
+
+export function setInsuranceMode(
+  session: Session,
+  mode: InsuranceMode,
+): Promise<{ mode: InsuranceMode | null }> {
+  return hubFetch<{ mode: InsuranceMode | null }>(session, "/tenants/me/insurance-mode", {
+    method: "PUT",
+    body: JSON.stringify({ mode }),
+  });
+}
+
+// GET /tenants/me/insurance-catalog — the GLOBAL catalog, shared by every
+// tenant (grows only through the admin endpoints below, never per-clinic).
+export type InsuranceCatalogEntryWire = {
+  id: string;
+  slug: string;
+  name: string;
+  mechanism: string;
+  note: string | null;
+};
+
+export function getInsuranceCatalog(session: Session): Promise<InsuranceCatalogEntryWire[]> {
+  return hubFetch<InsuranceCatalogEntryWire[]>(session, "/tenants/me/insurance-catalog");
+}
+
+// One row of a clinic's (or, in `independent` mode, a professional's) enabled
+// convênio list — catalog-backed (`catalog_id` set, `is_custom: false`) or the
+// clinic/professional's own "Outro" (`catalog_id: null`, `is_custom: true`,
+// `custom_payment_note` set).
+export type InsurancePlanWire = {
+  id: string;
+  catalog_id: string | null;
+  name: string;
+  is_custom: boolean;
+  custom_payment_note: string | null;
+  charge_deposit: boolean;
+};
+
+// GET /tenants/me/insurance-plans — the clinic's own enabled list (catalog +
+// custom). Meaningless in `independent` mode (nothing here backs any
+// professional's list there) but the endpoint itself is not mode-gated.
+export function getInsurancePlans(session: Session): Promise<InsurancePlanWire[]> {
+  return hubFetch<InsurancePlanWire[]>(session, "/tenants/me/insurance-plans");
+}
+
+// PUT /tenants/me/insurance-plans — REPLACES the whole catalog-linked subset
+// (≤50 rows). Never touches the clinic's "Outro" rows — those are created and
+// left alone (no delete endpoint yet, CHECKPOINT §10.8.4). Response mirrors
+// GET, i.e. it still includes the untouched custom rows.
+export function putInsurancePlans(
+  session: Session,
+  plans: { catalog_id: string; charge_deposit?: boolean }[],
+): Promise<InsurancePlanWire[]> {
+  return hubFetch<InsurancePlanWire[]>(session, "/tenants/me/insurance-plans", {
+    method: "PUT",
+    body: JSON.stringify({ plans }),
+  });
+}
+
+// POST /tenants/me/insurance-plans/custom — the clinic's "Outro" convênio:
+// a name + an explanation of how payment works for it, shown to the patient
+// at booking confirmation (and again with the Pix deposit request, when
+// `charge_deposit` is true). 409 `insurance_mode_not_applicable` if the
+// clinic is in `independent` mode or has not chosen one yet — callers must
+// not offer this button in those states.
+export function createTenantCustomInsurancePlan(
+  session: Session,
+  payload: { custom_name: string; custom_payment_note: string; charge_deposit?: boolean },
+): Promise<InsurancePlanWire> {
+  return hubFetch<InsurancePlanWire>(session, "/tenants/me/insurance-plans/custom", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+// PATCH /tenants/me/insurance-plans/{id} — toggles "Cobrar sinal (Pix)" for
+// ONE row (catalog-backed or custom). The only per-row write this contract
+// offers; there is no equivalent for a PROFESSIONAL's own plan in
+// `independent` mode (set once at creation, via the custom-plan POST below —
+// see ProfessionalInsuranceSection for why catalog-direct picks in that mode
+// keep the server default instead of exposing a toggle nothing can persist).
+export function patchInsurancePlanDeposit(
+  session: Session,
+  planId: string,
+  chargeDeposit: boolean,
+): Promise<InsurancePlanWire> {
+  return hubFetch<InsurancePlanWire>(session, `/tenants/me/insurance-plans/${planId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ charge_deposit: chargeDeposit }),
+  });
+}
+
+// GET .../professionals/{id}/insurance-plans response. `selectable`'s shape
+// (and what `id` in `accepted_plan_ids` means) depends on `mode`:
+//   "clinic_with_exceptions" — selectable = the clinic's own plans (`id` is
+//     tenant_insurance_plans.id); `inherits_clinic: true` means this
+//     professional never customised, and `accepted_plan_ids` already lists
+//     every selectable id (SPEC §2 — inherit ALL, never none by omission).
+//   "independent"            — selectable = the whole global catalog (each
+//     catalog row's own `id`/`catalog_id`, `is_custom: false`) PLUS this
+//     professional's own "Outro" rows (`is_custom: true`, a real row id, no
+//     `catalog_id`). `accepted_plan_ids` mixes catalog ids and custom row ids.
+//     `inherits_clinic` is always false.
+// `mode: null` means the backend answered before the tenant chose one — the
+// caller should treat this exactly like the 409 case (no section to show).
+export type ProfessionalInsuranceWire = {
+  professional_id: string;
+  mode: InsuranceMode | null;
+  selectable: InsurancePlanWire[];
+  accepted_plan_ids: string[];
+  inherits_clinic: boolean;
+};
+
+// Thrown by both professional insurance-plans calls when the tenant's mode is
+// "shared" or unset — there is no per-professional section to show in that
+// state, so a caller catching this should render nothing rather than an error.
+export const HUB_ERROR_INSURANCE_MODE_NOT_APPLICABLE = "insurance_mode_not_applicable";
+
+export function getProfessionalInsurancePlans(
+  session: Session,
+  professionalId: string,
+): Promise<ProfessionalInsuranceWire> {
+  return hubFetch<ProfessionalInsuranceWire>(session, `/tenants/me/professionals/${professionalId}/insurance-plans`);
+}
+
+// PUT .../professionals/{id}/insurance-plans — pass EXACTLY the field that
+// matches the tenant's current mode (the other throws 422
+// `wrong_field_for_mode`): `plan_ids` for `clinic_with_exceptions`,
+// `catalog_ids` for `independent`.
+export type ProfessionalInsuranceUpdatePayload =
+  | { plan_ids: string[] }
+  | { catalog_ids: string[] };
+
+export function putProfessionalInsurancePlans(
+  session: Session,
+  professionalId: string,
+  body: ProfessionalInsuranceUpdatePayload,
+): Promise<ProfessionalInsuranceWire> {
+  return hubFetch<ProfessionalInsuranceWire>(session, `/tenants/me/professionals/${professionalId}/insurance-plans`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+// POST .../professionals/{id}/insurance-plans/custom — a professional's own
+// "Outro", `independent` mode only (409 otherwise). Same shape/semantics as
+// the tenant's custom-plan endpoint above, scoped to this professional.
+export function createProfessionalCustomInsurancePlan(
+  session: Session,
+  professionalId: string,
+  payload: { custom_name: string; custom_payment_note: string; charge_deposit?: boolean },
+): Promise<InsurancePlanWire> {
+  return hubFetch<InsurancePlanWire>(
+    session,
+    `/tenants/me/professionals/${professionalId}/insurance-plans/custom`,
+    { method: "POST", body: JSON.stringify(payload) },
   );
 }

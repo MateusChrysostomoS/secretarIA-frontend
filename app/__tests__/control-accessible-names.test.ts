@@ -44,6 +44,10 @@ const CALL_SITE_FILES = [
   TOGGLE_ROW,
   MODALS,
   PAUSE_TOGGLES,
+  // TASK-008 — convênio (health-insurance) UI, new CToggle/ToggleRow call
+  // sites (per-plan "aceitar"/"cobrar sinal" toggles).
+  "app/(site)/configuracao/components/InsuranceSection.tsx",
+  "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
 ];
 
 // The hand-written controls, each with the file that defines it.

@@ -28,7 +28,6 @@ import {
   applyWireAppointmentTypes,
   applyWireBusinessHours,
   applyWireGcal,
-  applyWireInsurances,
   applyWireMessages,
   applyWirePixDeposit,
   applyWirePostConsult,
@@ -147,7 +146,6 @@ export function tenantSlicesFromWire(cfg: TenantConfigWire): TenantSlices {
     ctx: {
       clinicName: cfg.clinic_name ?? "",
       ...applyWireAddress(cfg.address),
-      insurances: applyWireInsurances(cfg.insurances),
       collectInsurance: cfg.collect_insurance,
     },
     messages: applyWireMessages(cfg),

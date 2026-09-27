@@ -16,17 +16,24 @@
 //    instead of pretending to own it — and shows no number, which also keeps
 //    a real clinic's line out of the DOM and out of screenshots.
 //
-// address/insurances/collectInsurance ARE real wire fields and stay editable.
-// The address copy no longer claims the bot answers "onde fica?" from it — see
-// ClinicCtx in ../lib/types.ts for why that promise was false.
+// address/collectInsurance ARE real wire fields and stay editable. The address
+// copy no longer claims the bot answers "onde fica?" from it — see ClinicCtx
+// in ../lib/types.ts for why that promise was false.
+//
+// CONVÊNIO (TASK-008): the free-text "Convênios aceitos" field that used to
+// live here is gone — see the note on ClinicCtx in ../lib/types.ts. In its
+// place, <InsuranceSection> owns its own load/save cycle straight against
+// lib/secretaria-hub.ts's insurance-mode/insurance-plans endpoints, entirely
+// independent of this page's `v`/`set`/Save button.
 
-import { Field, TextInput } from "../../_shared/ui";
+import { Field } from "../../_shared/ui";
 import { Section } from "./Section";
 import { AddressFields } from "./AddressFields";
 import { ToggleRow } from "./ToggleRow";
-import { toWireInsurances } from "../lib/hub-mapping";
+import { InsuranceSection } from "./InsuranceSection";
 import type { ClinicCtx } from "../lib/types";
-import { INSURANCES_TIP, insurancesError } from "@/lib/whatsapp-limits";
+import type { InsuranceModeState } from "../lib/insurance";
+import type { Session } from "@/lib/manage-api";
 
 type ContextSectionProps = {
   v: ClinicCtx;
@@ -36,14 +43,15 @@ type ContextSectionProps = {
   // (see lib/hydration.ts). Editing is pointless before that and dangerous
   // after a failed load, so the inputs are genuinely disabled either way.
   readOnly?: boolean;
+  // Session for InsuranceSection's own direct hub calls (null = session-less
+  // visitor demo, where the widget renders a short explanatory line instead).
+  session: Session | null;
+  // page.tsx's useInsuranceMode(session) — shared with ProfessionalsSection.
+  insuranceMode: InsuranceModeState;
 };
 
 // Renders all context fields inside a Section card with HelpTip annotations.
-export function ContextSection({ v, set, readOnly }: ContextSectionProps) {
-  // Split the CSV with the very function the PUT uses, so "one plan" means the
-  // same thing to the warning and to the payload.
-  const insurancesNotice = insurancesError(toWireInsurances(v.insurances) ?? []);
-
+export function ContextSection({ v, set, readOnly, session, insuranceMode }: ContextSectionProps) {
   return (
     <Section
       id="ctx"
@@ -77,26 +85,10 @@ export function ContextSection({ v, set, readOnly }: ContextSectionProps) {
         {/* structured clinic address — registration data, see AddressFields */}
         <AddressFields v={v} set={set} readOnly={readOnly} />
 
-        {/* Each plan becomes an `ins|` WhatsApp list row, so the 24-char cap is
-            per PLAN, not per field — `maxLength` would be wrong here, it would
-            cap the whole comma-separated string. The check runs over exactly
-            what the PUT sends (`toWireInsurances`), so the two cannot disagree
-            about where one plan ends. Warning only, never blocking — see
-            lib/whatsapp-limits.ts. */}
-        <Field label="Convênios aceitos" tip={INSURANCES_TIP}>
-          <TextInput
-            value={v.insurances}
-            onChange={e => set("insurances", e.target.value)}
-            placeholder="Unimed, Bradesco Saúde… (ou vazio para só particular)"
-            aria-invalid={insurancesNotice ? true : undefined}
-            disabled={readOnly}
-          />
-          {insurancesNotice && (
-            <span role="alert" style={{ fontSize: 12, color: "var(--danger, #c0392b)" }}>
-              {insurancesNotice}
-            </span>
-          )}
-        </Field>
+        {/* Convênio (TASK-008): its own mode gate + catalog multi-select +
+            "Outro", saved immediately through dedicated hub endpoints — see
+            the header comment above and InsuranceSection.tsx itself. */}
+        <InsuranceSection session={session} readOnly={readOnly} insuranceMode={insuranceMode} />
 
         {/* convênio collection preference (patient PII — minimized per LGPD) */}
         <ToggleRow

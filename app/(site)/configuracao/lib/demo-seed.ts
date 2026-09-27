@@ -76,7 +76,6 @@ export const DEMO_CTX: VisitorDemo<ClinicCtx> = visitorDemo({
   city: "São Paulo",
   state: "SP",
   postalCode: "01310-100",
-  insurances: "Unimed, Bradesco Saúde, SulAmérica",
   collectInsurance: true,
 });
 

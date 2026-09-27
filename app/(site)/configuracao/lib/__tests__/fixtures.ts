@@ -34,7 +34,6 @@ export function tenantWire(overrides: Partial<TenantConfigWire> = {}): TenantCon
     calendar_connected: false,
     google_calendar_mode: "per_professional",
     address: { line: "Rua Exemplo, 1", city: "São Paulo", state: "SP" },
-    insurances: ["Convênio Exemplo"],
     collect_insurance: true,
     pix_deposit_enabled: false,
     pix_deposit_percent: 30,

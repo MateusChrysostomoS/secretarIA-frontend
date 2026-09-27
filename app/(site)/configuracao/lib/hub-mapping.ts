@@ -195,21 +195,16 @@ export function applyWireAddress(wire: AddressWire | null): AddressFieldsOfCtx {
 }
 
 // ---------------------------------------------------------------------------
-// Insurances (Feature 3) — comma-separated in the UI, string[] on the wire.
-// ---------------------------------------------------------------------------
-
-export function toWireInsurances(insurancesCsv: string): string[] | null {
-  const items = insurancesCsv
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  return items.length > 0 ? items : null;
-}
-
-export function applyWireInsurances(wire: string[] | null): string {
-  return (wire ?? []).join(", ");
-}
-
+// Insurances (convênio) — REMOVED (TASK-008). `toWireInsurances`/
+// `applyWireInsurances` used to translate ClinicCtx.insurances (a
+// comma-separated string) into TenantConfigWire.insurances (string[]) and
+// back. Both are gone: the wire field they served no longer exists (see
+// CHECKPOINT_convenio_catalogo.md §10.7 — `PUT /tenants/me/config` silently
+// ignores an `insurances` key now), and the catalog-backed replacement lives
+// entirely in lib/secretaria-hub.ts's insurance-mode/insurance-plans
+// endpoints, consumed directly by InsuranceSection/ProfessionalInsuranceSection
+// — see the note on ClinicCtx in lib/types.ts for why that stays outside this
+// page's buildConfigUpdatePayload.
 // ---------------------------------------------------------------------------
 // Messages (new "Mensagens" section) — every field already existed on the
 // wire; this is the first UI wiring them up.
@@ -295,12 +290,13 @@ export function applyWireProfessionalProfile(p: ProfessionalWire): ProfessionalP
 // Mensagens (greeting/persona/language), Pós-consulta (post_consult_message/
 // post_consult_knowledge), Sinal via Pix (pix_deposit_*/pix_refund_*/
 // pix_retention_policy/pix_reschedule_limit — asaas_connected excluded, it is
-// READ-ONLY), address/insurances/collect_insurance (Feature 1/3), and
-// appointment_duration_min, and business_hours — the CLINIC's own opening
-// hours, which Section 07 now edits directly instead of only reading them back
-// as the thing a professional inherits. `appointment_types` stays on the
-// per-professional PUT below. `gap`/`lead` (Prefs) have no wire counterpart at
-// all and are NOT sent — see the comment on Prefs in lib/types.ts.
+// READ-ONLY), address/collect_insurance (Feature 1/3 — `insurances` itself
+// REMOVED, TASK-008, see the note above), and appointment_duration_min, and
+// business_hours — the CLINIC's own opening hours, which Section 07 now edits
+// directly instead of only reading them back as the thing a professional
+// inherits. `appointment_types` stays on the per-professional PUT below.
+// `gap`/`lead` (Prefs) have no wire counterpart at all and are NOT sent — see
+// the comment on Prefs in lib/types.ts.
 export function buildConfigUpdatePayload(
   ctx: ClinicCtx,
   messages: Messages,
@@ -314,7 +310,6 @@ export function buildConfigUpdatePayload(
     appointment_duration_min: defaultDurationMin,
     business_hours: toWireBusinessHours(clinicDays),
     address: toWireAddress(ctx),
-    insurances: toWireInsurances(ctx.insurances),
     collect_insurance: ctx.collectInsurance,
     clinic_description: messages.clinicDescription || null,
     returning_greeting_message: messages.returningGreetingMessage || null,

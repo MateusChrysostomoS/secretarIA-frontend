@@ -126,6 +126,7 @@ import {
   normalizeCalendarHealth,
   ownStatusByProfessional,
 } from "./lib/calendar-health";
+import { useInsuranceMode } from "./lib/insurance";
 import {
   createProfessionalCalendars,
   createService,
@@ -295,6 +296,12 @@ export default function ConfiguracaoPage() {
 
   // --- hydration state machine (lib/hydration.ts) ---
   const [hydration, dispatch] = useReducer(hydrationReducer, INITIAL_HYDRATION_STATE);
+
+  // --- convênio acceptance mode (TASK-008) — its own resource, own load/save
+  // cycle, shared between ContextSection and ProfessionalsSection so the two
+  // never disagree about which mode is active (see lib/insurance.ts). `null`
+  // session (visitor demo) is a no-op inside the hook. ---
+  const insuranceMode = useInsuranceMode(session);
 
   // --- deep link: /configuracao?secao=<NavId> ---
   // Opens the page already scrolled to one section. /inicio's owner-only
@@ -1244,7 +1251,13 @@ export default function ConfiguracaoPage() {
                   authenticated tenant member (owner or staff) gets full
                   read/write access once the data is actually there. */}
               <div style={{ display: "flex", flexDirection: "column", gap: 34 }}>
-                <ContextSection v={ctx} set={setCtxK} readOnly={!tenantEditable} />
+                <ContextSection
+                  v={ctx}
+                  set={setCtxK}
+                  readOnly={!tenantEditable}
+                  session={session}
+                  insuranceMode={insuranceMode}
+                />
                 <MessagesSection v={messages} set={setMessagesK} readOnly={!tenantEditable} />
                 <PostConsultSection v={postConsult} set={setPostConsultK} readOnly={!tenantEditable} />
                 <PixSection v={pixDeposit} set={setPixDepositK} readOnly={!tenantEditable} />
@@ -1263,6 +1276,7 @@ export default function ConfiguracaoPage() {
                   calendarSourceByProfessional={calendarSourceByProfessional}
                   clinicCalendarStatus={clinicCalendarStatus}
                   ownCalendarStatusByProfessional={ownCalendarStatusByProfessional}
+                  insuranceMode={insuranceMode}
                   readOnly={!professionalEditable}
                 />
                 <ServicesSection
