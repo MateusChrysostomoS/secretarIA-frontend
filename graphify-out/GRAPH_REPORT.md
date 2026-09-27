@@ -1,7 +1,7 @@
 # Graph Report - secretarIA-frontend  (2026-09-27)
 
 ## Corpus Check
-- 144 files · ~179,077 words
+- 144 files · ~179,238 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,96 +10,96 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3febfecc`
+- Built from commit: `6f8ce889`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - [[_COMMUNITY_page.tsx|page.tsx]]
 - [[_COMMUNITY_manage-api.ts|manage-api.ts]]
-- [[_COMMUNITY_WizardShell.tsx|WizardShell.tsx]]
+- [[_COMMUNITY_CadastroWizard.tsx|CadastroWizard.tsx]]
 - [[_COMMUNITY_page.tsx|page.tsx]]
-- [[_COMMUNITY_hubFetch|hubFetch]]
-- [[_COMMUNITY_hub-mapping.ts|hub-mapping.ts]]
-- [[_COMMUNITY_InsuranceSection.tsx|InsuranceSection.tsx]]
+- [[_COMMUNITY_secretaria-hub.ts|secretaria-hub.ts]]
+- [[_COMMUNITY_page.tsx|page.tsx]]
+- [[_COMMUNITY_ProfessionalsSection.tsx|ProfessionalsSection.tsx]]
 - [[_COMMUNITY_manageFetch|manageFetch]]
 - [[_COMMUNITY_package.json|package.json]]
 - [[_COMMUNITY_compilerOptions|compilerOptions]]
-- [[_COMMUNITY_ProfessionalsSection.tsx|ProfessionalsSection.tsx]]
-- [[_COMMUNITY_CheckoutTrialNotice.tsx|CheckoutTrialNotice.tsx]]
+- [[_COMMUNITY_PixSection.tsx|PixSection.tsx]]
 - [[_COMMUNITY_page.tsx|page.tsx]]
-- [[_COMMUNITY_hydration.ts|hydration.ts]]
-- [[_COMMUNITY_CHECKPOINT — contraste e landmarks (A11Y-2  A11Y-3)|CHECKPOINT — contraste e landmarks (A11Y-2 / A11Y-3)]]
-- [[_COMMUNITY_2. Decisões tomadas (as perguntas que eu não fiz)|2. Decisões tomadas (as perguntas que eu não fiz)]]
+- [[_COMMUNITY_page.tsx|page.tsx]]
+- [[_COMMUNITY_page.tsx|page.tsx]]
+- [[_COMMUNITY_page.tsx|page.tsx]]
+- [[_COMMUNITY_Icon|Icon]]
 - [[_COMMUNITY_meta-embedded-signup.ts|meta-embedded-signup.ts]]
 - [[_COMMUNITY_BrandIcon.tsx|BrandIcon.tsx]]
 - [[_COMMUNITY_AvailabilitySection.tsx|AvailabilitySection.tsx]]
-- [[_COMMUNITY_ui.tsx|ui.tsx]]
-- [[_COMMUNITY_manage-api.test.ts|manage-api.test.ts]]
-- [[_COMMUNITY_appt|appt]]
-- [[_COMMUNITY_CHECKPOINT — secretarIA-frontend (split out of brain-frontend)|CHECKPOINT — secretarIA-frontend (split out of brain-frontend)]]
-- [[_COMMUNITY_nginx-hardening.test.ts|nginx-hardening.test.ts]]
-- [[_COMMUNITY_secretaria-hub.test.ts|secretaria-hub.test.ts]]
-- [[_COMMUNITY_page.tsx|page.tsx]]
-- [[_COMMUNITY_usePortalGuard.ts|usePortalGuard.ts]]
-- [[_COMMUNITY_ServicesSection.tsx|ServicesSection.tsx]]
-- [[_COMMUNITY_event|event]]
+- [[_COMMUNITY_doRefresh|doRefresh]]
 - [[_COMMUNITY_Session|Session]]
+- [[_COMMUNITY_ServiceCard.tsx|ServiceCard.tsx]]
+- [[_COMMUNITY_CHECKPOINT — secretarIA-frontend (split out of brain-frontend)|CHECKPOINT — secretarIA-frontend (split out of brain-frontend)]]
+- [[_COMMUNITY_types.ts|types.ts]]
+- [[_COMMUNITY_manage-api.test.ts|manage-api.test.ts]]
+- [[_COMMUNITY_ActivateButton.tsx|ActivateButton.tsx]]
+- [[_COMMUNITY_usePortalGuard.ts|usePortalGuard.ts]]
+- [[_COMMUNITY_Section.tsx|Section.tsx]]
+- [[_COMMUNITY_StateTimeline.tsx|StateTimeline.tsx]]
+- [[_COMMUNITY_SideNav.tsx|SideNav.tsx]]
 - [[_COMMUNITY_secretarIA-frontend|secretarIA-frontend]]
 - [[_COMMUNITY_layout.tsx|layout.tsx]]
-- [[_COMMUNITY_a|a]]
+- [[_COMMUNITY_getEntitlements|getEntitlements]]
 - [[_COMMUNITY_next.config.mjs|next.config.mjs]]
+- [[_COMMUNITY_ManageApiError|ManageApiError]]
+- [[_COMMUNITY_Community 39|Community 39]]
+- [[_COMMUNITY_Community 40|Community 40]]
+- [[_COMMUNITY_clearSession|clearSession]]
+- [[_COMMUNITY_Community 42|Community 42]]
 - [[_COMMUNITY_page.tsx|page.tsx]]
-- [[_COMMUNITY_ConfigGapBanner.tsx|ConfigGapBanner.tsx]]
-- [[_COMMUNITY_snapshot.ts|snapshot.ts]]
-- [[_COMMUNITY_CHECKPOINT — Sessão fora do storage cookie httpOnly first-party (SEC-2)|CHECKPOINT — Sessão fora do storage: cookie httpOnly first-party (SEC-2)]]
-- [[_COMMUNITY_ServiceEditorModal.tsx|ServiceEditorModal.tsx]]
-- [[_COMMUNITY_MessagesSection.tsx|MessagesSection.tsx]]
-- [[_COMMUNITY_a|a]]
+- [[_COMMUNITY_Community 44|Community 44]]
 - [[_COMMUNITY_BrandGlyph.tsx|BrandGlyph.tsx]]
-- [[_COMMUNITY_snapshot.test.ts|snapshot.test.ts]]
-- [[_COMMUNITY_PortalHeader.tsx|PortalHeader.tsx]]
-- [[_COMMUNITY_lint|lint]]
-- [[_COMMUNITY_CHECKPOINT — chamadas duplicadas e prefetch desperdiçado (PERF-4  PERF-2  PERF-3)|CHECKPOINT — chamadas duplicadas e prefetch desperdiçado (PERF-4 / PERF-2 / PERF-3)]]
-- [[_COMMUNITY_CHECKPOINT — Hardening do nginx headers, 404 e robots.txt (SEC-1  SEC-3  SEC-4)|CHECKPOINT — Hardening do nginx: headers, 404 e robots.txt (SEC-1 / SEC-3 / SEC-4)]]
-- [[_COMMUNITY_page.tsx|page.tsx]]
-- [[_COMMUNITY_ProfessionalInsuranceSection.tsx|ProfessionalInsuranceSection.tsx]]
-- [[_COMMUNITY_ContextSection.tsx|ContextSection.tsx]]
-- [[_COMMUNITY_StateTimeline.tsx|StateTimeline.tsx]]
-- [[_COMMUNITY_cells|cells]]
-- [[_COMMUNITY_CHECKPOINT — nomes acessíveis dos controles de formulário (A11Y-1)|CHECKPOINT — nomes acessíveis dos controles de formulário (A11Y-1)]]
-- [[_COMMUNITY_CadastroWizard.tsx|CadastroWizard.tsx]]
-- [[_COMMUNITY_page.tsx|page.tsx]]
-- [[_COMMUNITY_PriorApiStep.tsx|PriorApiStep.tsx]]
-- [[_COMMUNITY_secretaria-hub.ts|secretaria-hub.ts]]
-- [[_COMMUNITY_RestartButton.tsx|RestartButton.tsx]]
-- [[_COMMUNITY_FacebookPageStep.tsx|FacebookPageStep.tsx]]
-- [[_COMMUNITY_PixSection.tsx|PixSection.tsx]]
-- [[_COMMUNITY_CHECKPOINT — Banner configure sua secretarIA (FEAT 42)|CHECKPOINT — Banner "configure sua secretarIA" (FEAT 42)]]
-- [[_COMMUNITY_CHECKPOINT — Fontes self-hosted via `nextfontgoogle` (PERF-1  LGPD)|CHECKPOINT — Fontes self-hosted via `next/font/google` (PERF-1 / LGPD)]]
-- [[_COMMUNITY_CHECKPOINT — Marca Brain nova + rodada de UX na Configuração|CHECKPOINT — Marca Brain nova + rodada de UX na Configuração]]
-- [[_COMMUNITY_legacy|legacy]]
-- [[_COMMUNITY_page.tsx|page.tsx]]
-- [[_COMMUNITY_MONTH_GRID|MONTH_GRID]]
-- [[_COMMUNITY_page.tsx|page.tsx]]
+- [[_COMMUNITY_Community 46|Community 46]]
+- [[_COMMUNITY_Community 47|Community 47]]
+- [[_COMMUNITY_Community 48|Community 48]]
+- [[_COMMUNITY_Community 49|Community 49]]
+- [[_COMMUNITY_Community 50|Community 50]]
+- [[_COMMUNITY_Community 51|Community 51]]
+- [[_COMMUNITY_Community 53|Community 53]]
+- [[_COMMUNITY_Community 54|Community 54]]
+- [[_COMMUNITY_Community 55|Community 55]]
+- [[_COMMUNITY_Community 56|Community 56]]
+- [[_COMMUNITY_Community 58|Community 58]]
+- [[_COMMUNITY_Community 59|Community 59]]
+- [[_COMMUNITY_Community 60|Community 60]]
+- [[_COMMUNITY_Community 61|Community 61]]
+- [[_COMMUNITY_Community 63|Community 63]]
+- [[_COMMUNITY_Community 64|Community 64]]
+- [[_COMMUNITY_Community 65|Community 65]]
+- [[_COMMUNITY_Community 66|Community 66]]
+- [[_COMMUNITY_Community 69|Community 69]]
+- [[_COMMUNITY_Community 70|Community 70]]
+- [[_COMMUNITY_Community 71|Community 71]]
+- [[_COMMUNITY_Community 72|Community 72]]
+- [[_COMMUNITY_Community 74|Community 74]]
+- [[_COMMUNITY_Community 77|Community 77]]
+- [[_COMMUNITY_Community 78|Community 78]]
 - [[_COMMUNITY_WD_LABELS|WD_LABELS]]
-- [[_COMMUNITY_SummaryStep.tsx|SummaryStep.tsx]]
-- [[_COMMUNITY_CHECKPOINT_catalogo_servicos_ui|CHECKPOINT_catalogo_servicos_ui.md]]
-- [[_COMMUNITY_PauseToggles.tsx|PauseToggles.tsx]]
-- [[_COMMUNITY_control-accessible-names.test.ts|control-accessible-names.test.ts]]
+- [[_COMMUNITY_Community 82|Community 82]]
+- [[_COMMUNITY_Community 84|Community 84]]
+- [[_COMMUNITY_Community 85|Community 85]]
+- [[_COMMUNITY_Community 86|Community 86]]
 - [[_COMMUNITY_block|block]]
-- [[_COMMUNITY_app-shell-viewport.test.ts|app-shell-viewport.test.ts]]
-- [[_COMMUNITY_d|d]]
+- [[_COMMUNITY_Community 89|Community 89]]
+- [[_COMMUNITY_Community 90|Community 90]]
 - [[_COMMUNITY_end|end]]
-- [[_COMMUNITY_OnboardingBanner.tsx|OnboardingBanner.tsx]]
-- [[_COMMUNITY_no-third-party-resources.test.ts|no-third-party-resources.test.ts]]
-- [[_COMMUNITY_{ endIso }|{ endIso }]]
-- [[_COMMUNITY_error.tsx|error.tsx]]
-- [[_COMMUNITY_events|events]]
-- [[_COMMUNITY_instant|instant]]
-- [[_COMMUNITY_keys|keys]]
+- [[_COMMUNITY_Community 92|Community 92]]
+- [[_COMMUNITY_Community 93|Community 93]]
+- [[_COMMUNITY_Community 94|Community 94]]
+- [[_COMMUNITY_Community 95|Community 95]]
+- [[_COMMUNITY_Community 98|Community 98]]
+- [[_COMMUNITY_Community 99|Community 99]]
+- [[_COMMUNITY_Community 100|Community 100]]
 - [[_COMMUNITY_mapped|mapped]]
-- [[_COMMUNITY_session-affordances.test.ts|session-affordances.test.ts]]
+- [[_COMMUNITY_Community 102|Community 102]]
 - [[_COMMUNITY_midnight|midnight]]
 - [[_COMMUNITY_month|month]]
 - [[_COMMUNITY_orphan|orphan]]
@@ -278,7 +278,7 @@ Nodes (80): ApptBlock(), DayBlock(), DayView(), heightOf(), MonthView(), NowLine
 Cohesion: 0.02
 Nodes (82): AdminAnamnesis, AdminAnamnesisDetail, AdminAnamnesisList, AdminDemoRequest, AdminMetrics, AdminMetricsClinic, AdminMetricsDoctor, AdminMetricsSatisfaction (+74 more)
 
-### Community 2 - "WizardShell.tsx"
+### Community 2 - "CadastroWizard.tsx"
 Cohesion: 0.13
 Nodes (16): ContactStep(), ContactStepProps, honeypotStyle, DedicatedNumberGuide(), DedicatedNumberGuideProps, STEPS, PageCreationGuide(), PageCreationGuideProps (+8 more)
 
@@ -286,15 +286,15 @@ Nodes (16): ContactStep(), ContactStepProps, honeypotStyle, DedicatedNumberGuide
 Cohesion: 0.19
 Nodes (8): CadastroWizard(), resolvePlan(), CadastroInner(), errorStyle, LaunchWaitlistForm(), LaunchWaitlistFormProps, isPurchaseGated(), submitLaunchWaitlist()
 
-### Community 4 - "hubFetch"
+### Community 4 - "secretaria-hub.ts"
 Cohesion: 0.09
 Nodes (22): cancelAppointment(), createAppointment(), createBlock(), createProfessionalCalendar(), createProfessionalCalendars(), createService(), disconnectCalendar(), disconnectProfessionalCalendar() (+14 more)
 
-### Community 5 - "hub-mapping.ts"
+### Community 5 - "page.tsx"
 Cohesion: 0.15
 Nodes (13): CalendarEnsureResult, ensureCalendars(), performSave(), PublishResult, retryProfessionalOnly(), SaveDeps, SaveOutcome, HubConfigurationUpdatePayload (+5 more)
 
-### Community 6 - "InsuranceSection.tsx"
+### Community 6 - "ProfessionalsSection.tsx"
 Cohesion: 0.15
 Nodes (13): InsuranceSectionProps, MODE_OPTIONS, InsuranceModeState, createTenantCustomInsurancePlan(), getInsuranceCatalog(), getInsuranceMode(), getInsurancePlans(), InsuranceCatalogEntryWire (+5 more)
 
@@ -310,11 +310,11 @@ Nodes (18): dependencies, next, react, react-dom, devDependencies, @types/node, 
 Cohesion: 0.10
 Nodes (19): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+11 more)
 
-### Community 10 - "ProfessionalsSection.tsx"
+### Community 10 - "PixSection.tsx"
 Cohesion: 0.06
 Nodes (43): Modal(), ModalProps, GoogleGlyph(), GoogleSection(), GoogleSectionProps, COPY, InviteKind, InviteTeamMemberModal() (+35 more)
 
-### Community 11 - "CheckoutTrialNotice.tsx"
+### Community 11 - "page.tsx"
 Cohesion: 0.38
 Nodes (6): CheckoutTrialNotice(), CheckoutTrialNoticeProps, loadTrialDays(), noticeStyle, catalogRequiresWhatsappCoexistence(), getCheckoutTrialDays()
 
@@ -322,15 +322,15 @@ Nodes (6): CheckoutTrialNotice(), CheckoutTrialNoticeProps, loadTrialDays(), not
 Cohesion: 0.12
 Nodes (21): CheckoutSucessoInner(), renderView(), ViewState, decodeJwtPayload(), ensureSession(), enterDoctorMode(), exchangeInviteToken(), exchangeOnboardingToken() (+13 more)
 
-### Community 13 - "hydration.ts"
+### Community 13 - "page.tsx"
 Cohesion: 0.11
 Nodes (29): baseStyle, failureMessage(), infoStyle, LoadStateNotice(), LoadStateNoticeProps, warnStyle, buildLoadFailedEvent(), canSave() (+21 more)
 
-### Community 14 - "CHECKPOINT — contraste e landmarks (A11Y-2 / A11Y-3)"
+### Community 14 - "page.tsx"
 Cohesion: 0.20
 Nodes (9): 1. Como foi medido, 2. A auditoria original errou os números — o fundo não é `--surface`, 3. São SEIS causas, não três — e uma delas é o inverso das outras, 4. O que mudou, 5. A11Y-3 — o que era verdade e o que não era, 6. Resultado, 7. Pendências e consequências conhecidas, CHECKPOINT — contraste e landmarks (A11Y-2 / A11Y-3) (+1 more)
 
-### Community 15 - "2. Decisões tomadas (as perguntas que eu não fiz)"
+### Community 15 - "Icon"
 Cohesion: 0.08
 Nodes (24): 1. O que estava errado (medido, não suposto), 2. Decisões tomadas (as perguntas que eu não fiz), 3. O que mudou, 4. Validação, 5. Pendências e observações, Ao vivo (Chrome real via CDP, dev server na 3111), CHECKPOINT — Agenda: datas reais (AG-1 a AG-4), Correção ao AG-2 da auditoria (+16 more)
 
@@ -346,11 +346,11 @@ Nodes (9): BrandIcon(), BrandIconProps, FILLED, IconName, PATHS, ThemeToggle(), 
 Cohesion: 0.18
 Nodes (7): AvailabilitySection(), AvailabilitySectionProps, DayRowProps, TIME_LIST, CToggle(), CToggleProps, ToggleRowProps
 
-### Community 19 - "ui.tsx"
+### Community 19 - "doRefresh"
 Cohesion: 0.16
 Nodes (12): CToast(), CToastProps, NAV, NavItem, SideNav(), SideNavProps, BtnSize, BtnVariant (+4 more)
 
-### Community 20 - "manage-api.test.ts"
+### Community 20 - "Session"
 Cohesion: 0.18
 Nodes (3): b64url(), makeJwt(), ManageApiModule
 
@@ -358,11 +358,11 @@ Nodes (3): b64url(), makeJwt(), ManageApiModule
 Cohesion: 0.17
 Nodes (11): A tela `/` — composição nova, não é cópia, CHECKPOINT — secretarIA-frontend (split out of brain-frontend), Decisões tomadas nesta rodada, Deploy no EasyPanel (guia — nada disto foi executado), Lacunas conhecidas (nada disto bloqueia o build), Mapa de rotas (14 + `_not-found`, todas estáticas), O que ficou de fora — e por quê, O que foi portado (+3 more)
 
-### Community 24 - "secretaria-hub.test.ts"
+### Community 24 - "manage-api.test.ts"
 Cohesion: 0.33
 Nodes (4): BACKEND_PROFESSIONAL_LIST_ITEM_KEYS, HubModule, mockHubTokenMint(), mockResponse()
 
-### Community 25 - "page.tsx"
+### Community 25 - "ActivateButton.tsx"
 Cohesion: 0.22
 Nodes (4): SetPasswordForm(), SetPasswordFormProps, ViewState, setPassword()
 
@@ -370,11 +370,11 @@ Nodes (4): SetPasswordForm(), SetPasswordFormProps, ViewState, setPassword()
 Cohesion: 0.29
 Nodes (8): pickProfessional(), InicioPage(), canManageClinic(), isSamePath(), PORTAL_ROLES, PostLoginDecision, resolveEntryRedirect(), resolvePostLogin()
 
-### Community 27 - "ServicesSection.tsx"
+### Community 27 - "Section.tsx"
 Cohesion: 0.25
 Nodes (6): InlineNote(), DURATION_OPTIONS, ServicesSection(), ServicesSectionProps, CatalogRow, HelpTip()
 
-### Community 29 - "Session"
+### Community 29 - "SideNav.tsx"
 Cohesion: 0.15
 Nodes (10): baseStyle, HubNotice(), HubNoticeProps, warnStyle, RETRY_DELAYS_MS, UseSecretariaHubResult, Session, hubConfigured() (+2 more)
 
@@ -386,131 +386,131 @@ Nodes (6): Auditoria de rotas & requisições — 30/08/2026, Convenções deste
 Cohesion: 0.20
 Nodes (8): dmSans, FONT_VARIABLES, hankenGrotesk, instrumentSerif, inter, metadata, newsreader, spaceGrotesk
 
-### Community 38 - "page.tsx"
+### Community 38 - "ManageApiError"
 Cohesion: 0.23
 Nodes (11): ATTEMPT_ERROR_CODE_LABEL, attemptFailureSuffix(), explainAttemptError(), ATTEMPT_RESULT_LABEL, BLOCKER_COPY, formatDateTime(), MANUAL_ACTION_REASONS, OnboardingPage() (+3 more)
 
-### Community 39 - "ConfigGapBanner.tsx"
+### Community 39 - "Community 39"
 Cohesion: 0.20
 Nodes (11): ConfigGapBanner(), ConfigGapBannerProps, colleagueMessage(), ConfigGapNotice, ConfigGapProfessional, ConfigGapSession, dismissConfigGap(), findConfigGaps() (+3 more)
 
-### Community 40 - "snapshot.ts"
+### Community 40 - "Community 40"
 Cohesion: 0.08
 Nodes (47): AddressFieldsOfCtx, applyWireAddress(), applyWireAppointmentTypes(), applyWireBusinessHours(), applyWireGcal(), applyWireMessages(), applyWirePixDeposit(), applyWirePostConsult() (+39 more)
 
-### Community 41 - "CHECKPOINT — Sessão fora do storage: cookie httpOnly first-party (SEC-2)"
+### Community 41 - "clearSession"
 Cohesion: 0.15
 Nodes (12): 10. Pendências desta rodada, 11. Skills atualizadas, 1. O que estava errado, 2. Por que NÃO foi a "Opção B" que a auditoria sugeria, 3. A arquitetura que ficou, 4. A consequência que mais pega, e o que ela obrigou a mudar, 5. Armadilhas encontradas que o prompt não previa, 6. Como foi provado (contra nginx real, não contra o diff) (+4 more)
 
-### Community 42 - "ServiceEditorModal.tsx"
+### Community 42 - "Community 42"
 Cohesion: 0.17
 Nodes (12): ServiceDraft, ServiceEditorModalProps, alsoAffected(), catalogRows(), offerService(), pendingLinks(), unpublished(), nearDuplicateNames() (+4 more)
 
-### Community 43 - "MessagesSection.tsx"
+### Community 43 - "page.tsx"
 Cohesion: 0.28
 Nodes (7): collapseBlankRun(), FIXED_GREETING_BUTTONS, GreetingComposer(), LANGUAGE_OPTIONS, MessagesSection(), MessagesSectionProps, splitGreetingTemplate()
 
-### Community 46 - "snapshot.test.ts"
+### Community 46 - "Community 46"
 Cohesion: 0.14
 Nodes (19): SAVE_BLOCKED_MESSAGE, AuthoritativeSnapshot, EMPTY_SNAPSHOT, emptiedProfessionalWire(), inheritingProfessionalWire(), legacyBackendProfessionalWire(), professionalWire(), tenantWire() (+11 more)
 
-### Community 47 - "PortalHeader.tsx"
+### Community 47 - "Community 47"
 Cohesion: 0.27
 Nodes (7): PortalHeader(), PortalHeaderProps, PortalProduct, PRODUCT_NAME, ProductLockup(), SecretariaWordmark(), SecretariaWordmarkProps
 
-### Community 49 - "CHECKPOINT — chamadas duplicadas e prefetch desperdiçado (PERF-4 / PERF-2 / PERF-3)"
+### Community 49 - "Community 49"
 Cohesion: 0.20
 Nodes (9): 1. O que mudou, 2. O achado que a auditoria errou: era 1 tela, não 3, 3. O bug que só mutation test achou: derrubar o in-flight não basta, 4. PERF-3 — duas correções ao relatório original, nenhum código aqui, 5. Prova pós-deploy, em produção real (clínica "Chrysostomo For Eyes"), 6. Instrumentos — 2 armadilhas para não repetir, 7. Gates, 8. Pendências (+1 more)
 
-### Community 50 - "CHECKPOINT — Hardening do nginx: headers, 404 e robots.txt (SEC-1 / SEC-3 / SEC-4)"
+### Community 50 - "Community 50"
 Cohesion: 0.20
 Nodes (9): 1. O que estava errado, medido em produção, 2. A armadilha que quase anulou a correção, 3. CSP — a decisão e por que ela é essa, 4. Referrer-Policy e os tokens na URL (SEC-3), 5. 404 e robots.txt (SEC-4), 6. Arquivos, 7. Como foi verificado, 8. Pendências (+1 more)
 
-### Community 51 - "page.tsx"
+### Community 51 - "Community 51"
 Cohesion: 0.09
 Nodes (10): AuthShell(), AuthShellProps, PasswordField(), PasswordFieldProps, StepIndicator(), StepIndicatorProps, confirmPasswordReset(), ManageApiError (+2 more)
 
-### Community 53 - "ProfessionalInsuranceSection.tsx"
+### Community 53 - "Community 53"
 Cohesion: 0.18
 Nodes (9): ProfessionalInsuranceSectionProps, ToggleRow(), TextArea(), TextInput(), createProfessionalCustomInsurancePlan(), getProfessionalInsurancePlans(), HubApiError, ProfessionalInsuranceWire (+1 more)
 
-### Community 54 - "ContextSection.tsx"
+### Community 54 - "Community 54"
 Cohesion: 0.20
 Nodes (10): AddressFields(), AddressFieldsProps, ContextSection(), ContextSectionProps, InsuranceSection(), PostConsultSection(), PostConsultSectionProps, Section() (+2 more)
 
-### Community 55 - "StateTimeline.tsx"
+### Community 55 - "Community 55"
 Cohesion: 0.50
 Nodes (4): NODES, rankOf(), StateTimeline(), OnboardingState
 
-### Community 58 - "CHECKPOINT — nomes acessíveis dos controles de formulário (A11Y-1)"
+### Community 58 - "Community 58"
 Cohesion: 0.13
 Nodes (14): 1. O que foi medido (não inferido), 2.1 Controle sem conteúdo para nomear — `CToggle`, `CSelect` e cópias, 2.2 O `<label>` do `Field` estava preso no controle ERRADO, 2.3 O `<label>` do `ToggleRow` nomeia — mas horrível, 2. Três causas raiz distintas (a auditoria via uma só), 3. Onde a auditoria e a investigação erraram, 4. O que mudou, 5. Como isso é guardado (+6 more)
 
-### Community 59 - "CadastroWizard.tsx"
+### Community 59 - "Community 59"
 Cohesion: 0.14
 Nodes (15): ADDON_COPY, AddonsStep(), AddonsStepProps, CadastroWizardProps, PROGRESS, PROGRESS_LABEL, PURCHASABLE_PLANS, ResolvedPlan (+7 more)
 
-### Community 60 - "page.tsx"
+### Community 60 - "Community 60"
 Cohesion: 0.21
 Nodes (9): alertStyle, PortalAccessNotice(), wrapStyle, isSessionExpired(), clearSession(), DoctorMe, getDoctorMe(), logout() (+1 more)
 
-### Community 61 - "PriorApiStep.tsx"
+### Community 61 - "Community 61"
 Cohesion: 0.40
 Nodes (4): OPTIONS, PriorApiStep(), PriorApiStepProps, SignupIntakePriorApi
 
-### Community 63 - "secretaria-hub.ts"
+### Community 63 - "Community 63"
 Cohesion: 0.08
 Nodes (28): getSecretariaHubToken(), AddressWire, AppointmentCancelPayload, AppointmentCreatePayload, AppointmentReschedulePayload, AppointmentStatusWire, AppointmentWire, BlockCreatePayload (+20 more)
 
-### Community 64 - "RestartButton.tsx"
+### Community 64 - "Community 64"
 Cohesion: 0.40
 Nodes (4): RestartButton(), RestartButtonProps, restartTestWindow(), RestartTestWindowResult
 
-### Community 65 - "FacebookPageStep.tsx"
+### Community 65 - "Community 65"
 Cohesion: 0.16
 Nodes (11): FacebookPageStep(), FacebookPageStepProps, OPTIONS, OPTIONS, WhatsappUsageStep(), WhatsappUsageStepProps, RadioOption, RadioPillGroup() (+3 more)
 
-### Community 66 - "PixSection.tsx"
+### Community 66 - "Community 66"
 Cohesion: 0.22
 Nodes (6): CSelect(), CSelectProps, NumberFieldProps, PixSection(), PixSectionProps, inputStyle
 
-### Community 69 - "CHECKPOINT — Banner "configure sua secretarIA" (FEAT 42)"
+### Community 69 - "Community 69"
 Cohesion: 0.18
 Nodes (10): 1. O que é, 2. De onde vem o sinal — e a correção ao prompt, 3. As três decisões, confirmadas pelo usuário antes do código, 4. Arquivos, 5. Armadilhas registradas, 6. Gates (rodados 2026-08-29), 7. Pendências, CHECKPOINT — Banner "configure sua secretarIA" (FEAT 42) (+2 more)
 
-### Community 70 - "CHECKPOINT — Fontes self-hosted via `next/font/google` (PERF-1 / LGPD)"
+### Community 70 - "Community 70"
 Cohesion: 0.20
 Nodes (9): 1. O que estava errado, 2. A correção, 3. Como foi provado, 4. Pendências, CHECKPOINT — Fontes self-hosted via `next/font/google` (PERF-1 / LGPD), Guarda de regressão, JetBrains Mono era peso morto, Pesos: nada foi perdido (+1 more)
 
-### Community 71 - "CHECKPOINT — Marca Brain nova + rodada de UX na Configuração"
+### Community 71 - "Community 71"
 Cohesion: 0.17
 Nodes (11): 1. Marca — a logo Brain de verdade, 2. Ícone da aba (favicon), 3. Google Calendar na aba Profissionais (Seção 05) e na Seção 08, 4. Serviço novo já nasce marcado para quem o criou, 5. Horário da clínica + "Preencher horários padrão da clínica" (Seção 07), 6. Conexão que o Google recusa — "Conectado" que não agenda (2026-09-12), CHECKPOINT — Marca Brain nova + rodada de UX na Configuração, Consequências de contrato (+3 more)
 
-### Community 74 - "page.tsx"
+### Community 74 - "Community 74"
 Cohesion: 0.33
 Nodes (9): daysRemaining(), daysRemainingLabel(), formatDays(), anchor, formatDate(), isConnected(), ReativarPage(), getTestWindow() (+1 more)
 
-### Community 78 - "page.tsx"
+### Community 78 - "Community 78"
 Cohesion: 0.13
 Nodes (22): ownStatusByProfessional(), DEMO_CATALOG, DEMO_CTX, DEMO_PROFILE, DEMO_ROSTER, DEMO_SERVICE_IDS, DEMO_SERVICES, demoWeek() (+14 more)
 
-### Community 82 - "SummaryStep.tsx"
+### Community 82 - "Community 82"
 Cohesion: 0.17
 Nodes (10): ADDON_SUMMARY_LABEL, FB_PAGE_LABEL, PRIOR_API_LABEL, SummaryStep(), SummaryStepProps, USAGE_LABEL, WizardAnswers, attachSignupIntake() (+2 more)
 
-### Community 84 - "CHECKPOINT_catalogo_servicos_ui.md"
+### Community 84 - "Community 84"
 Cohesion: 0.22
 Nodes (8): 1. O problema, 2. A tela nova, 3. As três armadilhas de migração, 4. Google Calendar: "Conta única" passou a criar as agendas, 5. brain-frontend: as telas da secretarIA saíram, 6. Pendências, O aviso antes de renomear — a parte que o usuário pediu explicitamente, ⚠️ Variável de build nova
 
-### Community 85 - "PauseToggles.tsx"
+### Community 85 - "Community 85"
 Cohesion: 0.40
 Nodes (3): PauseToggles(), PauseTogglesProps, pauseOnboarding()
 
-### Community 86 - "control-accessible-names.test.ts"
+### Community 86 - "Community 86"
 Cohesion: 0.29
 Nodes (4): CALL_SITE_FILES, CONTROLS, repoRoot, SWITCH_IMPLEMENTATIONS
 
-### Community 92 - "OnboardingBanner.tsx"
+### Community 92 - "Community 92"
 Cohesion: 0.40
 Nodes (4): OnboardingBanner(), STATE_LABEL, DoctorOnboarding, getDoctorOnboarding()
 
@@ -522,11 +522,11 @@ Nodes (4): OnboardingBanner(), STATE_LABEL, DoctorOnboarding, getDoctorOnboardin
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Session` connect `Session` to `RestartButton.tsx`, `manage-api.ts`, `InsuranceSection.tsx`, `ConfigGapBanner.tsx`, `ProfessionalsSection.tsx`, `page.tsx`, `meta-embedded-signup.ts`, `manage-api.test.ts`, `PauseToggles.tsx`, `ContextSection.tsx`, `ProfessionalInsuranceSection.tsx`, `secretaria-hub.test.ts`, `page.tsx`, `usePortalGuard.ts`, `OnboardingBanner.tsx`, `secretaria-hub.ts`?**
+- **Why does `Session` connect `SideNav.tsx` to `Community 64`, `manage-api.ts`, `ProfessionalsSection.tsx`, `Community 39`, `PixSection.tsx`, `Community 78`, `meta-embedded-signup.ts`, `Session`, `Community 85`, `Community 54`, `Community 53`, `manage-api.test.ts`, `ActivateButton.tsx`, `usePortalGuard.ts`, `Community 92`, `Community 63`?**
   _High betweenness centrality (0.012) - this node is a cross-community bridge._
-- **Why does `ManageApiError` connect `page.tsx` to `RestartButton.tsx`, `manage-api.ts`, `ProfessionalsSection.tsx`, `page.tsx`, `SummaryStep.tsx`, `page.tsx`, `usePortalGuard.ts`, `CadastroWizard.tsx`, `Session`, `secretaria-hub.ts`?**
+- **Why does `ManageApiError` connect `Community 51` to `Community 64`, `manage-api.ts`, `PixSection.tsx`, `page.tsx`, `Community 82`, `ActivateButton.tsx`, `usePortalGuard.ts`, `Community 59`, `SideNav.tsx`, `Community 63`?**
   _High betweenness centrality (0.009) - this node is a cross-community bridge._
-- **Why does `Icon()` connect `ui.tsx` to `page.tsx`, `PixSection.tsx`, `ProfessionalsSection.tsx`, `MessagesSection.tsx`, `ServiceEditorModal.tsx`, `hydration.ts`, `page.tsx`, `AvailabilitySection.tsx`, `ContextSection.tsx`, `ServicesSection.tsx`, `Session`?**
+- **Why does `Icon()` connect `doRefresh` to `page.tsx`, `Community 66`, `PixSection.tsx`, `page.tsx`, `Community 42`, `page.tsx`, `Community 78`, `AvailabilitySection.tsx`, `Community 54`, `Section.tsx`, `SideNav.tsx`?**
   _High betweenness centrality (0.007) - this node is a cross-community bridge._
 - **What connects `AuthShellProps`, `PasswordFieldProps`, `StepIndicatorProps` to the rest of the system?**
   _574 weakly-connected nodes found - possible documentation gaps or missing edges._
@@ -534,5 +534,5 @@ _Questions this graph is uniquely positioned to answer:_
   _Cohesion score 0.05148514851485148 - nodes in this community are weakly interconnected._
 - **Should `manage-api.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.02400408580183861 - nodes in this community are weakly interconnected._
-- **Should `WizardShell.tsx` be split into smaller, more focused modules?**
+- **Should `CadastroWizard.tsx` be split into smaller, more focused modules?**
   _Cohesion score 0.13333333333333333 - nodes in this community are weakly interconnected._

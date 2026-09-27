@@ -10047,7 +10047,7 @@
       "label": "Auditoria de rotas & requisi\u00e7\u00f5es \u2014 30/08/2026",
       "file_type": "document",
       "source_file": "CLAUDE.md",
-      "source_location": "L79",
+      "source_location": "L97",
       "_origin": "ast",
       "id": "claude_auditoria_de_rotas_requisi\u00e7\u00f5es_30_08_2026",
       "community": 30,
@@ -10057,7 +10057,7 @@
       "label": "graphify",
       "file_type": "document",
       "source_file": "CLAUDE.md",
-      "source_location": "L209",
+      "source_location": "L227",
       "_origin": "ast",
       "id": "claude_graphify",
       "community": 30,
@@ -36377,7 +36377,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "CLAUDE.md",
-      "source_location": "L209",
+      "source_location": "L227",
       "weight": 1.0,
       "source": "claude_secretaria_frontend",
       "target": "claude_graphify",
@@ -36397,7 +36397,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "CLAUDE.md",
-      "source_location": "L79",
+      "source_location": "L97",
       "weight": 1.0,
       "source": "claude_prompts_prontos_para_rodar",
       "target": "claude_auditoria_de_rotas_requisi\u00e7\u00f5es_30_08_2026",
@@ -37665,5 +37665,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "3febfecc348900ac02a424d94a6b5de1af9723a0"
+  "built_at_commit": "6f8ce8892c42f71a7d925908f8a224ffa042d76b"
 }
