@@ -48,6 +48,14 @@ com o usuário) ficam em `TECH/BRAIN/z_prompts/` — convenção compartilhada e
 Brain, não uma pasta deste repo. Cole o conteúdo inteiro numa sessão nova quando for a hora
 de executar:
 
+- `z_prompts/PLANO_CONSOLIDACAO_PORTAL_BRAIN_MESSAGE.md` (gerado 2026-09-23, via
+  `/prompt-generator`) — **este repo vira site de marketing do produto secretarIA.** As telas
+  operacionais (`app/(site)/configuracao/`, `app/(site)/agenda/`) são portadas para o
+  Brain-Message (Onda A do plano: `PROMPT_BRAIN_MESSAGE_MODULO_CONTEXTO_SECRETARIA.md` e
+  `PROMPT_BRAIN_MESSAGE_MODULO_AGENDA.md`) e só depois removidas daqui por
+  `PROMPT_SECRETARIA_FRONTEND_DESCOMISSIONAMENTO_OPERACIONAL.md` (Onda D — exige confirmação
+  explícita do dono de que a migração está validada em produção antes do `git rm`). **NÃO
+  EXECUTADO ainda; nenhum arquivo deste repo foi tocado por este plano até agora.**
 - ~~`z_prompts/PROMPT_SECRETARIA_CONFIG_PROFISSIONAIS_NAO_CARREGA.md`~~ — **EXECUTADO
   2026-09-12, CORRIGIDO EM PRODUÇÃO E PROVADO AO VIVO.** Causa raiz: **nenhuma das 4 pistas
   do prompt.** O `CORS_ALLOW_ORIGINS` do serviço `secretaria_api` estava em formato JSON
@@ -70,6 +78,16 @@ de executar:
   `/configuracao` — um usuário só alcança a segunda digitando a URL. Reverte deliberadamente
   a decisão de "uma home só" tomada na separação de 2026-08-14 (decisão nº2 do CHECKPOINT) —
   use quando quiser essa reversão.
+- `z_prompts/PROMPT_CONVENIO_CATALOGO_ACEITACAO_2_SECRETARIA_FRONTEND.md` (raiz de BRAIN, gerado
+  2026-09-23) — **substituído pelo escopo ampliado do TASK-008** (`tasks/TASK-008/SPEC.md` em
+  BRAIN), depois de revisão com o dono ter achado pendências reais (modo de aceitação sem default
+  silencioso, catálogo extensível, convênio "Outro"). **EXECUTADO 2026-09-27 — BUILT, commit
+  local (merge em `main`, não pushado/deployado): `InsuranceSection.tsx`/
+  `ProfessionalInsuranceSection.tsx` novos, `lib/secretaria-hub.ts`/`hub-mapping.ts`/`types.ts`
+  atualizados para o contrato de `secretarIA/docs/CHECKPOINT_convenio_catalogo.md` §10.5/10.6/10.7
+  (backend TASK-006+TASK-008, também merge local, não deployado). Prova real em Chrome (claro e
+  escuro, 22 screenshots) e revisão com 1 achado HIGH corrigido — ver
+  `tasks/TASK-008/results/` em BRAIN.**
 - `PROMPT_FEAT_42_...BANNER_FRONTENDS.md` foi **executado em 2026-08-29** — ver
   `docs/CHECKPOINT_config_gap_banner.md`. O prompt afirmava que o sinal viria de
   `GET /config`; ele vive em `GET /tenants/me/professionals`, e este app o lê pelo
