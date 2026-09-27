@@ -1,7 +1,7 @@
 # Graph Report - secretarIA-frontend  (2026-09-27)
 
 ## Corpus Check
-- 144 files · ~178,236 words
+- 144 files · ~179,077 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `1fe37616`
+- Built from commit: `3febfecc`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -291,8 +291,8 @@ Cohesion: 0.09
 Nodes (22): cancelAppointment(), createAppointment(), createBlock(), createProfessionalCalendar(), createProfessionalCalendars(), createService(), disconnectCalendar(), disconnectProfessionalCalendar() (+14 more)
 
 ### Community 5 - "hub-mapping.ts"
-Cohesion: 0.12
-Nodes (19): AddressFieldsOfCtx, applyWireAddress(), applyWireGcal(), applyWireMessages(), applyWirePixDeposit(), applyWirePostConsult(), applyWireServices(), buildConfigUpdatePayload() (+11 more)
+Cohesion: 0.15
+Nodes (13): CalendarEnsureResult, ensureCalendars(), performSave(), PublishResult, retryProfessionalOnly(), SaveDeps, SaveOutcome, HubConfigurationUpdatePayload (+5 more)
 
 ### Community 6 - "InsuranceSection.tsx"
 Cohesion: 0.15
@@ -323,8 +323,8 @@ Cohesion: 0.12
 Nodes (21): CheckoutSucessoInner(), renderView(), ViewState, decodeJwtPayload(), ensureSession(), enterDoctorMode(), exchangeInviteToken(), exchangeOnboardingToken() (+13 more)
 
 ### Community 13 - "hydration.ts"
-Cohesion: 0.06
-Nodes (51): baseStyle, failureMessage(), infoStyle, LoadStateNotice(), LoadStateNoticeProps, warnStyle, ownStatusByProfessional(), buildLoadFailedEvent() (+43 more)
+Cohesion: 0.11
+Nodes (29): baseStyle, failureMessage(), infoStyle, LoadStateNotice(), LoadStateNoticeProps, warnStyle, buildLoadFailedEvent(), canSave() (+21 more)
 
 ### Community 14 - "CHECKPOINT — contraste e landmarks (A11Y-2 / A11Y-3)"
 Cohesion: 0.20
@@ -395,24 +395,24 @@ Cohesion: 0.20
 Nodes (11): ConfigGapBanner(), ConfigGapBannerProps, colleagueMessage(), ConfigGapNotice, ConfigGapProfessional, ConfigGapSession, dismissConfigGap(), findConfigGaps() (+3 more)
 
 ### Community 40 - "snapshot.ts"
-Cohesion: 0.12
-Nodes (27): applyWireAppointmentTypes(), applyWireBusinessHours(), applyWireProfessionalProfile(), comparableCtx(), comparablePix(), comparableServices(), dirtySections(), ProfessionalSlices (+19 more)
+Cohesion: 0.08
+Nodes (47): AddressFieldsOfCtx, applyWireAddress(), applyWireAppointmentTypes(), applyWireBusinessHours(), applyWireGcal(), applyWireMessages(), applyWirePixDeposit(), applyWirePostConsult() (+39 more)
 
 ### Community 41 - "CHECKPOINT — Sessão fora do storage: cookie httpOnly first-party (SEC-2)"
 Cohesion: 0.15
 Nodes (12): 10. Pendências desta rodada, 11. Skills atualizadas, 1. O que estava errado, 2. Por que NÃO foi a "Opção B" que a auditoria sugeria, 3. A arquitetura que ficou, 4. A consequência que mais pega, e o que ela obrigou a mudar, 5. Armadilhas encontradas que o prompt não previa, 6. Como foi provado (contra nginx real, não contra o diff) (+4 more)
 
 ### Community 42 - "ServiceEditorModal.tsx"
-Cohesion: 0.18
-Nodes (11): ServiceDraft, ServiceEditorModalProps, alsoAffected(), catalogRows(), offerService(), pendingLinks(), unpublished(), nearDuplicateNames() (+3 more)
+Cohesion: 0.17
+Nodes (12): ServiceDraft, ServiceEditorModalProps, alsoAffected(), catalogRows(), offerService(), pendingLinks(), unpublished(), nearDuplicateNames() (+4 more)
 
 ### Community 43 - "MessagesSection.tsx"
 Cohesion: 0.28
 Nodes (7): collapseBlankRun(), FIXED_GREETING_BUTTONS, GreetingComposer(), LANGUAGE_OPTIONS, MessagesSection(), MessagesSectionProps, splitGreetingTemplate()
 
 ### Community 46 - "snapshot.test.ts"
-Cohesion: 0.25
-Nodes (8): demoWeek(), AuthoritativeSnapshot, EMPTY_SNAPSHOT, emptyProfessionalSlices(), emptyTenantSlices(), snapshotForTenant(), CLINIC_TYPES, closedWeek()
+Cohesion: 0.14
+Nodes (19): SAVE_BLOCKED_MESSAGE, AuthoritativeSnapshot, EMPTY_SNAPSHOT, emptiedProfessionalWire(), inheritingProfessionalWire(), legacyBackendProfessionalWire(), professionalWire(), tenantWire() (+11 more)
 
 ### Community 47 - "PortalHeader.tsx"
 Cohesion: 0.27
@@ -431,8 +431,8 @@ Cohesion: 0.09
 Nodes (10): AuthShell(), AuthShellProps, PasswordField(), PasswordFieldProps, StepIndicator(), StepIndicatorProps, confirmPasswordReset(), ManageApiError (+2 more)
 
 ### Community 53 - "ProfessionalInsuranceSection.tsx"
-Cohesion: 0.22
-Nodes (8): ProfessionalInsuranceSectionProps, ToggleRow(), TextArea(), TextInput(), createProfessionalCustomInsurancePlan(), getProfessionalInsurancePlans(), ProfessionalInsuranceWire, putProfessionalInsurancePlans()
+Cohesion: 0.18
+Nodes (9): ProfessionalInsuranceSectionProps, ToggleRow(), TextArea(), TextInput(), createProfessionalCustomInsurancePlan(), getProfessionalInsurancePlans(), HubApiError, ProfessionalInsuranceWire (+1 more)
 
 ### Community 54 - "ContextSection.tsx"
 Cohesion: 0.20
@@ -491,8 +491,8 @@ Cohesion: 0.33
 Nodes (9): daysRemaining(), daysRemainingLabel(), formatDays(), anchor, formatDate(), isConnected(), ReativarPage(), getTestWindow() (+1 more)
 
 ### Community 78 - "page.tsx"
-Cohesion: 0.10
-Nodes (27): DEMO_CATALOG, DEMO_CTX, DEMO_PROFILE, DEMO_ROSTER, DEMO_SERVICE_IDS, DEMO_SERVICES, VisitorDemo, CalendarEnsureResult (+19 more)
+Cohesion: 0.13
+Nodes (22): ownStatusByProfessional(), DEMO_CATALOG, DEMO_CTX, DEMO_PROFILE, DEMO_ROSTER, DEMO_SERVICE_IDS, DEMO_SERVICES, demoWeek() (+14 more)
 
 ### Community 82 - "SummaryStep.tsx"
 Cohesion: 0.17

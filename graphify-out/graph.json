@@ -1430,7 +1430,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "app_site_shared_ui_btn",
-      "community": 13,
+      "community": 42,
       "norm_label": "btn()"
     },
     {
@@ -4057,7 +4057,7 @@
       "label": "ProfessionalInsuranceSectionProps",
       "file_type": "code",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L38",
+      "source_location": "L55",
       "_origin": "ast",
       "id": "app_site_configuracao_components_professionalinsurancesection_professionalinsurancesectionprops",
       "community": 53,
@@ -4067,7 +4067,7 @@
       "label": "ProfessionalInsuranceSection()",
       "file_type": "code",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L54",
+      "source_location": "L71",
       "_origin": "ast",
       "id": "app_site_configuracao_components_professionalinsurancesection_professionalinsurancesection",
       "community": 10,
@@ -4440,7 +4440,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_fixtures",
-      "community": 13,
+      "community": 46,
       "norm_label": "fixtures.ts"
     },
     {
@@ -4450,7 +4450,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_fixtures_tenantwire",
-      "community": 13,
+      "community": 46,
       "norm_label": "tenantwire()"
     },
     {
@@ -4460,7 +4460,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_fixtures_professionalwire",
-      "community": 13,
+      "community": 46,
       "norm_label": "professionalwire()"
     },
     {
@@ -4470,7 +4470,7 @@
       "source_location": "L97",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_fixtures_inheritingprofessionalwire",
-      "community": 13,
+      "community": 46,
       "norm_label": "inheritingprofessionalwire()"
     },
     {
@@ -4480,7 +4480,7 @@
       "source_location": "L115",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_fixtures_emptiedprofessionalwire",
-      "community": 13,
+      "community": 46,
       "norm_label": "emptiedprofessionalwire()"
     },
     {
@@ -4490,7 +4490,7 @@
       "source_location": "L135",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_fixtures_legacybackendprofessionalwire",
-      "community": 13,
+      "community": 46,
       "norm_label": "legacybackendprofessionalwire()"
     },
     {
@@ -4530,7 +4530,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_save_test",
-      "community": 13,
+      "community": 46,
       "norm_label": "save.test.ts"
     },
     {
@@ -4550,7 +4550,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_save_test_tenant_patch",
-      "community": 13,
+      "community": 46,
       "norm_label": "tenant_patch"
     },
     {
@@ -4560,7 +4560,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_save_test_professional_patch",
-      "community": 13,
+      "community": 46,
       "norm_label": "professional_patch"
     },
     {
@@ -4570,7 +4570,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_save_test_calendarrefusal",
-      "community": 13,
+      "community": 46,
       "norm_label": "calendarrefusal()"
     },
     {
@@ -4580,7 +4580,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_save_test_spies",
-      "community": 13,
+      "community": 46,
       "norm_label": "spies()"
     },
     {
@@ -4590,7 +4590,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_save_test_authenticated",
-      "community": 13,
+      "community": 46,
       "norm_label": "authenticated"
     },
     {
@@ -4600,7 +4600,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_save_test_started",
-      "community": 13,
+      "community": 46,
       "norm_label": "started"
     },
     {
@@ -4610,7 +4610,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_save_test_tenant_ok",
-      "community": 13,
+      "community": 46,
       "norm_label": "tenant_ok"
     },
     {
@@ -4620,7 +4620,7 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_save_test_roster_ok",
-      "community": 13,
+      "community": 46,
       "norm_label": "roster_ok"
     },
     {
@@ -4630,7 +4630,7 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_save_test_loaded_with_a",
-      "community": 13,
+      "community": 46,
       "norm_label": "loaded_with_a"
     },
     {
@@ -4640,7 +4640,7 @@
       "source_location": "L90",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_save_test_loaded_no_professional",
-      "community": 13,
+      "community": 46,
       "norm_label": "loaded_no_professional"
     },
     {
@@ -4710,7 +4710,7 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_calendar_health_ownstatusbyprofessional",
-      "community": 13,
+      "community": 78,
       "norm_label": "ownstatusbyprofessional()"
     },
     {
@@ -4950,7 +4950,7 @@
       "source_location": "L183",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_demo_seed_demoweek",
-      "community": 46,
+      "community": 78,
       "norm_label": "demoweek()"
     },
     {
@@ -4960,7 +4960,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hub_mapping",
-      "community": 5,
+      "community": 40,
       "norm_label": "hub-mapping.ts"
     },
     {
@@ -4970,7 +4970,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hub_mapping_wire_to_local_day",
-      "community": 5,
+      "community": 40,
       "norm_label": "wire_to_local_day"
     },
     {
@@ -4980,7 +4980,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hub_mapping_local_to_wire_day",
-      "community": 5,
+      "community": 40,
       "norm_label": "local_to_wire_day"
     },
     {
@@ -4990,7 +4990,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hub_mapping_hhmmtominutes",
-      "community": 5,
+      "community": 40,
       "norm_label": "hhmmtominutes()"
     },
     {
@@ -5000,7 +5000,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hub_mapping_minutestohhmm",
-      "community": 5,
+      "community": 40,
       "norm_label": "minutestohhmm()"
     },
     {
@@ -5020,7 +5020,7 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hub_mapping_towirebusinesshours",
-      "community": 5,
+      "community": 40,
       "norm_label": "towirebusinesshours()"
     },
     {
@@ -5040,7 +5040,7 @@
       "source_location": "L117",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hub_mapping_applywireservices",
-      "community": 5,
+      "community": 40,
       "norm_label": "applywireservices()"
     },
     {
@@ -5050,7 +5050,7 @@
       "source_location": "L142",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hub_mapping_towireappointmenttypes",
-      "community": 5,
+      "community": 40,
       "norm_label": "towireappointmenttypes()"
     },
     {
@@ -5060,7 +5060,7 @@
       "source_location": "L162",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hub_mapping_addressfieldsofctx",
-      "community": 5,
+      "community": 40,
       "norm_label": "addressfieldsofctx"
     },
     {
@@ -5070,7 +5070,7 @@
       "source_location": "L170",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hub_mapping_towireaddress",
-      "community": 5,
+      "community": 40,
       "norm_label": "towireaddress()"
     },
     {
@@ -5080,7 +5080,7 @@
       "source_location": "L186",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hub_mapping_applywireaddress",
-      "community": 5,
+      "community": 40,
       "norm_label": "applywireaddress()"
     },
     {
@@ -5090,7 +5090,7 @@
       "source_location": "L213",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hub_mapping_applywiremessages",
-      "community": 5,
+      "community": 40,
       "norm_label": "applywiremessages()"
     },
     {
@@ -5100,7 +5100,7 @@
       "source_location": "L233",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hub_mapping_applywirepostconsult",
-      "community": 5,
+      "community": 40,
       "norm_label": "applywirepostconsult()"
     },
     {
@@ -5110,7 +5110,7 @@
       "source_location": "L247",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hub_mapping_applywirepixdeposit",
-      "community": 5,
+      "community": 40,
       "norm_label": "applywirepixdeposit()"
     },
     {
@@ -5120,7 +5120,7 @@
       "source_location": "L265",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hub_mapping_applywiregcal",
-      "community": 5,
+      "community": 40,
       "norm_label": "applywiregcal()"
     },
     {
@@ -5140,7 +5140,7 @@
       "source_location": "L300",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hub_mapping_buildconfigupdatepayload",
-      "community": 5,
+      "community": 40,
       "norm_label": "buildconfigupdatepayload()"
     },
     {
@@ -5150,7 +5150,7 @@
       "source_location": "L348",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hub_mapping_buildprofessionalconfigpayload",
-      "community": 5,
+      "community": 40,
       "norm_label": "buildprofessionalconfigpayload()"
     },
     {
@@ -5160,7 +5160,7 @@
       "source_location": "L372",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hub_mapping_applylink",
-      "community": 5,
+      "community": 40,
       "norm_label": "applylink()"
     },
     {
@@ -5290,7 +5290,7 @@
       "source_location": "L297",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hydration_canedittenantfields",
-      "community": 13,
+      "community": 78,
       "norm_label": "canedittenantfields()"
     },
     {
@@ -5300,7 +5300,7 @@
       "source_location": "L308",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hydration_caneditprofessionalfields",
-      "community": 13,
+      "community": 78,
       "norm_label": "caneditprofessionalfields()"
     },
     {
@@ -5420,7 +5420,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_insurance_useinsurancemode",
-      "community": 13,
+      "community": 78,
       "norm_label": "useinsurancemode()"
     },
     {
@@ -5430,7 +5430,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_save",
-      "community": 78,
+      "community": 5,
       "norm_label": "save.ts"
     },
     {
@@ -5440,7 +5440,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_save_savedeps",
-      "community": 78,
+      "community": 5,
       "norm_label": "savedeps"
     },
     {
@@ -5450,7 +5450,7 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_save_publishresult",
-      "community": 78,
+      "community": 5,
       "norm_label": "publishresult"
     },
     {
@@ -5460,7 +5460,7 @@
       "source_location": "L120",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_save_calendarensureresult",
-      "community": 78,
+      "community": 5,
       "norm_label": "calendarensureresult"
     },
     {
@@ -5470,7 +5470,7 @@
       "source_location": "L129",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_save_saveoutcome",
-      "community": 78,
+      "community": 5,
       "norm_label": "saveoutcome"
     },
     {
@@ -5480,7 +5480,7 @@
       "source_location": "L166",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_save_performsave",
-      "community": 78,
+      "community": 5,
       "norm_label": "performsave()"
     },
     {
@@ -5490,7 +5490,7 @@
       "source_location": "L269",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_save_ensurecalendars",
-      "community": 78,
+      "community": 5,
       "norm_label": "ensurecalendars()"
     },
     {
@@ -5500,7 +5500,7 @@
       "source_location": "L295",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_save_retryprofessionalonly",
-      "community": 78,
+      "community": 5,
       "norm_label": "retryprofessionalonly()"
     },
     {
@@ -5510,7 +5510,7 @@
       "source_location": "L303",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_save_save_blocked_message",
-      "community": 78,
+      "community": 46,
       "norm_label": "save_blocked_message"
     },
     {
@@ -5580,7 +5580,7 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_snapshot_snapshotfortenant",
-      "community": 46,
+      "community": 78,
       "norm_label": "snapshotfortenant()"
     },
     {
@@ -5590,7 +5590,7 @@
       "source_location": "L96",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_snapshot_tenantslices",
-      "community": 40,
+      "community": 78,
       "norm_label": "tenantslices"
     },
     {
@@ -5600,7 +5600,7 @@
       "source_location": "L116",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_snapshot_professionalslices",
-      "community": 40,
+      "community": 78,
       "norm_label": "professionalslices"
     },
     {
@@ -5610,7 +5610,7 @@
       "source_location": "L144",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_snapshot_tenantslicesfromwire",
-      "community": 5,
+      "community": 40,
       "norm_label": "tenantslicesfromwire()"
     },
     {
@@ -5630,7 +5630,7 @@
       "source_location": "L200",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_snapshot_emptyprofessionalslices",
-      "community": 46,
+      "community": 78,
       "norm_label": "emptyprofessionalslices()"
     },
     {
@@ -5640,7 +5640,7 @@
       "source_location": "L216",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_snapshot_emptytenantslices",
-      "community": 46,
+      "community": 78,
       "norm_label": "emptytenantslices()"
     },
     {
@@ -5720,7 +5720,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_types_clinicctx",
-      "community": 78,
+      "community": 40,
       "norm_label": "clinicctx"
     },
     {
@@ -5740,7 +5740,7 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_types_messages",
-      "community": 5,
+      "community": 40,
       "norm_label": "messages"
     },
     {
@@ -5780,7 +5780,7 @@
       "source_location": "L141",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_types_pixdeposit",
-      "community": 5,
+      "community": 40,
       "norm_label": "pixdeposit"
     },
     {
@@ -5790,7 +5790,7 @@
       "source_location": "L158",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_types_default_pix_deposit",
-      "community": 5,
+      "community": 40,
       "norm_label": "default_pix_deposit"
     },
     {
@@ -5800,7 +5800,7 @@
       "source_location": "L175",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_types_professionalprofile",
-      "community": 78,
+      "community": 40,
       "norm_label": "professionalprofile"
     },
     {
@@ -5880,7 +5880,7 @@
       "source_location": "L283",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_types_timerange",
-      "community": 5,
+      "community": 40,
       "norm_label": "timerange"
     },
     {
@@ -5890,7 +5890,7 @@
       "source_location": "L288",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_types_dayconfig",
-      "community": 78,
+      "community": 40,
       "norm_label": "dayconfig"
     },
     {
@@ -5910,7 +5910,7 @@
       "source_location": "L310",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_types_closedweek",
-      "community": 46,
+      "community": 78,
       "norm_label": "closedweek()"
     },
     {
@@ -6030,7 +6030,7 @@
       "source_location": "L244",
       "_origin": "ast",
       "id": "app_site_configuracao_page_configuracaopage",
-      "community": 13,
+      "community": 78,
       "norm_label": "configuracaopage()"
     },
     {
@@ -8770,7 +8770,7 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "lib_secretaria_hub_hubapierror",
-      "community": 13,
+      "community": 53,
       "norm_label": "hubapierror"
     },
     {
@@ -8780,7 +8780,7 @@
       "source_location": "L121",
       "_origin": "ast",
       "id": "lib_secretaria_hub_hubapierror_constructor",
-      "community": 13,
+      "community": 53,
       "norm_label": ".constructor()"
     },
     {
@@ -8860,7 +8860,7 @@
       "source_location": "L279",
       "_origin": "ast",
       "id": "lib_secretaria_hub_tenantconfigwire",
-      "community": 78,
+      "community": 5,
       "norm_label": "tenantconfigwire"
     },
     {
@@ -8870,7 +8870,7 @@
       "source_location": "L349",
       "_origin": "ast",
       "id": "lib_secretaria_hub_tenantconfigupdatepayload",
-      "community": 78,
+      "community": 5,
       "norm_label": "tenantconfigupdatepayload"
     },
     {
@@ -8970,7 +8970,7 @@
       "source_location": "L486",
       "_origin": "ast",
       "id": "lib_secretaria_hub_hubconfigurationupdatepayload",
-      "community": 78,
+      "community": 5,
       "norm_label": "hubconfigurationupdatepayload"
     },
     {
@@ -8980,7 +8980,7 @@
       "source_location": "L495",
       "_origin": "ast",
       "id": "lib_secretaria_hub_hubconfigurationwire",
-      "community": 78,
+      "community": 5,
       "norm_label": "hubconfigurationwire"
     },
     {
@@ -9000,7 +9000,7 @@
       "source_location": "L526",
       "_origin": "ast",
       "id": "lib_secretaria_hub_islegacybackend",
-      "community": 13,
+      "community": 46,
       "norm_label": "islegacybackend()"
     },
     {
@@ -9130,7 +9130,7 @@
       "source_location": "L696",
       "_origin": "ast",
       "id": "lib_secretaria_hub_professionalwire",
-      "community": 78,
+      "community": 5,
       "norm_label": "professionalwire"
     },
     {
@@ -9190,7 +9190,7 @@
       "source_location": "L803",
       "_origin": "ast",
       "id": "lib_secretaria_hub_professionalconfigupdatepayload",
-      "community": 78,
+      "community": 5,
       "norm_label": "professionalconfigupdatepayload"
     },
     {
@@ -17704,7 +17704,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L24",
+      "source_location": "L40",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "app_site_shared_ui",
@@ -18228,7 +18228,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L24",
+      "source_location": "L40",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "app_site_shared_ui_btn",
@@ -18503,7 +18503,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L24",
+      "source_location": "L40",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "app_site_shared_ui_field",
@@ -18613,7 +18613,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L24",
+      "source_location": "L40",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "app_site_shared_ui_textinput",
@@ -18679,7 +18679,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L24",
+      "source_location": "L40",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "app_site_shared_ui_textarea",
@@ -23429,7 +23429,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L25",
+      "source_location": "L41",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "app_site_configuracao_components_ctoggle",
@@ -23462,7 +23462,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L25",
+      "source_location": "L41",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "app_site_configuracao_components_ctoggle_ctoggle",
@@ -24084,17 +24084,6 @@
       "weight": 1.0,
       "source": "app_site_configuracao_components_insurancesection",
       "target": "lib_whatsapp_limits_insuranceserror",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L27",
-      "weight": 1.0,
-      "source": "app_site_configuracao_components_professionalinsurancesection",
-      "target": "app_site_configuracao_components_insurancesection",
       "confidence_score": 1.0
     },
     {
@@ -24846,7 +24835,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L54",
+      "source_location": "L71",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "app_site_configuracao_components_professionalinsurancesection_professionalinsurancesection",
@@ -24856,7 +24845,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L38",
+      "source_location": "L55",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "app_site_configuracao_components_professionalinsurancesection_professionalinsurancesectionprops",
@@ -24867,7 +24856,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L26",
+      "source_location": "L42",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "app_site_configuracao_components_togglerow",
@@ -24878,7 +24867,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L26",
+      "source_location": "L42",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "app_site_configuracao_components_togglerow_togglerow",
@@ -24889,7 +24878,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L35",
+      "source_location": "L52",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "lib_manage_api",
@@ -24900,7 +24889,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L35",
+      "source_location": "L52",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "lib_manage_api_session",
@@ -24911,7 +24900,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L28",
+      "source_location": "L43",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "lib_secretaria_hub",
@@ -24922,7 +24911,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L28",
+      "source_location": "L43",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "lib_secretaria_hub_createprofessionalcustominsuranceplan",
@@ -24933,7 +24922,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L28",
+      "source_location": "L43",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "lib_secretaria_hub_getprofessionalinsuranceplans",
@@ -24944,7 +24933,18 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L28",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "app_site_configuracao_components_professionalinsurancesection",
+      "target": "lib_secretaria_hub_hubapierror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
+      "source_location": "L43",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "lib_secretaria_hub_insurancemode",
@@ -24955,7 +24955,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L28",
+      "source_location": "L43",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "lib_secretaria_hub_professionalinsurancewire",
@@ -24966,7 +24966,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L28",
+      "source_location": "L43",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "lib_secretaria_hub_putprofessionalinsuranceplans",
@@ -24977,7 +24977,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L36",
+      "source_location": "L53",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "lib_whatsapp_limits",
@@ -24988,7 +24988,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/(site)/configuracao/components/ProfessionalInsuranceSection.tsx",
-      "source_location": "L36",
+      "source_location": "L53",
       "weight": 1.0,
       "source": "app_site_configuracao_components_professionalinsurancesection",
       "target": "lib_whatsapp_limits_insuranceserror",
@@ -37665,5 +37665,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "1fe37616d84a060ec8617bb4c8da09587c521be1"
+  "built_at_commit": "3febfecc348900ac02a424d94a6b5de1af9723a0"
 }
