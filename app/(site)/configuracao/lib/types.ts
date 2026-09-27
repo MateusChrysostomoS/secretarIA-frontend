@@ -25,14 +25,25 @@ export type ClinicCtx = {
   city: string;
   state: string;             // UF, e.g. "SP"
   postalCode: string;        // CEP
-  // Accepted health-insurance plan names, comma-separated in the UI. REAL —
-  // wired to TenantConfigWire.insurances (string[] on the wire).
-  insurances: string;
   // When on, SecretarIA asks the patient whether they have a convênio (health
   // plan) during booking and which one — patient PII, minimized per LGPD.
   // REAL — wired to TenantConfigWire.collect_insurance.
   collectInsurance: boolean;
 };
+
+// NOTE (TASK-008): there used to be an `insurances: string` (comma-separated)
+// field here, wired to `TenantConfigWire.insurances`. That wire field is gone
+// (see CHECKPOINT_convenio_catalogo.md §10.7) — the clinic's accepted plans
+// now live behind the catalog/mode endpoints in lib/secretaria-hub.ts, loaded
+// and saved immediately by InsuranceSection/ProfessionalInsuranceSection, NOT
+// through this page's ClinicCtx/buildConfigUpdatePayload/Save button. That is
+// a deliberate divergence from a literal reading of the SPEC's "ClinicCtx
+// carries insuranceMode + plans": the insurance endpoints are their own
+// immediate-write resources (GET/PUT/POST/PATCH, no draft state), exactly
+// like the service catalog (see ServiceEditorModal/createService) — routing
+// them through the tenant snapshot/hydration/save machinery built for
+// TenantConfigWire would force every convênio edit to wait for an unrelated
+// "Salvar configuração" click, which is not how the backend models them.
 
 // NOTE: there is deliberately no `phone` here anymore. The old field was a
 // demo-only string with no wire counterpart and no consumer: whatever the
@@ -51,7 +62,6 @@ export const EMPTY_CLINIC_CTX: ClinicCtx = {
   city: "",
   state: "",
   postalCode: "",
-  insurances: "",
   collectInsurance: false,
 };
 
