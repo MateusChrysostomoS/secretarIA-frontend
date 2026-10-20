@@ -159,8 +159,8 @@ export function StepAskArt() {
   return (
     <div className="lp-art" aria-hidden="true">
       <div className="lp-vig lp-art__thread">
-        <div className="v-msg v-msg--out">Vocês aceitam o plano Vida Plena?</div>
-        <div className="v-msg v-msg--in">Aceitamos, sim. Quer que eu veja os horários disponíveis?</div>
+        <div className="v-msg v-msg--out">Onde fica a clínica? Tem estacionamento?</div>
+        <div className="v-msg v-msg--in">Ficamos na Rua das Acácias, 120, com estacionamento ao lado. Quer que eu veja os horários disponíveis?</div>
       </div>
     </div>
   );

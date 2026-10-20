@@ -100,7 +100,7 @@ const STEPS: { title: string; text: string; art: () => React.ReactElement }[] = 
   },
   {
     title: "Conversa com a secretarIA",
-    text: "O paciente pergunta do jeito dele. A secretarIA responde com o que a clínica cadastrou: endereço, serviços, convênios aceitos, formas de pagamento.",
+    text: "O paciente pergunta do jeito dele. A secretarIA responde com o que a clínica cadastrou: endereço, horários, serviços e preparo.",
     art: StepAskArt,
   },
   {
