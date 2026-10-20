@@ -304,13 +304,413 @@
       "norm_label": "authlayout()"
     },
     {
+      "label": "legal-documents.test.ts",
+      "file_type": "code",
+      "source_file": "app/(legal)/__tests__/legal-documents.test.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "app_legal_tests_legal_documents_test",
+      "community": 27,
+      "norm_label": "legal-documents.test.ts"
+    },
+    {
+      "label": "KEYS",
+      "file_type": "code",
+      "source_file": "app/(legal)/__tests__/legal-documents.test.ts",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "app_legal_tests_legal_documents_test_keys",
+      "community": 27,
+      "norm_label": "keys"
+    },
+    {
+      "label": "repoRoot",
+      "file_type": "code",
+      "source_file": "app/(legal)/__tests__/legal-documents.test.ts",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "app_legal_tests_legal_documents_test_reporoot",
+      "community": 27,
+      "norm_label": "reporoot"
+    },
+    {
+      "label": "allText()",
+      "file_type": "code",
+      "source_file": "app/(legal)/__tests__/legal-documents.test.ts",
+      "source_location": "L17",
+      "_origin": "ast",
+      "id": "app_legal_tests_legal_documents_test_alltext",
+      "community": 27,
+      "norm_label": "alltext()"
+    },
+    {
+      "label": "ids()",
+      "file_type": "code",
+      "source_file": "app/(legal)/__tests__/legal-documents.test.ts",
+      "source_location": "L36",
+      "_origin": "ast",
+      "id": "app_legal_tests_legal_documents_test_ids",
+      "community": 3,
+      "norm_label": "ids()"
+    },
+    {
+      "label": "legal-markdown.test.ts",
+      "file_type": "code",
+      "source_file": "app/(legal)/__tests__/legal-markdown.test.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "app_legal_tests_legal_markdown_test",
+      "community": 27,
+      "norm_label": "legal-markdown.test.ts"
+    },
+    {
+      "label": "LegalDocument.tsx",
+      "file_type": "code",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "app_legal_components_legaldocument",
+      "community": 27,
+      "norm_label": "legaldocument.tsx"
+    },
+    {
+      "label": "renderInline()",
+      "file_type": "code",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L25",
+      "_origin": "ast",
+      "id": "app_legal_components_legaldocument_renderinline",
+      "community": 27,
+      "norm_label": "renderinline()"
+    },
+    {
+      "label": "Text()",
+      "file_type": "code",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L69",
+      "_origin": "ast",
+      "id": "app_legal_components_legaldocument_text",
+      "community": 27,
+      "norm_label": "text()"
+    },
+    {
+      "label": "SubheadingTag",
+      "file_type": "code",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L76",
+      "_origin": "ast",
+      "id": "app_legal_components_legaldocument_subheadingtag",
+      "community": 27,
+      "norm_label": "subheadingtag"
+    },
+    {
+      "label": "Blocks()",
+      "file_type": "code",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L78",
+      "_origin": "ast",
+      "id": "app_legal_components_legaldocument_blocks",
+      "community": 27,
+      "norm_label": "blocks()"
+    },
+    {
+      "label": "Toc()",
+      "file_type": "code",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L143",
+      "_origin": "ast",
+      "id": "app_legal_components_legaldocument_toc",
+      "community": 27,
+      "norm_label": "toc()"
+    },
+    {
+      "label": "LegalDocumentPage()",
+      "file_type": "code",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L157",
+      "_origin": "ast",
+      "id": "app_legal_components_legaldocument_legaldocumentpage",
+      "community": 27,
+      "norm_label": "legaldocumentpage()"
+    },
+    {
+      "label": "documents.ts",
+      "file_type": "code",
+      "source_file": "app/(legal)/_content/documents.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "app_legal_content_documents",
+      "community": 27,
+      "norm_label": "documents.ts"
+    },
+    {
+      "label": "LegalDocumentKey",
+      "file_type": "code",
+      "source_file": "app/(legal)/_content/documents.ts",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "app_legal_content_documents_legaldocumentkey",
+      "community": 27,
+      "norm_label": "legaldocumentkey"
+    },
+    {
+      "label": "LegalDocumentEntry",
+      "file_type": "code",
+      "source_file": "app/(legal)/_content/documents.ts",
+      "source_location": "L20",
+      "_origin": "ast",
+      "id": "app_legal_content_documents_legaldocumententry",
+      "community": 27,
+      "norm_label": "legaldocumententry"
+    },
+    {
+      "label": "LEGAL_DOCUMENTS",
+      "file_type": "code",
+      "source_file": "app/(legal)/_content/documents.ts",
+      "source_location": "L31",
+      "_origin": "ast",
+      "id": "app_legal_content_documents_legal_documents",
+      "community": 27,
+      "norm_label": "legal_documents"
+    },
+    {
+      "label": "readLegalSource()",
+      "file_type": "code",
+      "source_file": "app/(legal)/_content/documents.ts",
+      "source_location": "L48",
+      "_origin": "ast",
+      "id": "app_legal_content_documents_readlegalsource",
+      "community": 27,
+      "norm_label": "readlegalsource()"
+    },
+    {
+      "label": "loadLegalDocument()",
+      "file_type": "code",
+      "source_file": "app/(legal)/_content/documents.ts",
+      "source_location": "L52",
+      "_origin": "ast",
+      "id": "app_legal_content_documents_loadlegaldocument",
+      "community": 27,
+      "norm_label": "loadlegaldocument()"
+    },
+    {
+      "label": "legal-markdown.ts",
+      "file_type": "code",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "app_legal_lib_legal_markdown",
+      "community": 27,
+      "norm_label": "legal-markdown.ts"
+    },
+    {
+      "label": "Block",
+      "file_type": "code",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L33",
+      "_origin": "ast",
+      "id": "app_legal_lib_legal_markdown_block",
+      "community": 27,
+      "norm_label": "block"
+    },
+    {
+      "label": "LegalSection",
+      "file_type": "code",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L40",
+      "_origin": "ast",
+      "id": "app_legal_lib_legal_markdown_legalsection",
+      "community": 27,
+      "norm_label": "legalsection"
+    },
+    {
+      "label": "LegalDocument",
+      "file_type": "code",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L48",
+      "_origin": "ast",
+      "id": "app_legal_lib_legal_markdown_legaldocument",
+      "community": 27,
+      "norm_label": "legaldocument"
+    },
+    {
+      "label": "Inline",
+      "file_type": "code",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L55",
+      "_origin": "ast",
+      "id": "app_legal_lib_legal_markdown_inline",
+      "community": 27,
+      "norm_label": "inline"
+    },
+    {
+      "label": "slugify()",
+      "file_type": "code",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L70",
+      "_origin": "ast",
+      "id": "app_legal_lib_legal_markdown_slugify",
+      "community": 27,
+      "norm_label": "slugify()"
+    },
+    {
+      "label": "stripComments()",
+      "file_type": "code",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L80",
+      "_origin": "ast",
+      "id": "app_legal_lib_legal_markdown_stripcomments",
+      "community": 27,
+      "norm_label": "stripcomments()"
+    },
+    {
+      "label": "splitRow()",
+      "file_type": "code",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L84",
+      "_origin": "ast",
+      "id": "app_legal_lib_legal_markdown_splitrow",
+      "community": 27,
+      "norm_label": "splitrow()"
+    },
+    {
+      "label": "parseBlocks()",
+      "file_type": "code",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L92",
+      "_origin": "ast",
+      "id": "app_legal_lib_legal_markdown_parseblocks",
+      "community": 27,
+      "norm_label": "parseblocks()"
+    },
+    {
+      "label": "parseLegalDocument()",
+      "file_type": "code",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L181",
+      "_origin": "ast",
+      "id": "app_legal_lib_legal_markdown_parselegaldocument",
+      "community": 27,
+      "norm_label": "parselegaldocument()"
+    },
+    {
+      "label": "parseInline()",
+      "file_type": "code",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L264",
+      "_origin": "ast",
+      "id": "app_legal_lib_legal_markdown_parseinline",
+      "community": 27,
+      "norm_label": "parseinline()"
+    },
+    {
+      "label": "fillTokens()",
+      "file_type": "code",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L285",
+      "_origin": "ast",
+      "id": "app_legal_lib_legal_markdown_filltokens",
+      "community": 27,
+      "norm_label": "filltokens()"
+    },
+    {
+      "label": "isAllowedHref()",
+      "file_type": "code",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L291",
+      "_origin": "ast",
+      "id": "app_legal_lib_legal_markdown_isallowedhref",
+      "community": 27,
+      "norm_label": "isallowedhref()"
+    },
+    {
+      "label": "layout.tsx",
+      "file_type": "code",
+      "source_file": "app/(legal)/layout.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "app_legal_layout",
+      "community": 264,
+      "norm_label": "layout.tsx"
+    },
+    {
+      "label": "LegalLayout()",
+      "file_type": "code",
+      "source_file": "app/(legal)/layout.tsx",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "app_legal_layout_legallayout",
+      "community": 264,
+      "norm_label": "legallayout()"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "app/(legal)/privacidade/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "app_legal_privacidade_page",
+      "community": 27,
+      "norm_label": "page.tsx"
+    },
+    {
+      "label": "metadata",
+      "file_type": "code",
+      "source_file": "app/(legal)/privacidade/page.tsx",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "app_legal_privacidade_page_metadata",
+      "community": 27,
+      "norm_label": "metadata"
+    },
+    {
+      "label": "PrivacidadePage()",
+      "file_type": "code",
+      "source_file": "app/(legal)/privacidade/page.tsx",
+      "source_location": "L13",
+      "_origin": "ast",
+      "id": "app_legal_privacidade_page_privacidadepage",
+      "community": 27,
+      "norm_label": "privacidadepage()"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "app/(legal)/termos/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "app_legal_termos_page",
+      "community": 27,
+      "norm_label": "page.tsx"
+    },
+    {
+      "label": "metadata",
+      "file_type": "code",
+      "source_file": "app/(legal)/termos/page.tsx",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "app_legal_termos_page_metadata",
+      "community": 27,
+      "norm_label": "metadata"
+    },
+    {
+      "label": "TermosPage()",
+      "file_type": "code",
+      "source_file": "app/(legal)/termos/page.tsx",
+      "source_location": "L13",
+      "_origin": "ast",
+      "id": "app_legal_termos_page_termospage",
+      "community": 27,
+      "norm_label": "termospage()"
+    },
+    {
       "label": "ContactForm.tsx",
       "file_type": "code",
       "source_file": "app/(marketing)/_components/ContactForm.tsx",
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_marketing_components_contactform",
-      "community": 66,
+      "community": 17,
       "norm_label": "contactform.tsx"
     },
     {
@@ -320,7 +720,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "app_marketing_components_contactform_max",
-      "community": 66,
+      "community": 17,
       "norm_label": "max"
     },
     {
@@ -330,7 +730,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "app_marketing_components_contactform_fielderrors",
-      "community": 66,
+      "community": 17,
       "norm_label": "fielderrors"
     },
     {
@@ -340,7 +740,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "app_marketing_components_contactform_contactform",
-      "community": 66,
+      "community": 17,
       "norm_label": "contactform()"
     },
     {
@@ -380,7 +780,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "app_marketing_components_figures_herofigure",
-      "community": 27,
+      "community": 25,
       "norm_label": "herofigure()"
     },
     {
@@ -400,7 +800,7 @@
       "source_location": "L158",
       "_origin": "ast",
       "id": "app_marketing_components_figures_stepaskart",
-      "community": 27,
+      "community": 25,
       "norm_label": "stepaskart()"
     },
     {
@@ -410,7 +810,7 @@
       "source_location": "L169",
       "_origin": "ast",
       "id": "app_marketing_components_figures_steppickart",
-      "community": 27,
+      "community": 25,
       "norm_label": "steppickart()"
     },
     {
@@ -480,7 +880,7 @@
       "source_location": "L306",
       "_origin": "ast",
       "id": "app_marketing_components_figures_conversasfigure",
-      "community": 27,
+      "community": 25,
       "norm_label": "conversasfigure()"
     },
     {
@@ -580,7 +980,7 @@
       "source_location": "L548",
       "_origin": "ast",
       "id": "app_marketing_components_figures_contextofigure",
-      "community": 27,
+      "community": 25,
       "norm_label": "contextofigure()"
     },
     {
@@ -590,7 +990,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_marketing_components_glyph",
-      "community": 95,
+      "community": 25,
       "norm_label": "glyph.tsx"
     },
     {
@@ -600,7 +1000,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "app_marketing_components_glyph_glyphname",
-      "community": 95,
+      "community": 25,
       "norm_label": "glyphname"
     },
     {
@@ -610,7 +1010,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "app_marketing_components_glyph_paths",
-      "community": 95,
+      "community": 25,
       "norm_label": "paths"
     },
     {
@@ -620,7 +1020,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "app_marketing_components_glyph_glyph",
-      "community": 95,
+      "community": 25,
       "norm_label": "glyph()"
     },
     {
@@ -630,7 +1030,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_marketing_components_siteheader",
-      "community": 17,
+      "community": 66,
       "norm_label": "siteheader.tsx"
     },
     {
@@ -640,7 +1040,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "app_marketing_components_siteheader_sitenavlink",
-      "community": 17,
+      "community": 66,
       "norm_label": "sitenavlink"
     },
     {
@@ -650,7 +1050,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "app_marketing_components_siteheader_siteheaderprops",
-      "community": 17,
+      "community": 66,
       "norm_label": "siteheaderprops"
     },
     {
@@ -660,7 +1060,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "app_marketing_components_siteheader_siteheader",
-      "community": 17,
+      "community": 66,
       "norm_label": "siteheader()"
     },
     {
@@ -690,7 +1090,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_marketing_page",
-      "community": 27,
+      "community": 25,
       "norm_label": "page.tsx"
     },
     {
@@ -700,7 +1100,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "app_marketing_page_metadata",
-      "community": 27,
+      "community": 25,
       "norm_label": "metadata"
     },
     {
@@ -710,7 +1110,7 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "app_marketing_page_nav",
-      "community": 27,
+      "community": 25,
       "norm_label": "nav"
     },
     {
@@ -720,7 +1120,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "app_marketing_page_steps",
-      "community": 27,
+      "community": 25,
       "norm_label": "steps"
     },
     {
@@ -730,7 +1130,7 @@
       "source_location": "L123",
       "_origin": "ast",
       "id": "app_marketing_page_does",
-      "community": 27,
+      "community": 25,
       "norm_label": "does"
     },
     {
@@ -740,7 +1140,7 @@
       "source_location": "L134",
       "_origin": "ast",
       "id": "app_marketing_page_does_not",
-      "community": 27,
+      "community": 25,
       "norm_label": "does_not"
     },
     {
@@ -750,7 +1150,7 @@
       "source_location": "L149",
       "_origin": "ast",
       "id": "app_marketing_page_safety",
-      "community": 27,
+      "community": 25,
       "norm_label": "safety"
     },
     {
@@ -760,7 +1160,7 @@
       "source_location": "L172",
       "_origin": "ast",
       "id": "app_marketing_page_faq",
-      "community": 27,
+      "community": 25,
       "norm_label": "faq"
     },
     {
@@ -770,7 +1170,7 @@
       "source_location": "L254",
       "_origin": "ast",
       "id": "app_marketing_page_landingpage",
-      "community": 27,
+      "community": 25,
       "norm_label": "landingpage()"
     },
     {
@@ -820,7 +1220,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_components_brandglyph",
-      "community": 38,
+      "community": 66,
       "norm_label": "brandglyph.tsx"
     },
     {
@@ -830,7 +1230,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "app_site_components_brandglyph_brandglyphprops",
-      "community": 38,
+      "community": 66,
       "norm_label": "brandglyphprops"
     },
     {
@@ -840,7 +1240,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "app_site_components_brandglyph_brandglyph",
-      "community": 38,
+      "community": 66,
       "norm_label": "brandglyph()"
     },
     {
@@ -1030,7 +1430,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_components_modal",
-      "community": 10,
+      "community": 53,
       "norm_label": "modal.tsx"
     },
     {
@@ -1040,7 +1440,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "app_site_components_modal_modalprops",
-      "community": 10,
+      "community": 53,
       "norm_label": "modalprops"
     },
     {
@@ -1050,7 +1450,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "app_site_components_modal_modal",
-      "community": 10,
+      "community": 53,
       "norm_label": "modal()"
     },
     {
@@ -1130,7 +1530,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_components_portalheader",
-      "community": 38,
+      "community": 60,
       "norm_label": "portalheader.tsx"
     },
     {
@@ -1140,7 +1540,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "app_site_components_portalheader_portalheaderprops",
-      "community": 38,
+      "community": 60,
       "norm_label": "portalheaderprops"
     },
     {
@@ -1150,7 +1550,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "app_site_components_portalheader_portalheader",
-      "community": 38,
+      "community": 60,
       "norm_label": "portalheader()"
     },
     {
@@ -1160,7 +1560,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_components_productlockup",
-      "community": 38,
+      "community": 60,
       "norm_label": "productlockup.tsx"
     },
     {
@@ -1170,7 +1570,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "app_site_components_productlockup_portalproduct",
-      "community": 38,
+      "community": 60,
       "norm_label": "portalproduct"
     },
     {
@@ -1180,7 +1580,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "app_site_components_productlockup_product_name",
-      "community": 38,
+      "community": 60,
       "norm_label": "product_name"
     },
     {
@@ -1190,7 +1590,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "app_site_components_productlockup_productlockup",
-      "community": 38,
+      "community": 60,
       "norm_label": "productlockup()"
     },
     {
@@ -1240,7 +1640,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_components_secretariawordmark",
-      "community": 38,
+      "community": 60,
       "norm_label": "secretariawordmark.tsx"
     },
     {
@@ -1250,7 +1650,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "app_site_components_secretariawordmark_secretariawordmarkprops",
-      "community": 38,
+      "community": 60,
       "norm_label": "secretariawordmarkprops"
     },
     {
@@ -1260,7 +1660,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "app_site_components_secretariawordmark_secretariawordmark",
-      "community": 38,
+      "community": 60,
       "norm_label": "secretariawordmark()"
     },
     {
@@ -1270,7 +1670,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_components_themetoggle",
-      "community": 38,
+      "community": 60,
       "norm_label": "themetoggle.tsx"
     },
     {
@@ -1280,7 +1680,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "app_site_components_themetoggle_themetoggleprops",
-      "community": 38,
+      "community": 60,
       "norm_label": "themetoggleprops"
     },
     {
@@ -1290,7 +1690,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "app_site_components_themetoggle_themetoggle",
-      "community": 38,
+      "community": 60,
       "norm_label": "themetoggle()"
     },
     {
@@ -1300,7 +1700,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_components_usebrandtheme",
-      "community": 38,
+      "community": 60,
       "norm_label": "usebrandtheme.ts"
     },
     {
@@ -1310,7 +1710,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "app_site_components_usebrandtheme_theme",
-      "community": 38,
+      "community": 60,
       "norm_label": "theme"
     },
     {
@@ -1320,7 +1720,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "app_site_components_usebrandtheme_usebrandtheme",
-      "community": 38,
+      "community": 60,
       "norm_label": "usebrandtheme()"
     },
     {
@@ -1390,7 +1790,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_shared_hubnotice",
-      "community": 29,
+      "community": 47,
       "norm_label": "hubnotice.tsx"
     },
     {
@@ -1400,7 +1800,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "app_site_shared_hubnotice_hubnoticeprops",
-      "community": 29,
+      "community": 47,
       "norm_label": "hubnoticeprops"
     },
     {
@@ -1410,7 +1810,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "app_site_shared_hubnotice_basestyle",
-      "community": 29,
+      "community": 47,
       "norm_label": "basestyle"
     },
     {
@@ -1420,7 +1820,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "app_site_shared_hubnotice_warnstyle",
-      "community": 29,
+      "community": 47,
       "norm_label": "warnstyle"
     },
     {
@@ -1430,7 +1830,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "app_site_shared_hubnotice_hubnotice",
-      "community": 29,
+      "community": 47,
       "norm_label": "hubnotice()"
     },
     {
@@ -1470,7 +1870,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "app_site_shared_calendar_dates_weekday",
-      "community": 5,
+      "community": 43,
       "norm_label": "weekday"
     },
     {
@@ -1660,7 +2060,7 @@
       "source_location": "L198",
       "_origin": "ast",
       "id": "app_site_shared_calendar_dates_daylabelfromkey",
-      "community": 5,
+      "community": 0,
       "norm_label": "daylabelfromkey()"
     },
     {
@@ -1700,7 +2100,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_shared_data",
-      "community": 19,
+      "community": 5,
       "norm_label": "data.ts"
     },
     {
@@ -1720,7 +2120,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "app_site_shared_data_anamnese",
-      "community": 19,
+      "community": 5,
       "norm_label": "anamnese"
     },
     {
@@ -1730,7 +2130,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "app_site_shared_data_appt",
-      "community": 19,
+      "community": 5,
       "norm_label": "appt"
     },
     {
@@ -1740,7 +2140,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "app_site_shared_data_statustone",
-      "community": 19,
+      "community": 5,
       "norm_label": "statustone"
     },
     {
@@ -1750,7 +2150,7 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "app_site_shared_data_appt_types",
-      "community": 19,
+      "community": 5,
       "norm_label": "appt_types"
     },
     {
@@ -1760,7 +2160,7 @@
       "source_location": "L94",
       "_origin": "ast",
       "id": "app_site_shared_data_durations",
-      "community": 19,
+      "community": 5,
       "norm_label": "durations"
     },
     {
@@ -1780,7 +2180,7 @@
       "source_location": "L113",
       "_origin": "ast",
       "id": "app_site_shared_data_current_user",
-      "community": 19,
+      "community": 5,
       "norm_label": "current_user"
     },
     {
@@ -1790,7 +2190,7 @@
       "source_location": "L114",
       "_origin": "ast",
       "id": "app_site_shared_data_clinic",
-      "community": 19,
+      "community": 5,
       "norm_label": "clinic"
     },
     {
@@ -1800,7 +2200,7 @@
       "source_location": "L121",
       "_origin": "ast",
       "id": "app_site_shared_data_fmttime",
-      "community": 43,
+      "community": 5,
       "norm_label": "fmttime()"
     },
     {
@@ -1900,7 +2300,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "app_site_shared_ui_btn",
-      "community": 29,
+      "community": 19,
       "norm_label": "btn()"
     },
     {
@@ -1950,7 +2350,7 @@
       "source_location": "L311",
       "_origin": "ast",
       "id": "app_site_shared_ui_helptip",
-      "community": 42,
+      "community": 18,
       "norm_label": "helptip()"
     },
     {
@@ -1960,7 +2360,7 @@
       "source_location": "L364",
       "_origin": "ast",
       "id": "app_site_shared_ui_field",
-      "community": 54,
+      "community": 258,
       "norm_label": "field()"
     },
     {
@@ -1970,7 +2370,7 @@
       "source_location": "L397",
       "_origin": "ast",
       "id": "app_site_shared_ui_inputstyle",
-      "community": 19,
+      "community": 260,
       "norm_label": "inputstyle"
     },
     {
@@ -1980,7 +2380,7 @@
       "source_location": "L408",
       "_origin": "ast",
       "id": "app_site_shared_ui_textinput",
-      "community": 10,
+      "community": 258,
       "norm_label": "textinput()"
     },
     {
@@ -1990,7 +2390,7 @@
       "source_location": "L429",
       "_origin": "ast",
       "id": "app_site_shared_ui_textarea",
-      "community": 54,
+      "community": 40,
       "norm_label": "textarea()"
     },
     {
@@ -2120,7 +2520,7 @@
       "source_location": "L333",
       "_origin": "ast",
       "id": "app_site_agenda_calendar_weekview",
-      "community": 29,
+      "community": 43,
       "norm_label": "weekview()"
     },
     {
@@ -2130,7 +2530,7 @@
       "source_location": "L466",
       "_origin": "ast",
       "id": "app_site_agenda_calendar_dayview",
-      "community": 29,
+      "community": 43,
       "norm_label": "dayview()"
     },
     {
@@ -2200,7 +2600,7 @@
       "source_location": "L164",
       "_origin": "ast",
       "id": "app_site_agenda_drawer_drawer",
-      "community": 5,
+      "community": 43,
       "norm_label": "drawer()"
     },
     {
@@ -2520,7 +2920,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_agenda_page",
-      "community": 29,
+      "community": 0,
       "norm_label": "page.tsx"
     },
     {
@@ -2530,7 +2930,7 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "app_site_agenda_page_viewmode",
-      "community": 29,
+      "community": 0,
       "norm_label": "viewmode"
     },
     {
@@ -2540,7 +2940,7 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "app_site_agenda_page_modalstate",
-      "community": 29,
+      "community": 0,
       "norm_label": "modalstate"
     },
     {
@@ -2550,7 +2950,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "app_site_agenda_page_toaststate",
-      "community": 29,
+      "community": 0,
       "norm_label": "toaststate"
     },
     {
@@ -2560,7 +2960,7 @@
       "source_location": "L106",
       "_origin": "ast",
       "id": "app_site_agenda_page_toast",
-      "community": 29,
+      "community": 0,
       "norm_label": "toast()"
     },
     {
@@ -2570,7 +2970,7 @@
       "source_location": "L164",
       "_origin": "ast",
       "id": "app_site_agenda_page_toolbar",
-      "community": 29,
+      "community": 0,
       "norm_label": "toolbar()"
     },
     {
@@ -2660,7 +3060,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_app_onboarding_components_statetimeline",
-      "community": 38,
+      "community": 262,
       "norm_label": "statetimeline.tsx"
     },
     {
@@ -2670,7 +3070,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "app_site_app_onboarding_components_statetimeline_nodes",
-      "community": 38,
+      "community": 262,
       "norm_label": "nodes"
     },
     {
@@ -2680,7 +3080,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "app_site_app_onboarding_components_statetimeline_rankof",
-      "community": 38,
+      "community": 262,
       "norm_label": "rankof()"
     },
     {
@@ -2690,7 +3090,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "app_site_app_onboarding_components_statetimeline_statetimeline",
-      "community": 38,
+      "community": 262,
       "norm_label": "statetimeline()"
     },
     {
@@ -2700,7 +3100,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_app_onboarding_lib_tests_attempt_error_test",
-      "community": 38,
+      "community": 263,
       "norm_label": "attempt-error.test.ts"
     },
     {
@@ -2720,7 +3120,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_app_onboarding_lib_attempt_error",
-      "community": 38,
+      "community": 263,
       "norm_label": "attempt-error.ts"
     },
     {
@@ -2730,7 +3130,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "app_site_app_onboarding_lib_attempt_error_attempt_error_code_label",
-      "community": 38,
+      "community": 263,
       "norm_label": "attempt_error_code_label"
     },
     {
@@ -2740,7 +3140,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "app_site_app_onboarding_lib_attempt_error_explainattempterror",
-      "community": 38,
+      "community": 263,
       "norm_label": "explainattempterror()"
     },
     {
@@ -2750,7 +3150,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "app_site_app_onboarding_lib_attempt_error_attemptfailuresuffix",
-      "community": 38,
+      "community": 263,
       "norm_label": "attemptfailuresuffix()"
     },
     {
@@ -2960,7 +3360,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_app_reativar_lib_tests_test_window_test",
-      "community": 38,
+      "community": 95,
       "norm_label": "test-window.test.ts"
     },
     {
@@ -2970,7 +3370,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "app_site_app_reativar_lib_tests_test_window_test_anchor",
-      "community": 38,
+      "community": 95,
       "norm_label": "anchor"
     },
     {
@@ -2980,7 +3380,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_app_reativar_lib_test_window",
-      "community": 38,
+      "community": 95,
       "norm_label": "test-window.ts"
     },
     {
@@ -2990,7 +3390,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "app_site_app_reativar_lib_test_window_daysremaining",
-      "community": 38,
+      "community": 95,
       "norm_label": "daysremaining()"
     },
     {
@@ -3000,7 +3400,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "app_site_app_reativar_lib_test_window_daysremaininglabel",
-      "community": 38,
+      "community": 95,
       "norm_label": "daysremaininglabel()"
     },
     {
@@ -3010,7 +3410,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "app_site_app_reativar_lib_test_window_formatdays",
-      "community": 38,
+      "community": 95,
       "norm_label": "formatdays()"
     },
     {
@@ -3020,7 +3420,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_app_reativar_page",
-      "community": 38,
+      "community": 95,
       "norm_label": "page.tsx"
     },
     {
@@ -3030,7 +3430,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "app_site_app_reativar_page_formatdate",
-      "community": 38,
+      "community": 95,
       "norm_label": "formatdate()"
     },
     {
@@ -3040,7 +3440,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "app_site_app_reativar_page_isconnected",
-      "community": 38,
+      "community": 95,
       "norm_label": "isconnected()"
     },
     {
@@ -3050,7 +3450,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "app_site_app_reativar_page_reativarpage",
-      "community": 38,
+      "community": 95,
       "norm_label": "reativarpage()"
     },
     {
@@ -3160,7 +3560,7 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "app_site_cadastro_components_cadastrowizard_cadastrowizard",
-      "community": 59,
+      "community": 3,
       "norm_label": "cadastrowizard()"
     },
     {
@@ -3250,7 +3650,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_cadastro_components_facebookpagestep",
-      "community": 65,
+      "community": 2,
       "norm_label": "facebookpagestep.tsx"
     },
     {
@@ -3260,7 +3660,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "app_site_cadastro_components_facebookpagestep_options",
-      "community": 65,
+      "community": 2,
       "norm_label": "options"
     },
     {
@@ -3270,7 +3670,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "app_site_cadastro_components_facebookpagestep_facebookpagestepprops",
-      "community": 65,
+      "community": 2,
       "norm_label": "facebookpagestepprops"
     },
     {
@@ -3280,7 +3680,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "app_site_cadastro_components_facebookpagestep_facebookpagestep",
-      "community": 65,
+      "community": 2,
       "norm_label": "facebookpagestep()"
     },
     {
@@ -3330,7 +3730,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_cadastro_components_priorapistep",
-      "community": 2,
+      "community": 65,
       "norm_label": "priorapistep.tsx"
     },
     {
@@ -3340,7 +3740,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "app_site_cadastro_components_priorapistep_options",
-      "community": 2,
+      "community": 65,
       "norm_label": "options"
     },
     {
@@ -3350,7 +3750,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "app_site_cadastro_components_priorapistep_priorapistepprops",
-      "community": 2,
+      "community": 65,
       "norm_label": "priorapistepprops"
     },
     {
@@ -3360,7 +3760,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "app_site_cadastro_components_priorapistep_priorapistep",
-      "community": 2,
+      "community": 65,
       "norm_label": "priorapistep()"
     },
     {
@@ -3590,7 +3990,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_cadastro_lib_plans",
-      "community": 3,
+      "community": 82,
       "norm_label": "plans.ts"
     },
     {
@@ -3600,7 +4000,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "app_site_cadastro_lib_plans_purchasable_plans",
-      "community": 3,
+      "community": 82,
       "norm_label": "purchasable_plans"
     },
     {
@@ -3610,7 +4010,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "app_site_cadastro_lib_plans_resolvedplan",
-      "community": 55,
+      "community": 82,
       "norm_label": "resolvedplan"
     },
     {
@@ -3760,7 +4160,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_calendar_connected_page",
-      "community": 38,
+      "community": 66,
       "norm_label": "page.tsx"
     },
     {
@@ -3770,7 +4170,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "app_site_calendar_connected_page_calendarconnectedpage",
-      "community": 38,
+      "community": 66,
       "norm_label": "calendarconnectedpage()"
     },
     {
@@ -3780,7 +4180,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "app_site_calendar_connected_page_calendarconnectedinner",
-      "community": 38,
+      "community": 66,
       "norm_label": "calendarconnectedinner()"
     },
     {
@@ -3790,7 +4190,7 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "app_site_calendar_connected_page_calendarconnectedshell",
-      "community": 38,
+      "community": 66,
       "norm_label": "calendarconnectedshell()"
     },
     {
@@ -3800,7 +4200,7 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "app_site_calendar_connected_page_placeholder",
-      "community": 38,
+      "community": 66,
       "norm_label": "placeholder()"
     },
     {
@@ -3810,7 +4210,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_checkout_cancelado_page",
-      "community": 38,
+      "community": 66,
       "norm_label": "page.tsx"
     },
     {
@@ -3820,7 +4220,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "app_site_checkout_cancelado_page_checkoutcanceladopage",
-      "community": 38,
+      "community": 66,
       "norm_label": "checkoutcanceladopage()"
     },
     {
@@ -3830,7 +4230,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_checkout_sucesso_page",
-      "community": 12,
+      "community": 47,
       "norm_label": "page.tsx"
     },
     {
@@ -3840,7 +4240,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "app_site_checkout_sucesso_page_viewstate",
-      "community": 12,
+      "community": 47,
       "norm_label": "viewstate"
     },
     {
@@ -3850,7 +4250,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "app_site_checkout_sucesso_page_checkoutsucessopage",
-      "community": 12,
+      "community": 47,
       "norm_label": "checkoutsucessopage()"
     },
     {
@@ -3860,7 +4260,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "app_site_checkout_sucesso_page_checkoutsucessoinner",
-      "community": 12,
+      "community": 47,
       "norm_label": "checkoutsucessoinner()"
     },
     {
@@ -3870,7 +4270,7 @@
       "source_location": "L191",
       "_origin": "ast",
       "id": "app_site_checkout_sucesso_page_renderview",
-      "community": 12,
+      "community": 47,
       "norm_label": "renderview()"
     },
     {
@@ -3880,7 +4280,7 @@
       "source_location": "L312",
       "_origin": "ast",
       "id": "app_site_checkout_sucesso_page_checkoutshell",
-      "community": 12,
+      "community": 47,
       "norm_label": "checkoutshell()"
     },
     {
@@ -3890,7 +4290,7 @@
       "source_location": "L329",
       "_origin": "ast",
       "id": "app_site_checkout_sucesso_page_spinner",
-      "community": 12,
+      "community": 47,
       "norm_label": "spinner()"
     },
     {
@@ -3900,7 +4300,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_configuracao_components_addressfields",
-      "community": 54,
+      "community": 258,
       "norm_label": "addressfields.tsx"
     },
     {
@@ -3910,7 +4310,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "app_site_configuracao_components_addressfields_addressfieldsprops",
-      "community": 54,
+      "community": 258,
       "norm_label": "addressfieldsprops"
     },
     {
@@ -3920,7 +4320,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "app_site_configuracao_components_addressfields_addressfields",
-      "community": 54,
+      "community": 258,
       "norm_label": "addressfields()"
     },
     {
@@ -4010,7 +4410,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_configuracao_components_cselect",
-      "community": 54,
+      "community": 260,
       "norm_label": "cselect.tsx"
     },
     {
@@ -4020,7 +4420,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "app_site_configuracao_components_cselect_cselectprops",
-      "community": 54,
+      "community": 260,
       "norm_label": "cselectprops"
     },
     {
@@ -4030,7 +4430,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "app_site_configuracao_components_cselect_cselect",
-      "community": 54,
+      "community": 260,
       "norm_label": "cselect()"
     },
     {
@@ -4070,7 +4470,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_configuracao_components_ctoggle",
-      "community": 53,
+      "community": 6,
       "norm_label": "ctoggle.tsx"
     },
     {
@@ -4080,7 +4480,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "app_site_configuracao_components_ctoggle_ctoggleprops",
-      "community": 53,
+      "community": 6,
       "norm_label": "ctoggleprops"
     },
     {
@@ -4090,7 +4490,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "app_site_configuracao_components_ctoggle_ctoggle",
-      "community": 53,
+      "community": 6,
       "norm_label": "ctoggle()"
     },
     {
@@ -4100,7 +4500,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_configuracao_components_contextsection",
-      "community": 54,
+      "community": 6,
       "norm_label": "contextsection.tsx"
     },
     {
@@ -4110,7 +4510,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "app_site_configuracao_components_contextsection_contextsectionprops",
-      "community": 54,
+      "community": 6,
       "norm_label": "contextsectionprops"
     },
     {
@@ -4120,7 +4520,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "app_site_configuracao_components_contextsection_contextsection",
-      "community": 54,
+      "community": 6,
       "norm_label": "contextsection()"
     },
     {
@@ -4240,7 +4640,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_configuracao_components_inviteteammembermodal",
-      "community": 10,
+      "community": 53,
       "norm_label": "inviteteammembermodal.tsx"
     },
     {
@@ -4250,7 +4650,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "app_site_configuracao_components_inviteteammembermodal_invitekind",
-      "community": 10,
+      "community": 53,
       "norm_label": "invitekind"
     },
     {
@@ -4260,7 +4660,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "app_site_configuracao_components_inviteteammembermodal_copy",
-      "community": 10,
+      "community": 53,
       "norm_label": "copy"
     },
     {
@@ -4270,7 +4670,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "app_site_configuracao_components_inviteteammembermodal_inviteteammembermodalprops",
-      "community": 10,
+      "community": 53,
       "norm_label": "inviteteammembermodalprops"
     },
     {
@@ -4280,7 +4680,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "app_site_configuracao_components_inviteteammembermodal_inviteteammembermodal",
-      "community": 10,
+      "community": 53,
       "norm_label": "inviteteammembermodal()"
     },
     {
@@ -4450,7 +4850,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_configuracao_components_pixsection",
-      "community": 54,
+      "community": 260,
       "norm_label": "pixsection.tsx"
     },
     {
@@ -4460,7 +4860,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "app_site_configuracao_components_pixsection_pixsectionprops",
-      "community": 54,
+      "community": 260,
       "norm_label": "pixsectionprops"
     },
     {
@@ -4470,7 +4870,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "app_site_configuracao_components_pixsection_numberfieldprops",
-      "community": 54,
+      "community": 260,
       "norm_label": "numberfieldprops"
     },
     {
@@ -4480,7 +4880,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "app_site_configuracao_components_pixsection_numberfield",
-      "community": 54,
+      "community": 260,
       "norm_label": "numberfield()"
     },
     {
@@ -4490,7 +4890,7 @@
       "source_location": "L101",
       "_origin": "ast",
       "id": "app_site_configuracao_components_pixsection_asaasstatuspill",
-      "community": 54,
+      "community": 260,
       "norm_label": "asaasstatuspill()"
     },
     {
@@ -4500,7 +4900,7 @@
       "source_location": "L128",
       "_origin": "ast",
       "id": "app_site_configuracao_components_pixsection_pixsection",
-      "community": 54,
+      "community": 260,
       "norm_label": "pixsection()"
     },
     {
@@ -4510,7 +4910,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_configuracao_components_postconsultsection",
-      "community": 54,
+      "community": 40,
       "norm_label": "postconsultsection.tsx"
     },
     {
@@ -4520,7 +4920,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "app_site_configuracao_components_postconsultsection_postconsultsectionprops",
-      "community": 54,
+      "community": 40,
       "norm_label": "postconsultsectionprops"
     },
     {
@@ -4530,7 +4930,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "app_site_configuracao_components_postconsultsection_postconsultsection",
-      "community": 54,
+      "community": 40,
       "norm_label": "postconsultsection()"
     },
     {
@@ -4540,7 +4940,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_configuracao_components_professionalinsurancesection",
-      "community": 53,
+      "community": 6,
       "norm_label": "professionalinsurancesection.tsx"
     },
     {
@@ -4550,7 +4950,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "app_site_configuracao_components_professionalinsurancesection_professionalinsurancesectionprops",
-      "community": 53,
+      "community": 6,
       "norm_label": "professionalinsurancesectionprops"
     },
     {
@@ -4560,7 +4960,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "app_site_configuracao_components_professionalinsurancesection_professionalinsurancesection",
-      "community": 53,
+      "community": 6,
       "norm_label": "professionalinsurancesection()"
     },
     {
@@ -4660,7 +5060,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_configuracao_components_serviceeditormodal",
-      "community": 10,
+      "community": 258,
       "norm_label": "serviceeditormodal.tsx"
     },
     {
@@ -4670,7 +5070,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "app_site_configuracao_components_serviceeditormodal_servicedraft",
-      "community": 10,
+      "community": 258,
       "norm_label": "servicedraft"
     },
     {
@@ -4680,7 +5080,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "app_site_configuracao_components_serviceeditormodal_serviceeditormodalprops",
-      "community": 10,
+      "community": 258,
       "norm_label": "serviceeditormodalprops"
     },
     {
@@ -4690,7 +5090,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "app_site_configuracao_components_serviceeditormodal_serviceeditormodal",
-      "community": 10,
+      "community": 53,
       "norm_label": "serviceeditormodal()"
     },
     {
@@ -4700,7 +5100,7 @@
       "source_location": "L256",
       "_origin": "ast",
       "id": "app_site_configuracao_components_serviceeditormodal_confirmreach",
-      "community": 10,
+      "community": 258,
       "norm_label": "confirmreach()"
     },
     {
@@ -4710,7 +5110,7 @@
       "source_location": "L315",
       "_origin": "ast",
       "id": "app_site_configuracao_components_serviceeditormodal_requirementseditor",
-      "community": 10,
+      "community": 258,
       "norm_label": "requirementseditor()"
     },
     {
@@ -4720,7 +5120,7 @@
       "source_location": "L392",
       "_origin": "ast",
       "id": "app_site_configuracao_components_serviceeditormodal_notice",
-      "community": 10,
+      "community": 258,
       "norm_label": "notice()"
     },
     {
@@ -4830,7 +5230,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_configuracao_components_togglerow",
-      "community": 53,
+      "community": 6,
       "norm_label": "togglerow.tsx"
     },
     {
@@ -4840,7 +5240,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "app_site_configuracao_components_togglerow_togglerowprops",
-      "community": 53,
+      "community": 6,
       "norm_label": "togglerowprops"
     },
     {
@@ -4850,7 +5250,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "app_site_configuracao_components_togglerow_togglerow",
-      "community": 53,
+      "community": 6,
       "norm_label": "togglerow()"
     },
     {
@@ -4930,7 +5330,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_fixtures",
-      "community": 45,
+      "community": 46,
       "norm_label": "fixtures.ts"
     },
     {
@@ -4940,7 +5340,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_fixtures_tenantwire",
-      "community": 45,
+      "community": 46,
       "norm_label": "tenantwire()"
     },
     {
@@ -4950,7 +5350,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_fixtures_professionalwire",
-      "community": 45,
+      "community": 46,
       "norm_label": "professionalwire()"
     },
     {
@@ -4960,7 +5360,7 @@
       "source_location": "L97",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_fixtures_inheritingprofessionalwire",
-      "community": 45,
+      "community": 46,
       "norm_label": "inheritingprofessionalwire()"
     },
     {
@@ -4970,7 +5370,7 @@
       "source_location": "L115",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_fixtures_emptiedprofessionalwire",
-      "community": 45,
+      "community": 46,
       "norm_label": "emptiedprofessionalwire()"
     },
     {
@@ -4980,7 +5380,7 @@
       "source_location": "L135",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_fixtures_legacybackendprofessionalwire",
-      "community": 45,
+      "community": 46,
       "norm_label": "legacybackendprofessionalwire()"
     },
     {
@@ -5070,7 +5470,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_save_test_spies",
-      "community": 45,
+      "community": 46,
       "norm_label": "spies()"
     },
     {
@@ -5140,7 +5540,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_snapshot_test",
-      "community": 45,
+      "community": 46,
       "norm_label": "snapshot.test.ts"
     },
     {
@@ -5150,7 +5550,7 @@
       "source_location": "L274",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_tests_snapshot_test_clinic_types",
-      "community": 45,
+      "community": 46,
       "norm_label": "clinic_types"
     },
     {
@@ -5360,7 +5760,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_demo_seed",
-      "community": 78,
+      "community": 40,
       "norm_label": "demo-seed.ts"
     },
     {
@@ -5370,7 +5770,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_demo_seed_visitordemo",
-      "community": 78,
+      "community": 40,
       "norm_label": "visitordemo"
     },
     {
@@ -5380,7 +5780,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_demo_seed_demo_roster",
-      "community": 78,
+      "community": 40,
       "norm_label": "demo_roster"
     },
     {
@@ -5390,7 +5790,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_demo_seed_demo_ctx",
-      "community": 78,
+      "community": 40,
       "norm_label": "demo_ctx"
     },
     {
@@ -5400,7 +5800,7 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_demo_seed_demo_profile",
-      "community": 78,
+      "community": 40,
       "norm_label": "demo_profile"
     },
     {
@@ -5410,7 +5810,7 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_demo_seed_demo_service_ids",
-      "community": 78,
+      "community": 40,
       "norm_label": "demo_service_ids"
     },
     {
@@ -5420,7 +5820,7 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_demo_seed_demo_services",
-      "community": 78,
+      "community": 40,
       "norm_label": "demo_services"
     },
     {
@@ -5430,7 +5830,7 @@
       "source_location": "L135",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_demo_seed_demo_catalog",
-      "community": 78,
+      "community": 40,
       "norm_label": "demo_catalog"
     },
     {
@@ -5440,7 +5840,7 @@
       "source_location": "L183",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_demo_seed_demoweek",
-      "community": 78,
+      "community": 40,
       "norm_label": "demoweek()"
     },
     {
@@ -5730,7 +6130,7 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hydration_initial_hydration_state",
-      "community": 46,
+      "community": 13,
       "norm_label": "initial_hydration_state"
     },
     {
@@ -5800,7 +6200,7 @@
       "source_location": "L333",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_hydration_saveblockedreason",
-      "community": 13,
+      "community": 78,
       "norm_label": "saveblockedreason"
     },
     {
@@ -6000,7 +6400,7 @@
       "source_location": "L303",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_save_save_blocked_message",
-      "community": 78,
+      "community": 46,
       "norm_label": "save_blocked_message"
     },
     {
@@ -6050,7 +6450,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_snapshot_authoritativesnapshot",
-      "community": 45,
+      "community": 46,
       "norm_label": "authoritativesnapshot"
     },
     {
@@ -6060,7 +6460,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_snapshot_empty_snapshot",
-      "community": 45,
+      "community": 46,
       "norm_label": "empty_snapshot"
     },
     {
@@ -6070,7 +6470,7 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_snapshot_snapshotfortenant",
-      "community": 45,
+      "community": 46,
       "norm_label": "snapshotfortenant()"
     },
     {
@@ -6210,7 +6610,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_types_clinicctx",
-      "community": 54,
+      "community": 40,
       "norm_label": "clinicctx"
     },
     {
@@ -6230,7 +6630,7 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_types_messages",
-      "community": 40,
+      "community": 54,
       "norm_label": "messages"
     },
     {
@@ -6270,7 +6670,7 @@
       "source_location": "L141",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_types_pixdeposit",
-      "community": 54,
+      "community": 260,
       "norm_label": "pixdeposit"
     },
     {
@@ -6290,7 +6690,7 @@
       "source_location": "L175",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_types_professionalprofile",
-      "community": 78,
+      "community": 40,
       "norm_label": "professionalprofile"
     },
     {
@@ -6370,7 +6770,7 @@
       "source_location": "L283",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_types_timerange",
-      "community": 40,
+      "community": 4,
       "norm_label": "timerange"
     },
     {
@@ -6380,7 +6780,7 @@
       "source_location": "L288",
       "_origin": "ast",
       "id": "app_site_configuracao_lib_types_dayconfig",
-      "community": 78,
+      "community": 18,
       "norm_label": "dayconfig"
     },
     {
@@ -6470,7 +6870,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_configuracao_page",
-      "community": 78,
+      "community": 40,
       "norm_label": "page.tsx"
     },
     {
@@ -6480,7 +6880,7 @@
       "source_location": "L162",
       "_origin": "ast",
       "id": "app_site_configuracao_page_nav_ids",
-      "community": 78,
+      "community": 40,
       "norm_label": "nav_ids"
     },
     {
@@ -6490,7 +6890,7 @@
       "source_location": "L163",
       "_origin": "ast",
       "id": "app_site_configuracao_page_navid",
-      "community": 78,
+      "community": 40,
       "norm_label": "navid"
     },
     {
@@ -6500,7 +6900,7 @@
       "source_location": "L172",
       "_origin": "ast",
       "id": "app_site_configuracao_page_pickprofessional",
-      "community": 78,
+      "community": 63,
       "norm_label": "pickprofessional()"
     },
     {
@@ -6510,7 +6910,7 @@
       "source_location": "L189",
       "_origin": "ast",
       "id": "app_site_configuracao_page_savemessage",
-      "community": 78,
+      "community": 63,
       "norm_label": "savemessage()"
     },
     {
@@ -6520,7 +6920,7 @@
       "source_location": "L229",
       "_origin": "ast",
       "id": "app_site_configuracao_page_successtone",
-      "community": 78,
+      "community": 63,
       "norm_label": "successtone()"
     },
     {
@@ -6630,7 +7030,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_site_error",
-      "community": 38,
+      "community": 261,
       "norm_label": "error.tsx"
     },
     {
@@ -6640,7 +7040,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "app_site_error_siteerrorprops",
-      "community": 38,
+      "community": 261,
       "norm_label": "siteerrorprops"
     },
     {
@@ -6650,7 +7050,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "app_site_error_siteerror",
-      "community": 38,
+      "community": 261,
       "norm_label": "siteerror()"
     },
     {
@@ -7270,7 +7670,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_tests_platform_links_test",
-      "community": 60,
+      "community": 31,
       "norm_label": "platform-links.test.ts"
     },
     {
@@ -7280,7 +7680,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_tests_portal_routes_test",
-      "community": 38,
+      "community": 261,
       "norm_label": "portal-routes.test.ts"
     },
     {
@@ -7430,7 +7830,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_tests_whatsapp_limits_test",
-      "community": 10,
+      "community": 53,
       "norm_label": "whatsapp-limits.test.ts"
     },
     {
@@ -7710,7 +8110,7 @@
       "source_location": "L255",
       "_origin": "ast",
       "id": "lib_manage_api_manageapierror",
-      "community": 51,
+      "community": 55,
       "norm_label": "manageapierror"
     },
     {
@@ -7720,7 +8120,7 @@
       "source_location": "L257",
       "_origin": "ast",
       "id": "lib_manage_api_manageapierror_constructor",
-      "community": 51,
+      "community": 55,
       "norm_label": ".constructor()"
     },
     {
@@ -7890,7 +8290,7 @@
       "source_location": "L522",
       "_origin": "ast",
       "id": "lib_manage_api_getme",
-      "community": 29,
+      "community": 0,
       "norm_label": "getme()"
     },
     {
@@ -7910,7 +8310,7 @@
       "source_location": "L540",
       "_origin": "ast",
       "id": "lib_manage_api_coerceaddons",
-      "community": 258,
+      "community": 1,
       "norm_label": "coerceaddons()"
     },
     {
@@ -7920,7 +8320,7 @@
       "source_location": "L546",
       "_origin": "ast",
       "id": "lib_manage_api_coercelimits",
-      "community": 258,
+      "community": 1,
       "norm_label": "coercelimits()"
     },
     {
@@ -7930,7 +8330,7 @@
       "source_location": "L555",
       "_origin": "ast",
       "id": "lib_manage_api_getentitlements",
-      "community": 258,
+      "community": 1,
       "norm_label": "getentitlements()"
     },
     {
@@ -7940,7 +8340,7 @@
       "source_location": "L574",
       "_origin": "ast",
       "id": "lib_manage_api_submitdemorequest",
-      "community": 66,
+      "community": 17,
       "norm_label": "submitdemorequest()"
     },
     {
@@ -8020,7 +8420,7 @@
       "source_location": "L670",
       "_origin": "ast",
       "id": "lib_manage_api_signupintakepriorapi",
-      "community": 2,
+      "community": 65,
       "norm_label": "signupintakepriorapi"
     },
     {
@@ -8030,7 +8430,7 @@
       "source_location": "L671",
       "_origin": "ast",
       "id": "lib_manage_api_signupintakefbpage",
-      "community": 65,
+      "community": 2,
       "norm_label": "signupintakefbpage"
     },
     {
@@ -8130,7 +8530,7 @@
       "source_location": "L781",
       "_origin": "ast",
       "id": "lib_manage_api_getonboardingstatus",
-      "community": 12,
+      "community": 47,
       "norm_label": "getonboardingstatus()"
     },
     {
@@ -8150,7 +8550,7 @@
       "source_location": "L819",
       "_origin": "ast",
       "id": "lib_manage_api_exchangeonboardingtoken",
-      "community": 12,
+      "community": 47,
       "norm_label": "exchangeonboardingtoken()"
     },
     {
@@ -8220,7 +8620,7 @@
       "source_location": "L945",
       "_origin": "ast",
       "id": "lib_manage_api_catalogplanid",
-      "community": 3,
+      "community": 82,
       "norm_label": "catalogplanid"
     },
     {
@@ -8840,7 +9240,7 @@
       "source_location": "L1678",
       "_origin": "ast",
       "id": "lib_manage_api_onboardingstate",
-      "community": 38,
+      "community": 262,
       "norm_label": "onboardingstate"
     },
     {
@@ -8890,7 +9290,7 @@
       "source_location": "L1717",
       "_origin": "ast",
       "id": "lib_manage_api_doctoronboarding",
-      "community": 16,
+      "community": 92,
       "norm_label": "doctoronboarding"
     },
     {
@@ -8940,7 +9340,7 @@
       "source_location": "L1772",
       "_origin": "ast",
       "id": "lib_manage_api_resolveonboardingblocker",
-      "community": 7,
+      "community": 38,
       "norm_label": "resolveonboardingblocker()"
     },
     {
@@ -8970,7 +9370,7 @@
       "source_location": "L1811",
       "_origin": "ast",
       "id": "lib_manage_api_testwindow",
-      "community": 38,
+      "community": 95,
       "norm_label": "testwindow"
     },
     {
@@ -8980,7 +9380,7 @@
       "source_location": "L1831",
       "_origin": "ast",
       "id": "lib_manage_api_gettestwindow",
-      "community": 38,
+      "community": 95,
       "norm_label": "gettestwindow()"
     },
     {
@@ -9050,7 +9450,7 @@
       "source_location": "L1947",
       "_origin": "ast",
       "id": "lib_manage_api_doctorprofessional",
-      "community": 78,
+      "community": 40,
       "norm_label": "doctorprofessional"
     },
     {
@@ -9100,7 +9500,7 @@
       "source_location": "L2002",
       "_origin": "ast",
       "id": "lib_manage_api_professionalskey",
-      "community": 1,
+      "community": 39,
       "norm_label": "professionalskey()"
     },
     {
@@ -9110,7 +9510,7 @@
       "source_location": "L2016",
       "_origin": "ast",
       "id": "lib_manage_api_invalidatedoctorprofessionals",
-      "community": 1,
+      "community": 63,
       "norm_label": "invalidatedoctorprofessionals()"
     },
     {
@@ -9160,7 +9560,7 @@
       "source_location": "L2097",
       "_origin": "ast",
       "id": "lib_manage_api_createprofessionalinvite",
-      "community": 10,
+      "community": 53,
       "norm_label": "createprofessionalinvite()"
     },
     {
@@ -9240,7 +9640,7 @@
       "source_location": "L2184",
       "_origin": "ast",
       "id": "lib_manage_api_createsecretaryinvite",
-      "community": 10,
+      "community": 53,
       "norm_label": "createsecretaryinvite()"
     },
     {
@@ -9270,7 +9670,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_platform_links",
-      "community": 60,
+      "community": 31,
       "norm_label": "platform-links.ts"
     },
     {
@@ -9280,7 +9680,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "lib_platform_links_parsepublicurl",
-      "community": 60,
+      "community": 31,
       "norm_label": "parsepublicurl()"
     },
     {
@@ -9290,7 +9690,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "lib_platform_links_resolveplatformloginhref",
-      "community": 60,
+      "community": 31,
       "norm_label": "resolveplatformloginhref()"
     },
     {
@@ -9300,7 +9700,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "lib_platform_links_resolvesiteurl",
-      "community": 60,
+      "community": 31,
       "norm_label": "resolvesiteurl()"
     },
     {
@@ -9310,7 +9710,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "lib_platform_links_platform_login_href",
-      "community": 60,
+      "community": 31,
       "norm_label": "platform_login_href"
     },
     {
@@ -9320,7 +9720,7 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "lib_platform_links_site_url",
-      "community": 60,
+      "community": 31,
       "norm_label": "site_url"
     },
     {
@@ -9330,7 +9730,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_portal_routes",
-      "community": 38,
+      "community": 261,
       "norm_label": "portal-routes.ts"
     },
     {
@@ -9340,7 +9740,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "lib_portal_routes_portal_roles",
-      "community": 38,
+      "community": 261,
       "norm_label": "portal_roles"
     },
     {
@@ -9350,7 +9750,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "lib_portal_routes_postlogindecision",
-      "community": 38,
+      "community": 261,
       "norm_label": "postlogindecision"
     },
     {
@@ -9360,7 +9760,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "lib_portal_routes_resolvepostlogin",
-      "community": 38,
+      "community": 261,
       "norm_label": "resolvepostlogin()"
     },
     {
@@ -9370,7 +9770,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "lib_portal_routes_resolveentryredirect",
-      "community": 38,
+      "community": 261,
       "norm_label": "resolveentryredirect()"
     },
     {
@@ -9380,7 +9780,7 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "lib_portal_routes_canmanageclinic",
-      "community": 38,
+      "community": 63,
       "norm_label": "canmanageclinic()"
     },
     {
@@ -9390,7 +9790,7 @@
       "source_location": "L129",
       "_origin": "ast",
       "id": "lib_portal_routes_issamepath",
-      "community": 38,
+      "community": 261,
       "norm_label": "issamepath()"
     },
     {
@@ -9420,7 +9820,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "lib_secretaria_hub_hubconfigured",
-      "community": 29,
+      "community": 47,
       "norm_label": "hubconfigured()"
     },
     {
@@ -9570,7 +9970,7 @@
       "source_location": "L230",
       "_origin": "ast",
       "id": "lib_secretaria_hub_appointmenttypewire",
-      "community": 40,
+      "community": 4,
       "norm_label": "appointmenttypewire"
     },
     {
@@ -9590,7 +9990,7 @@
       "source_location": "L279",
       "_origin": "ast",
       "id": "lib_secretaria_hub_tenantconfigwire",
-      "community": 78,
+      "community": 46,
       "norm_label": "tenantconfigwire"
     },
     {
@@ -9600,7 +10000,7 @@
       "source_location": "L349",
       "_origin": "ast",
       "id": "lib_secretaria_hub_tenantconfigupdatepayload",
-      "community": 78,
+      "community": 4,
       "norm_label": "tenantconfigupdatepayload"
     },
     {
@@ -9740,7 +10140,7 @@
       "source_location": "L531",
       "_origin": "ast",
       "id": "lib_secretaria_hub_listcalendarevents",
-      "community": 63,
+      "community": 0,
       "norm_label": "listcalendarevents()"
     },
     {
@@ -9750,7 +10150,7 @@
       "source_location": "L541",
       "_origin": "ast",
       "id": "lib_secretaria_hub_createappointment",
-      "community": 63,
+      "community": 0,
       "norm_label": "createappointment()"
     },
     {
@@ -9780,7 +10180,7 @@
       "source_location": "L578",
       "_origin": "ast",
       "id": "lib_secretaria_hub_getcancelpreview",
-      "community": 63,
+      "community": 0,
       "norm_label": "getcancelpreview()"
     },
     {
@@ -9790,7 +10190,7 @@
       "source_location": "L589",
       "_origin": "ast",
       "id": "lib_secretaria_hub_cancelappointment",
-      "community": 63,
+      "community": 0,
       "norm_label": "cancelappointment()"
     },
     {
@@ -9870,7 +10270,7 @@
       "source_location": "L725",
       "_origin": "ast",
       "id": "lib_secretaria_hub_professionalcalendarsource",
-      "community": 10,
+      "community": 63,
       "norm_label": "professionalcalendarsource"
     },
     {
@@ -9920,7 +10320,7 @@
       "source_location": "L803",
       "_origin": "ast",
       "id": "lib_secretaria_hub_professionalconfigupdatepayload",
-      "community": 78,
+      "community": 4,
       "norm_label": "professionalconfigupdatepayload"
     },
     {
@@ -10170,7 +10570,7 @@
       "source_location": "L1143",
       "_origin": "ast",
       "id": "lib_secretaria_hub_professionalinsurancewire",
-      "community": 53,
+      "community": 6,
       "norm_label": "professionalinsurancewire"
     },
     {
@@ -10180,7 +10580,7 @@
       "source_location": "L1156",
       "_origin": "ast",
       "id": "lib_secretaria_hub_getprofessionalinsuranceplans",
-      "community": 53,
+      "community": 6,
       "norm_label": "getprofessionalinsuranceplans()"
     },
     {
@@ -10200,7 +10600,7 @@
       "source_location": "L1171",
       "_origin": "ast",
       "id": "lib_secretaria_hub_putprofessionalinsuranceplans",
-      "community": 53,
+      "community": 6,
       "norm_label": "putprofessionalinsuranceplans()"
     },
     {
@@ -10210,7 +10610,7 @@
       "source_location": "L1185",
       "_origin": "ast",
       "id": "lib_secretaria_hub_createprofessionalcustominsuranceplan",
-      "community": 53,
+      "community": 6,
       "norm_label": "createprofessionalcustominsuranceplan()"
     },
     {
@@ -10270,7 +10670,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_whatsapp_limits",
-      "community": 10,
+      "community": 53,
       "norm_label": "whatsapp-limits.ts"
     },
     {
@@ -10280,7 +10680,7 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "lib_whatsapp_limits_professionalnameerror",
-      "community": 10,
+      "community": 53,
       "norm_label": "professionalnameerror()"
     },
     {
@@ -10290,7 +10690,7 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "lib_whatsapp_limits_isprofessionalnameatlimit",
-      "community": 10,
+      "community": 53,
       "norm_label": "isprofessionalnameatlimit()"
     },
     {
@@ -10300,7 +10700,7 @@
       "source_location": "L113",
       "_origin": "ast",
       "id": "lib_whatsapp_limits_servicenameerror",
-      "community": 10,
+      "community": 53,
       "norm_label": "servicenameerror()"
     },
     {
@@ -10310,7 +10710,7 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "lib_whatsapp_limits_isservicenameatlimit",
-      "community": 10,
+      "community": 53,
       "norm_label": "isservicenameatlimit()"
     },
     {
@@ -10320,7 +10720,7 @@
       "source_location": "L142",
       "_origin": "ast",
       "id": "lib_whatsapp_limits_insuranceserror",
-      "community": 10,
+      "community": 53,
       "norm_label": "insuranceserror()"
     },
     {
@@ -12202,6 +12602,486 @@
       "id": "docs_checkpoint_sessao_cookie_httponly_11_skills_atualizadas",
       "community": 41,
       "norm_label": "11. skills atualizadas"
+    },
+    {
+      "label": "politica-de-privacidade.md",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade",
+      "community": 45,
+      "norm_label": "politica-de-privacidade.md"
+    },
+    {
+      "label": "Pol\u00edtica de Privacidade da secretarIA",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_pol\u00edtica_de_privacidade_da_secretaria",
+      "community": 45,
+      "norm_label": "politica de privacidade da secretaria"
+    },
+    {
+      "label": "1. Sobre esta Pol\u00edtica",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L24",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_1_sobre_esta_pol\u00edtica",
+      "community": 45,
+      "norm_label": "1. sobre esta politica"
+    },
+    {
+      "label": "2. Quem \u00e9 respons\u00e1vel pelos seus dados",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L30",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_2_quem_\u00e9_respons\u00e1vel_pelos_seus_dados",
+      "community": 45,
+      "norm_label": "2. quem e responsavel pelos seus dados"
+    },
+    {
+      "label": "3. Quais dados tratamos",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L48",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_3_quais_dados_tratamos",
+      "community": 45,
+      "norm_label": "3. quais dados tratamos"
+    },
+    {
+      "label": "3.1. Pacientes",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L50",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_3_1_pacientes",
+      "community": 45,
+      "norm_label": "3.1. pacientes"
+    },
+    {
+      "label": "3.2. Cl\u00ednicas e suas equipes",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L67",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_3_2_cl\u00ednicas_e_suas_equipes",
+      "community": 45,
+      "norm_label": "3.2. clinicas e suas equipes"
+    },
+    {
+      "label": "3.3. Visitantes do site",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L77",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_3_3_visitantes_do_site",
+      "community": 45,
+      "norm_label": "3.3. visitantes do site"
+    },
+    {
+      "label": "4. Para que usamos os dados e com qual base legal",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L82",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_4_para_que_usamos_os_dados_e_com_qual_base_legal",
+      "community": 45,
+      "norm_label": "4. para que usamos os dados e com qual base legal"
+    },
+    {
+      "label": "5. Intelig\u00eancia artificial",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L108",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_5_intelig\u00eancia_artificial",
+      "community": 45,
+      "norm_label": "5. inteligencia artificial"
+    },
+    {
+      "label": "6. Com quem compartilhamos os dados",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L122",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_6_com_quem_compartilhamos_os_dados",
+      "community": 45,
+      "norm_label": "6. com quem compartilhamos os dados"
+    },
+    {
+      "label": "7. Transfer\u00eancia internacional de dados",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L144",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_7_transfer\u00eancia_internacional_de_dados",
+      "community": 45,
+      "norm_label": "7. transferencia internacional de dados"
+    },
+    {
+      "label": "8. Por quanto tempo guardamos os dados",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L150",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_8_por_quanto_tempo_guardamos_os_dados",
+      "community": 45,
+      "norm_label": "8. por quanto tempo guardamos os dados"
+    },
+    {
+      "label": "9. Como protegemos os dados",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L169",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_9_como_protegemos_os_dados",
+      "community": 45,
+      "norm_label": "9. como protegemos os dados"
+    },
+    {
+      "label": "10. Incidentes de seguran\u00e7a",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L185",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_10_incidentes_de_seguran\u00e7a",
+      "community": 45,
+      "norm_label": "10. incidentes de seguranca"
+    },
+    {
+      "label": "11. Seus direitos e como exerc\u00ea-los",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L191",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_11_seus_direitos_e_como_exerc\u00ea_los",
+      "community": 45,
+      "norm_label": "11. seus direitos e como exerce-los"
+    },
+    {
+      "label": "12. Crian\u00e7as e adolescentes",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L217",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_12_crian\u00e7as_e_adolescentes",
+      "community": 45,
+      "norm_label": "12. criancas e adolescentes"
+    },
+    {
+      "label": "13. Cookies e armazenamento no navegador",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L223",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_13_cookies_e_armazenamento_no_navegador",
+      "community": 45,
+      "norm_label": "13. cookies e armazenamento no navegador"
+    },
+    {
+      "label": "14. Canal WhatsApp (quando dispon\u00edvel)",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L240",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_14_canal_whatsapp_quando_dispon\u00edvel",
+      "community": 45,
+      "norm_label": "14. canal whatsapp (quando disponivel)"
+    },
+    {
+      "label": "15. Altera\u00e7\u00f5es desta Pol\u00edtica",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L246",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_15_altera\u00e7\u00f5es_desta_pol\u00edtica",
+      "community": 45,
+      "norm_label": "15. alteracoes desta politica"
+    },
+    {
+      "label": "16. Encarregado e contato",
+      "file_type": "document",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L252",
+      "_origin": "ast",
+      "id": "docs_legal_politica_de_privacidade_16_encarregado_e_contato",
+      "community": 45,
+      "norm_label": "16. encarregado e contato"
+    },
+    {
+      "label": "termos-de-uso.md",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso",
+      "community": 29,
+      "norm_label": "termos-de-uso.md"
+    },
+    {
+      "label": "Termos de Uso da secretarIA",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "community": 29,
+      "norm_label": "termos de uso da secretaria"
+    },
+    {
+      "label": "Parte I \u2014 Regras para todos",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L20",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_parte_i_regras_para_todos",
+      "community": 29,
+      "norm_label": "parte i \u2014 regras para todos"
+    },
+    {
+      "label": "1. Quem somos e defini\u00e7\u00f5es",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L22",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_1_quem_somos_e_defini\u00e7\u00f5es",
+      "community": 29,
+      "norm_label": "1. quem somos e definicoes"
+    },
+    {
+      "label": "2. O que \u00e9 a secretarIA",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L37",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_2_o_que_\u00e9_a_secretaria",
+      "community": 29,
+      "norm_label": "2. o que e a secretaria"
+    },
+    {
+      "label": "3. Aceite e capacidade",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L47",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_3_aceite_e_capacidade",
+      "community": 29,
+      "norm_label": "3. aceite e capacidade"
+    },
+    {
+      "label": "Parte II \u2014 Para pacientes",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L55",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_parte_ii_para_pacientes",
+      "community": 29,
+      "norm_label": "parte ii \u2014 para pacientes"
+    },
+    {
+      "label": "4. Como funciona o atendimento pelo Portal",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L57",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_4_como_funciona_o_atendimento_pelo_portal",
+      "community": 29,
+      "norm_label": "4. como funciona o atendimento pelo portal"
+    },
+    {
+      "label": "5. Sua Conta do Portal",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L73",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_5_sua_conta_do_portal",
+      "community": 29,
+      "norm_label": "5. sua conta do portal"
+    },
+    {
+      "label": "6. Informa\u00e7\u00f5es de sa\u00fade e arquivos",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L83",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_6_informa\u00e7\u00f5es_de_sa\u00fade_e_arquivos",
+      "community": 29,
+      "norm_label": "6. informacoes de saude e arquivos"
+    },
+    {
+      "label": "7. Agendamento para outra pessoa, crian\u00e7as e adolescentes",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L91",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_7_agendamento_para_outra_pessoa_crian\u00e7as_e_adolescentes",
+      "community": 29,
+      "norm_label": "7. agendamento para outra pessoa, criancas e adolescentes"
+    },
+    {
+      "label": "8. Limites do Assistente",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L97",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_8_limites_do_assistente",
+      "community": 29,
+      "norm_label": "8. limites do assistente"
+    },
+    {
+      "label": "9. Regras de uso",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L105",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_9_regras_de_uso",
+      "community": 29,
+      "norm_label": "9. regras de uso"
+    },
+    {
+      "label": "10. O papel da Cl\u00ednica no seu atendimento",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L119",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_10_o_papel_da_cl\u00ednica_no_seu_atendimento",
+      "community": 29,
+      "norm_label": "10. o papel da clinica no seu atendimento"
+    },
+    {
+      "label": "Parte III \u2014 Para cl\u00ednicas",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L125",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_parte_iii_para_cl\u00ednicas",
+      "community": 29,
+      "norm_label": "parte iii \u2014 para clinicas"
+    },
+    {
+      "label": "11. Contrata\u00e7\u00e3o, planos e pagamento",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L127",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_11_contrata\u00e7\u00e3o_planos_e_pagamento",
+      "community": 29,
+      "norm_label": "11. contratacao, planos e pagamento"
+    },
+    {
+      "label": "12. Contas da Equipe e acesso ao Console",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L135",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_12_contas_da_equipe_e_acesso_ao_console",
+      "community": 29,
+      "norm_label": "12. contas da equipe e acesso ao console"
+    },
+    {
+      "label": "13. Responsabilidades da Cl\u00ednica",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L141",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_13_responsabilidades_da_cl\u00ednica",
+      "community": 29,
+      "norm_label": "13. responsabilidades da clinica"
+    },
+    {
+      "label": "14. Prote\u00e7\u00e3o de dados: a Cl\u00ednica como controladora e a Brain como operadora",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L154",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_14_prote\u00e7\u00e3o_de_dados_a_cl\u00ednica_como_controladora_e_a_brain_como_operadora",
+      "community": 29,
+      "norm_label": "14. protecao de dados: a clinica como controladora e a brain como operadora"
+    },
+    {
+      "label": "15. Disponibilidade, suporte e mudan\u00e7as no Servi\u00e7o",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L176",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_15_disponibilidade_suporte_e_mudan\u00e7as_no_servi\u00e7o",
+      "community": 29,
+      "norm_label": "15. disponibilidade, suporte e mudancas no servico"
+    },
+    {
+      "label": "16. Suspens\u00e3o e encerramento",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L186",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_16_suspens\u00e3o_e_encerramento",
+      "community": 29,
+      "norm_label": "16. suspensao e encerramento"
+    },
+    {
+      "label": "Parte IV \u2014 Disposi\u00e7\u00f5es finais",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L196",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_parte_iv_disposi\u00e7\u00f5es_finais",
+      "community": 29,
+      "norm_label": "parte iv \u2014 disposicoes finais"
+    },
+    {
+      "label": "17. Propriedade intelectual",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L198",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_17_propriedade_intelectual",
+      "community": 29,
+      "norm_label": "17. propriedade intelectual"
+    },
+    {
+      "label": "18. Responsabilidade",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L206",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_18_responsabilidade",
+      "community": 29,
+      "norm_label": "18. responsabilidade"
+    },
+    {
+      "label": "19. Comunica\u00e7\u00f5es",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L214",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_19_comunica\u00e7\u00f5es",
+      "community": 29,
+      "norm_label": "19. comunicacoes"
+    },
+    {
+      "label": "20. Altera\u00e7\u00f5es destes Termos",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L220",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_20_altera\u00e7\u00f5es_destes_termos",
+      "community": 29,
+      "norm_label": "20. alteracoes destes termos"
+    },
+    {
+      "label": "21. Lei aplic\u00e1vel, foro e contato",
+      "file_type": "document",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L226",
+      "_origin": "ast",
+      "id": "docs_legal_termos_de_uso_21_lei_aplic\u00e1vel_foro_e_contato",
+      "community": 29,
+      "norm_label": "21. lei aplicavel, foro e contato"
     },
     {
       "label": "layout.tsx",
@@ -14638,6 +15518,931 @@
       "weight": 1.0,
       "source": "app_auth_layout",
       "target": "app_auth_layout_authlayout",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-documents.test.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_documents_test",
+      "target": "app_legal_content_documents",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-documents.test.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_documents_test",
+      "target": "app_legal_content_documents_legal_documents",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-documents.test.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_documents_test",
+      "target": "app_legal_content_documents_legaldocumentkey",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-documents.test.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_documents_test",
+      "target": "app_legal_content_documents_loadlegaldocument",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-documents.test.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_documents_test",
+      "target": "app_legal_content_documents_readlegalsource",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-documents.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_documents_test",
+      "target": "app_legal_lib_legal_markdown",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-documents.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_documents_test",
+      "target": "app_legal_lib_legal_markdown_block",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-documents.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_documents_test",
+      "target": "app_legal_lib_legal_markdown_filltokens",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-documents.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_documents_test",
+      "target": "app_legal_lib_legal_markdown_isallowedhref",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-documents.test.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_documents_test",
+      "target": "app_legal_lib_legal_markdown_legaldocument",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-documents.test.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_documents_test",
+      "target": "app_legal_tests_legal_documents_test_alltext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-documents.test.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_documents_test",
+      "target": "app_legal_tests_legal_documents_test_ids",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-documents.test.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_documents_test",
+      "target": "app_legal_tests_legal_documents_test_keys",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-documents.test.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_documents_test",
+      "target": "app_legal_tests_legal_documents_test_reporoot",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "indirect_call",
+      "context": "collection",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "app/(site)/cadastro/_components/CadastroWizard.tsx",
+      "source_location": "L211",
+      "weight": 1.0,
+      "source": "app_site_cadastro_components_cadastrowizard_cadastrowizard",
+      "target": "app_legal_tests_legal_documents_test_ids"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-markdown.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_markdown_test",
+      "target": "app_legal_lib_legal_markdown",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-markdown.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_markdown_test",
+      "target": "app_legal_lib_legal_markdown_filltokens",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-markdown.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_markdown_test",
+      "target": "app_legal_lib_legal_markdown_isallowedhref",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-markdown.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_markdown_test",
+      "target": "app_legal_lib_legal_markdown_parseinline",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-markdown.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_markdown_test",
+      "target": "app_legal_lib_legal_markdown_parselegaldocument",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/__tests__/legal-markdown.test.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "app_legal_tests_legal_markdown_test",
+      "target": "app_legal_lib_legal_markdown_slugify",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L78",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument",
+      "target": "app_legal_components_legaldocument_blocks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L157",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument",
+      "target": "app_legal_components_legaldocument_legaldocumentpage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L25",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument",
+      "target": "app_legal_components_legaldocument_renderinline",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L76",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument",
+      "target": "app_legal_components_legaldocument_subheadingtag",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L69",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument",
+      "target": "app_legal_components_legaldocument_text",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L143",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument",
+      "target": "app_legal_components_legaldocument_toc",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument",
+      "target": "app_legal_content_documents",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument",
+      "target": "app_legal_content_documents_legal_documents",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument",
+      "target": "app_legal_content_documents_legaldocumentkey",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument",
+      "target": "app_legal_lib_legal_markdown",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument",
+      "target": "app_legal_lib_legal_markdown_block",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument",
+      "target": "app_legal_lib_legal_markdown_inline",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument",
+      "target": "app_legal_lib_legal_markdown_isallowedhref",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument",
+      "target": "app_legal_lib_legal_markdown_legaldocument",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument",
+      "target": "app_legal_lib_legal_markdown_parseinline",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument",
+      "target": "app_site_components_secretariawordmark",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument",
+      "target": "app_site_components_secretariawordmark_secretariawordmark",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument",
+      "target": "app_site_components_themetoggle",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument",
+      "target": "app_site_components_themetoggle_themetoggle",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/privacidade/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "app_legal_privacidade_page",
+      "target": "app_legal_components_legaldocument",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/termos/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "app_legal_termos_page",
+      "target": "app_legal_components_legaldocument",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L46",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument_renderinline",
+      "target": "app_legal_lib_legal_markdown_isallowedhref"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L70",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument_text",
+      "target": "app_legal_components_legaldocument_renderinline",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/(legal)/_components/LegalDocument.tsx",
+      "source_location": "L70",
+      "weight": 1.0,
+      "source": "app_legal_components_legaldocument_text",
+      "target": "app_legal_lib_legal_markdown_parseinline"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/privacidade/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "app_legal_privacidade_page",
+      "target": "app_legal_components_legaldocument_legaldocumentpage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/termos/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "app_legal_termos_page",
+      "target": "app_legal_components_legaldocument_legaldocumentpage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_content/documents.ts",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "app_legal_content_documents",
+      "target": "app_legal_content_documents_legal_documents",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_content/documents.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "app_legal_content_documents",
+      "target": "app_legal_content_documents_legaldocumententry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_content/documents.ts",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "app_legal_content_documents",
+      "target": "app_legal_content_documents_legaldocumentkey",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_content/documents.ts",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "app_legal_content_documents",
+      "target": "app_legal_content_documents_loadlegaldocument",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_content/documents.ts",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "app_legal_content_documents",
+      "target": "app_legal_content_documents_readlegalsource",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_content/documents.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "app_legal_content_documents",
+      "target": "app_legal_lib_legal_markdown",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_content/documents.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "app_legal_content_documents",
+      "target": "app_legal_lib_legal_markdown_legaldocument",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_content/documents.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "app_legal_content_documents",
+      "target": "app_legal_lib_legal_markdown_parselegaldocument",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/privacidade/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "app_legal_privacidade_page",
+      "target": "app_legal_content_documents",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/termos/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "app_legal_termos_page",
+      "target": "app_legal_content_documents",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/privacidade/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "app_legal_privacidade_page",
+      "target": "app_legal_content_documents_legal_documents",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/termos/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "app_legal_termos_page",
+      "target": "app_legal_content_documents_legal_documents",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_content/documents.ts",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "app_legal_content_documents_loadlegaldocument",
+      "target": "app_legal_content_documents_readlegalsource",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/(legal)/_content/documents.ts",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "app_legal_content_documents_loadlegaldocument",
+      "target": "app_legal_lib_legal_markdown_parselegaldocument"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/privacidade/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "app_legal_privacidade_page",
+      "target": "app_legal_content_documents_loadlegaldocument",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/(legal)/privacidade/page.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "app_legal_privacidade_page_privacidadepage",
+      "target": "app_legal_content_documents_loadlegaldocument"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/termos/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "app_legal_termos_page",
+      "target": "app_legal_content_documents_loadlegaldocument",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/(legal)/termos/page.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "app_legal_termos_page_termospage",
+      "target": "app_legal_content_documents_loadlegaldocument"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "app_legal_lib_legal_markdown",
+      "target": "app_legal_lib_legal_markdown_block",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L285",
+      "weight": 1.0,
+      "source": "app_legal_lib_legal_markdown",
+      "target": "app_legal_lib_legal_markdown_filltokens",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L55",
+      "weight": 1.0,
+      "source": "app_legal_lib_legal_markdown",
+      "target": "app_legal_lib_legal_markdown_inline",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L291",
+      "weight": 1.0,
+      "source": "app_legal_lib_legal_markdown",
+      "target": "app_legal_lib_legal_markdown_isallowedhref",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "app_legal_lib_legal_markdown",
+      "target": "app_legal_lib_legal_markdown_legaldocument",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "app_legal_lib_legal_markdown",
+      "target": "app_legal_lib_legal_markdown_legalsection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L92",
+      "weight": 1.0,
+      "source": "app_legal_lib_legal_markdown",
+      "target": "app_legal_lib_legal_markdown_parseblocks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L264",
+      "weight": 1.0,
+      "source": "app_legal_lib_legal_markdown",
+      "target": "app_legal_lib_legal_markdown_parseinline",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L181",
+      "weight": 1.0,
+      "source": "app_legal_lib_legal_markdown",
+      "target": "app_legal_lib_legal_markdown_parselegaldocument",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L70",
+      "weight": 1.0,
+      "source": "app_legal_lib_legal_markdown",
+      "target": "app_legal_lib_legal_markdown_slugify",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L84",
+      "weight": 1.0,
+      "source": "app_legal_lib_legal_markdown",
+      "target": "app_legal_lib_legal_markdown_splitrow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L80",
+      "weight": 1.0,
+      "source": "app_legal_lib_legal_markdown",
+      "target": "app_legal_lib_legal_markdown_stripcomments",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L206",
+      "weight": 1.0,
+      "source": "app_legal_lib_legal_markdown_parselegaldocument",
+      "target": "app_legal_lib_legal_markdown_slugify",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L286",
+      "weight": 1.0,
+      "source": "app_legal_lib_legal_markdown_filltokens",
+      "target": "app_legal_lib_legal_markdown_stripcomments",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L182",
+      "weight": 1.0,
+      "source": "app_legal_lib_legal_markdown_parselegaldocument",
+      "target": "app_legal_lib_legal_markdown_stripcomments",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L118",
+      "weight": 1.0,
+      "source": "app_legal_lib_legal_markdown_parseblocks",
+      "target": "app_legal_lib_legal_markdown_splitrow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/_lib/legal-markdown.ts",
+      "source_location": "L231",
+      "weight": 1.0,
+      "source": "app_legal_lib_legal_markdown_parselegaldocument",
+      "target": "app_legal_lib_legal_markdown_parseblocks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/layout.tsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "app_legal_layout",
+      "target": "app_legal_layout_legallayout",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/privacidade/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "app_legal_privacidade_page",
+      "target": "app_legal_privacidade_page_metadata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/privacidade/page.tsx",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "app_legal_privacidade_page",
+      "target": "app_legal_privacidade_page_privacidadepage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/termos/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "app_legal_termos_page",
+      "target": "app_legal_termos_page_metadata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/(legal)/termos/page.tsx",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "app_legal_termos_page",
+      "target": "app_legal_termos_page_termospage",
       "confidence_score": 1.0
     },
     {
@@ -41342,8 +43147,468 @@
       "source": "docs_checkpoint_sessao_cookie_httponly_checkpoint_sess\u00e3o_fora_do_storage_cookie_httponly_first_party_sec_2",
       "target": "docs_checkpoint_sessao_cookie_httponly_9_mudan\u00e7as_de_comportamento_a_comunicar",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade",
+      "target": "docs_legal_politica_de_privacidade_pol\u00edtica_de_privacidade_da_secretaria",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L185",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade_pol\u00edtica_de_privacidade_da_secretaria",
+      "target": "docs_legal_politica_de_privacidade_10_incidentes_de_seguran\u00e7a",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L191",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade_pol\u00edtica_de_privacidade_da_secretaria",
+      "target": "docs_legal_politica_de_privacidade_11_seus_direitos_e_como_exerc\u00ea_los",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L217",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade_pol\u00edtica_de_privacidade_da_secretaria",
+      "target": "docs_legal_politica_de_privacidade_12_crian\u00e7as_e_adolescentes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L223",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade_pol\u00edtica_de_privacidade_da_secretaria",
+      "target": "docs_legal_politica_de_privacidade_13_cookies_e_armazenamento_no_navegador",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L240",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade_pol\u00edtica_de_privacidade_da_secretaria",
+      "target": "docs_legal_politica_de_privacidade_14_canal_whatsapp_quando_dispon\u00edvel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L246",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade_pol\u00edtica_de_privacidade_da_secretaria",
+      "target": "docs_legal_politica_de_privacidade_15_altera\u00e7\u00f5es_desta_pol\u00edtica",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L252",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade_pol\u00edtica_de_privacidade_da_secretaria",
+      "target": "docs_legal_politica_de_privacidade_16_encarregado_e_contato",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade_pol\u00edtica_de_privacidade_da_secretaria",
+      "target": "docs_legal_politica_de_privacidade_1_sobre_esta_pol\u00edtica",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade_pol\u00edtica_de_privacidade_da_secretaria",
+      "target": "docs_legal_politica_de_privacidade_2_quem_\u00e9_respons\u00e1vel_pelos_seus_dados",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade_pol\u00edtica_de_privacidade_da_secretaria",
+      "target": "docs_legal_politica_de_privacidade_3_quais_dados_tratamos",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L82",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade_pol\u00edtica_de_privacidade_da_secretaria",
+      "target": "docs_legal_politica_de_privacidade_4_para_que_usamos_os_dados_e_com_qual_base_legal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L108",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade_pol\u00edtica_de_privacidade_da_secretaria",
+      "target": "docs_legal_politica_de_privacidade_5_intelig\u00eancia_artificial",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L122",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade_pol\u00edtica_de_privacidade_da_secretaria",
+      "target": "docs_legal_politica_de_privacidade_6_com_quem_compartilhamos_os_dados",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L144",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade_pol\u00edtica_de_privacidade_da_secretaria",
+      "target": "docs_legal_politica_de_privacidade_7_transfer\u00eancia_internacional_de_dados",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L150",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade_pol\u00edtica_de_privacidade_da_secretaria",
+      "target": "docs_legal_politica_de_privacidade_8_por_quanto_tempo_guardamos_os_dados",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L169",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade_pol\u00edtica_de_privacidade_da_secretaria",
+      "target": "docs_legal_politica_de_privacidade_9_como_protegemos_os_dados",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L50",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade_3_quais_dados_tratamos",
+      "target": "docs_legal_politica_de_privacidade_3_1_pacientes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade_3_quais_dados_tratamos",
+      "target": "docs_legal_politica_de_privacidade_3_2_cl\u00ednicas_e_suas_equipes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/politica-de-privacidade.md",
+      "source_location": "L77",
+      "weight": 1.0,
+      "source": "docs_legal_politica_de_privacidade_3_quais_dados_tratamos",
+      "target": "docs_legal_politica_de_privacidade_3_3_visitantes_do_site",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso",
+      "target": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L119",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_10_o_papel_da_cl\u00ednica_no_seu_atendimento",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L127",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_11_contrata\u00e7\u00e3o_planos_e_pagamento",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L135",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_12_contas_da_equipe_e_acesso_ao_console",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L141",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_13_responsabilidades_da_cl\u00ednica",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L154",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_14_prote\u00e7\u00e3o_de_dados_a_cl\u00ednica_como_controladora_e_a_brain_como_operadora",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L176",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_15_disponibilidade_suporte_e_mudan\u00e7as_no_servi\u00e7o",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L186",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_16_suspens\u00e3o_e_encerramento",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L198",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_17_propriedade_intelectual",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L206",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_18_responsabilidade",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L214",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_19_comunica\u00e7\u00f5es",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_1_quem_somos_e_defini\u00e7\u00f5es",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L220",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_20_altera\u00e7\u00f5es_destes_termos",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L226",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_21_lei_aplic\u00e1vel_foro_e_contato",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L37",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_2_o_que_\u00e9_a_secretaria",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L47",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_3_aceite_e_capacidade",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L57",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_4_como_funciona_o_atendimento_pelo_portal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L73",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_5_sua_conta_do_portal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L83",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_6_informa\u00e7\u00f5es_de_sa\u00fade_e_arquivos",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L91",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_7_agendamento_para_outra_pessoa_crian\u00e7as_e_adolescentes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L97",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_8_limites_do_assistente",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L105",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_9_regras_de_uso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_parte_i_regras_para_todos",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L55",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_parte_ii_para_pacientes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L125",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_parte_iii_para_cl\u00ednicas",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/legal/termos-de-uso.md",
+      "source_location": "L196",
+      "weight": 1.0,
+      "source": "docs_legal_termos_de_uso_termos_de_uso_da_secretaria",
+      "target": "docs_legal_termos_de_uso_parte_iv_disposi\u00e7\u00f5es_finais",
+      "confidence_score": 1.0
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "36ddc10313fcd57922309b6db20bc5b4ec6d3659"
+  "built_at_commit": "c4eda94e2fec110818f2726aa82041ebc51500bb"
 }
