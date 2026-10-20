@@ -73,21 +73,15 @@ export function PortalHeader({
   return (
     <header className={`portal-header${sticky ? "" : " portal-header--flow"}`}>
       <div className="portal-brand-row">
-        {/* PORTAL_HOME, not "/": on this domain "/" is the LOGIN form — there is
-            no marketing home here, unlike brain-frontend — so pointing the brand
-            at the root used to drop a signed-in user on a login screen. As of
-            2026-08-31 "/" does bounce a session it serves back here on mount
-            (resolveEntryRedirect), so that would now merely be a round trip; the
-            link stays on PORTAL_HOME because one navigation beats two, and
-            because it is still correct for a session "/" deliberately refuses to
-            route (a platform admin, whose decision is `denied` — /inicio at least
-            explains that in place). This is the one way back to /inicio; "Sair"
-            beside it is still how you leave, when there is a session to leave.
-            Not every render of this header is behind a session: /agenda and
-            /configuracao also serve a session-less VISITOR in demo mode (see
-            useSecretariaHub / HubNotice). For that visitor the link now costs one
-            extra client navigation — /inicio's guard finds no session and replaces
-            with "/" — landing exactly where the old href went. */}
+        {/* PORTAL_HOME, not "/": "/" is the product's public landing page
+            (since 2026-10-19; before that it was the login form), so pointing the
+            brand at the root would drop a signed-in user out of the portal. This
+            is the one way back to /inicio; "Sair" beside it is still how you
+            leave, when there is a session to leave. Not every render of this
+            header is behind a session: /agenda and /configuracao also serve a
+            session-less VISITOR in demo mode (see useSecretariaHub / HubNotice).
+            For that visitor the link costs one extra client navigation —
+            /inicio's guard finds no session and replaces with LOGIN_ROUTE. */}
         <Link href={PORTAL_HOME} className="portal-brand" aria-label="Brain">
           <BrandGlyph size={26} />
           <span className="portal-wordmark">Brain</span>

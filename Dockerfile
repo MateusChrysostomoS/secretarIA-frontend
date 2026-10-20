@@ -52,6 +52,24 @@ ENV NEXT_PUBLIC_SECRETARIA_HUB_BASE_URL=${NEXT_PUBLIC_SECRETARIA_HUB_BASE_URL}
 RUN case "$NEXT_PUBLIC_SECRETARIA_HUB_BASE_URL" in \
       *"<"*) echo "ERROR: replace the NEXT_PUBLIC_SECRETARIA_HUB_BASE_URL placeholder in Dockerfile with the secretarIA public origin." >&2; exit 1 ;; \
     esac
+# ── Public site (the landing at "/") ──────────────────────────────────
+#
+# NEXT_PUBLIC_PLATFORM_LOGIN_URL → the FULL URL of the clinic platform's login
+#   page (the Brain-Message console: Conversas, Agenda, Contexto), e.g.
+#   https://<brain-message-host>/login. The landing's "Entrar" opens it. Read
+#   by lib/platform-links.ts, which accepts only an absolute https URL (http
+#   only for localhost). EMPTY OR INVALID → "Entrar" falls back to this app's
+#   own login (/entrar): same brain-api account, older hub — a working door,
+#   not the intended one. Set it as a Build Arg in EasyPanel.
+ARG NEXT_PUBLIC_PLATFORM_LOGIN_URL=
+ENV NEXT_PUBLIC_PLATFORM_LOGIN_URL=${NEXT_PUBLIC_PLATFORM_LOGIN_URL}
+# NEXT_PUBLIC_SITE_URL → this site's own public origin (scheme + host, no
+#   path), e.g. https://<this-site-host>. Only makes canonical, og:url and
+#   og:image ABSOLUTE, which link previews (WhatsApp, LinkedIn, Slack) require.
+#   EMPTY → those three tags are simply left out; title, description and the
+#   rest of Open Graph still ship. Set it as a Build Arg in EasyPanel.
+ARG NEXT_PUBLIC_SITE_URL=
+ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 RUN npm run build
 
 # ── Stage 2: serve the static files with nginx ──────────────────────

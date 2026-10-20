@@ -5,6 +5,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   ADMIN_ACCESS_MESSAGE,
+  LOGIN_RESET_SUCCESS_HREF,
+  LOGIN_ROUTE,
   PORTAL_HOME,
   PORTAL_ROLES,
   SIGNUP_HREF,
@@ -35,7 +37,25 @@ describe("PORTAL_HOME", () => {
   });
 });
 
-// resolvePostLogin is the decision the / entry screen makes after a successful
+// The login moved off "/" on 2026-10-19 ("/" is the public landing now). Same
+// reasoning as PORTAL_HOME above: pinned literally, and checked on disk, because
+// every guard bounce, expired session and "Sair" in the app lands here.
+describe("LOGIN_ROUTE", () => {
+  it("is /entrar, not the root", () => {
+    expect(LOGIN_ROUTE).toBe("/entrar");
+  });
+
+  it("points at a route that actually exists on disk", () => {
+    const route = path.join(__dirname, "..", "..", "app", "(auth)", LOGIN_ROUTE, "page.tsx");
+    expect(existsSync(route)).toBe(true);
+  });
+
+  it("carries the reset banner flag the login screen reads", () => {
+    expect(LOGIN_RESET_SUCCESS_HREF).toBe("/entrar?reset=success");
+  });
+});
+
+// resolvePostLogin is the decision the login screen makes after a successful
 // POST /auth/token, and the one usePortalGuard makes for an already-signed-in
 // visitor. Both must agree, which is why it lives in one tested place.
 describe("resolvePostLogin", () => {

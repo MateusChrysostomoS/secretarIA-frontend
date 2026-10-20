@@ -1,17 +1,19 @@
 "use client";
 
-// "/" — the only public route in this app, and its single front door.
+// /entrar — the login screen of this app (LOGIN_ROUTE in lib/portal-routes.ts).
 //
-// It does exactly two things, deliberately: sign an existing clinic in, and send
-// a new one to the signup wizard. There is no marketing content here — the
-// product's marketing lives on the Brain site, on its own domain.
+// Lived at "/" until 2026-10-19, when "/" became the product's public landing
+// page (app/(marketing)/page.tsx). The screen itself moved unchanged: same form,
+// same session check on mount, same ?reset=success banner. What it signs into
+// is the older hub (/inicio, /agenda, /configuracao); the clinic platform the
+// landing's "Entrar" opens is the Brain-Message console, on its own domain —
+// see lib/platform-links.ts.
 //
-// This is a NEW composition, not a port. In brain-frontend the two paths are
-// separate routes (/login, reached from a marketing home; /cadastro, reached
-// from a pricing card via PlanCheckoutCta). Neither of those entry points exists
-// on this domain, so both paths surface here: the login form owns the card, and
-// the signup CTA sits below it in AuthShell's `belowCard` slot behind a divider —
-// the same slot /login already used for its secondary link.
+// The slot below the card used to send a new clinic to the signup wizard
+// ("Contratar secretarIA" → /cadastro). It now sends them to the landing
+// instead: /cadastro sells the WhatsApp plan whose billing is on hold, and the
+// landing is where a new clinic talks to the team. SIGNUP_HREF itself is kept
+// (checkout/cancelado still uses it).
 //
 // Authentication itself is unchanged: POST /auth/token against brain-api via
 // lib/manage-api.login(), which is the identity authority for every Brain
@@ -32,17 +34,17 @@
 //
 // It also answers a third question before either of those: is someone already
 // signed in? See the mount effect below — until 2026-08-31 it did not, and a
-// signed-in user who opened "/" got the login form as if they were a stranger.
+// signed-in user who opened the login got the form as if they were a stranger.
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 import { ensureSession, getSession, login } from "@/lib/manage-api";
-import { SIGNUP_HREF, resolveEntryRedirect, resolvePostLogin } from "@/lib/portal-routes";
+import { resolveEntryRedirect, resolvePostLogin } from "@/lib/portal-routes";
 
-import { AuthShell } from "./_shared/AuthShell";
-import { PasswordField } from "./_shared/PasswordField";
+import { AuthShell } from "../_shared/AuthShell";
+import { PasswordField } from "../_shared/PasswordField";
 
 export default function EntryPage() {
   return (
@@ -76,7 +78,7 @@ function EntryInner() {
   // A session that already exists when this screen mounts belongs in the app, not
   // in front of a login form. resolvePostLogin used to run ONLY inside
   // handleSubmit below, which meant it fired for a login performed in THIS page
-  // load and never for a session that was already there: a bookmarked "/", the
+  // load and never for a session that was already there: a bookmarked login, the
   // back button after signing in, or any link still pointing at the root all
   // showed the form as if nobody were signed in. resolveEntryRedirect owns the
   // rule — including the `denied` case, which stays on this screen on purpose —
@@ -168,23 +170,21 @@ function EntryInner() {
         <>
           <div className="login-divider">ou</div>
           <p className="login-help">Sua clínica ainda não usa a secretarIA?</p>
-          {/* The wizard resolves the plan from the query string; SIGNUP_HREF
-              carries the one plan this domain sells. It is a plain link, not a
-              gated button: /cadastro applies the launch gate itself (see
-              app/(site)/_lib/launch.ts), so the rule lives in exactly one place.
+          {/* The landing, not /cadastro: see the file header. "/" is the
+              product's public page, where a new clinic talks to the team.
 
               prefetch={false}, here and on "Esqueci minha senha" below, for the
               same reason: this whole screen is above the fold, so <Link> would
-              fetch both routes' RSC payloads (out/cadastro/index.txt,
-              out/esqueci_senha/index.txt) the moment it paints — on a login page
-              where the overwhelmingly likely next action is submitting the form. */}
+              fetch both routes' RSC payloads the moment it paints — on a login
+              page where the overwhelmingly likely next action is submitting the
+              form. */}
           <Link
-            href={SIGNUP_HREF}
+            href="/"
             className="btn btn-secondary login-submit"
             style={{ marginTop: 12 }}
             prefetch={false}
           >
-            Contratar secretarIA
+            Conhecer a secretarIA
           </Link>
         </>
       }

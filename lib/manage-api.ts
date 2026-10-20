@@ -30,6 +30,9 @@
 //   POST /auth/password-reset/verify  -> pre-flight token check            (verifyResetToken)
 //   POST /auth/password-reset/confirm -> consume token, set new password   (confirmPasswordReset)
 
+// Where an unrecoverable session sends the browser (redirectToLogin below).
+import { LOGIN_ROUTE } from "./portal-routes";
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -131,6 +134,11 @@ export type DemoRequestPayload = {
   product_interest?: DemoProductInterest | null;
   message?: string | null;
   source?: DemoSource | null;
+  // HONEYPOT (brain-api schemas/demo.py, CONTRACTS.md §5). A real visitor never
+  // sees the field and leaves it empty; a bot fills it, and brain-api answers a
+  // normal 201 WITHOUT storing the row. Never persisted. Sent as "" by the
+  // public site's contact form (app/(marketing)/_components/ContactForm.tsx).
+  website?: string | null;
 };
 
 export type DemoRequestConfirmation = {
@@ -323,7 +331,7 @@ type RefreshOutcome =
 let refreshInFlight: Promise<RefreshOutcome> | null = null;
 
 function redirectToLogin(): void {
-  if (typeof window !== "undefined") window.location.assign("/");
+  if (typeof window !== "undefined") window.location.assign(LOGIN_ROUTE);
 }
 
 // Build a Session from a freshly minted token pair. Every identity field is
@@ -1959,7 +1967,7 @@ export type DoctorProfessional = {
 // Same shape as getHubToken in lib/secretaria-hub.ts: a module-memory entry
 // plus an in-flight promise map, both keyed by the OWNING session
 // (`${tenantId}:${token}`) rather than by "the last roster fetched". Login here
-// is a client-side route push (no full reload — app/(auth)/page.tsx), so one
+// is a client-side route push (no full reload — app/(auth)/entrar/page.tsx), so one
 // tab can hold sessions for more than one clinic within a single page
 // lifetime; an unkeyed cache would hand clinic A's roster to clinic B. Same
 // reason the hub token is keyed, spelled out at length there.

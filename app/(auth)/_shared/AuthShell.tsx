@@ -1,4 +1,4 @@
-// AuthShell — chrome for the public entry screen (/).
+// AuthShell — chrome for the login screen (/entrar) and the password-reset steps.
 // Renders the cream + teal background (medical grid, drifting dots,
 // ECG trace), the centred brand block, the card wrapper, and the
 // footer line. The page-specific content lives in `children`;
@@ -27,7 +27,7 @@ type AuthShellProps = {
    * secretarIA", so a "por Brain" line under it said Brain twice.
    */
   role?: string;
-  /** Where the brand wordmark links to. Defaults to the marketing site. */
+  /** Where the brand wordmark links to. Defaults to the product's public landing ("/"). */
   brandHref?: string;
   /** Card title — supports rich JSX so callers can italicise an accent word. */
   title: ReactNode;
@@ -45,10 +45,9 @@ type AuthShellProps = {
   footer?: ReactNode;
 };
 
-// No link row: `/` is the only public route in this app, so "voltar ao site"
-// would point at the page the visitor is already on, and the #privacidade /
-// #suporte anchors it used to carry belong to the Brain marketing home, which
-// does not exist on this domain.
+// No link row. The #privacidade / #suporte anchors it used to carry belonged to
+// the Brain marketing home; the brand lockup above already links back to the
+// product's own landing ("/"), which is where the legal links live.
 const DEFAULT_FOOTER = <span>secretarIA é um produto Brain.</span>;
 
 export function AuthShell({

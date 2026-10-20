@@ -15,7 +15,7 @@ import { BrandIcon } from "../../_components/BrandIcon";
 import { ThemeToggle } from "../../_components/ThemeToggle";
 import { clearSession, isSessionExpired, usePortalGuard } from "../../_components/usePortalGuard";
 import { PortalAccessNotice } from "../../_components/PortalAccessNotice";
-import { PORTAL_HOME } from "@/lib/portal-routes";
+import { LOGIN_ROUTE, PORTAL_HOME } from "@/lib/portal-routes";
 import { getTestWindow, logout, type TestWindow } from "@/lib/manage-api";
 import { daysRemaining, daysRemainingLabel, formatDays } from "./lib/test-window";
 import { RestartButton } from "./_components/RestartButton";
@@ -70,7 +70,7 @@ export default function ReativarPage() {
         .catch((e) => {
           if (isSessionExpired(e)) {
             clearSession();
-            window.location.assign("/");
+            window.location.assign(LOGIN_ROUTE);
             return;
           }
           setLoadError("Não foi possível carregar o período de teste. Tente novamente.");
@@ -102,7 +102,7 @@ export default function ReativarPage() {
       <header className="dash-header">
         <div className="container dash-nav">
           {/* PORTAL_HOME, not "/": this screen is guarded (always
-              authenticated), and on this domain "/" is the login form. */}
+              authenticated), and "/" is the public landing page. */}
           <Link className="brand-mark" href={PORTAL_HOME} aria-label="Brain">
             <BrandGlyph size={28} />
             <span className="wordmark" style={{ fontSize: 22 }}>
@@ -115,7 +115,7 @@ export default function ReativarPage() {
               <BrandIcon name="arrowR" className="flip-h" />
               Voltar ao painel
             </Link>
-            <Link className="btn btn--outline btn--sm" href="/" onClick={() => void logout()}>
+            <Link className="btn btn--outline btn--sm" href={LOGIN_ROUTE} onClick={() => void logout()}>
               Sair
             </Link>
           </div>

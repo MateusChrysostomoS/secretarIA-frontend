@@ -33,7 +33,7 @@ import {
   type Session,
   clearSession,
 } from "@/lib/manage-api";
-import { PORTAL_HOME, isSamePath, resolvePostLogin } from "@/lib/portal-routes";
+import { LOGIN_ROUTE, PORTAL_HOME, isSamePath, resolvePostLogin } from "@/lib/portal-routes";
 
 export function usePortalGuard(allowed: string[]): {
   session: Session | null;
@@ -62,8 +62,9 @@ export function usePortalGuard(allowed: string[]): {
       const current = getSession() ?? (await ensureSession());
       if (cancelled) return;
       if (!current?.token) {
-        // No session at all — the entry screen (/) is both login and signup.
-        router.replace("/");
+        // No session at all — to this app's login screen. Not "/": that is the
+        // public landing page since 2026-10-19, and it has no form.
+        router.replace(LOGIN_ROUTE);
         return;
       }
       if (!allowed.includes(current.role)) {

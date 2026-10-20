@@ -3,12 +3,12 @@
 // /esqueci_senha/atualizar_senha — Step 3 of the password-reset flow.
 // Receives the validated token via ?token=... and POSTs the new
 // password to /auth/password-reset/confirm. On success, redirects
-// to /?reset=success so the entry screen shows a confirmation
-// banner. No auto-login by design (brain-api doesn't return a session here).
+// to LOGIN_RESET_SUCCESS_HREF (/entrar?reset=success) so the login screen shows a
+// confirmation banner. No auto-login by design (brain-api doesn't return a session here).
 //
 // Ported from brain-frontend's app/(SignOut)/esqueci_senha/atualizar_senha/page.tsx,
 // pointed at this app's own lib/manage-api instead of lib/api (PreCheck), redirecting
-// to / instead of /login (this app has no /login route), and validating the new
+// to this app's login (LOGIN_ROUTE) instead of /login, and validating the new
 // password against the real backend rule (8-72 chars, letter + digit — see
 // lib/password-policy.ts) instead of brain-frontend's looser length-only check.
 
@@ -22,6 +22,7 @@ import {
   MIN_PASSWORD_LENGTH,
   passwordPolicyError,
 } from "@/lib/password-policy";
+import { LOGIN_RESET_SUCCESS_HREF, LOGIN_ROUTE } from "@/lib/portal-routes";
 import { stripQueryParamFromUrl } from "@/lib/url-token";
 
 import { AuthShell } from "../../_shared/AuthShell";
@@ -86,7 +87,7 @@ function UpdatePasswordInner() {
     setLoading(true);
     try {
       await confirmPasswordReset(token, password);
-      router.push("/?reset=success");
+      router.push(LOGIN_RESET_SUCCESS_HREF);
     } catch (err) {
       const status = err instanceof ManageApiError ? err.status : 0;
       setError(
@@ -113,7 +114,7 @@ function UpdatePasswordInner() {
       error={error}
       belowCard={
         <p className="login-help">
-          Mudou de ideia? <Link href="/">Entrar</Link>
+          Mudou de ideia? <Link href={LOGIN_ROUTE}>Entrar</Link>
         </p>
       }
     >

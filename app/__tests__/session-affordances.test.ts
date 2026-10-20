@@ -24,7 +24,7 @@ const repoRoot = process.cwd();
 const read = (rel: string) => readFileSync(path.join(repoRoot, rel), "utf8");
 
 const HEADER = "app/(site)/_components/PortalHeader.tsx";
-const ENTRY = "app/(auth)/page.tsx";
+const ENTRY = "app/(auth)/entrar/page.tsx";
 // Unguarded by design: a missing session on these means "stay in demo mode".
 const DEMO_SCREENS = ["app/(site)/agenda/page.tsx", "app/(site)/configuracao/page.tsx"];
 
@@ -57,7 +57,9 @@ describe("logout is offered only where there is a session (ARQ-2)", () => {
   });
 });
 
-describe("/ hands an already-signed-in user to the app (ARQ-5)", () => {
+// The login screen lived at "/" until 2026-10-19; it is /entrar now (LOGIN_ROUTE),
+// and "/" is the public landing page. The guard moved with the screen.
+describe("the login screen hands an already-signed-in user to the app (ARQ-5)", () => {
   const src = read(ENTRY);
   // Everything before handleSubmit — i.e. what runs without anyone typing.
   const beforeSubmit = src.slice(0, src.indexOf("async function handleSubmit"));

@@ -17,6 +17,22 @@
 // names the clinic and links onward, so "one product" stopped meaning "one door".
 export const PORTAL_HOME = "/inicio";
 
+// The login screen of THIS app — the old hub's front door.
+//
+// Was "/" until 2026-10-19, when "/" became the product's public landing page
+// (app/(marketing)/page.tsx). Every place that means "send this person to the
+// login form" — a guard with no session, an expired session, "Sair", the end of
+// the password-reset flow — goes through this constant, never through a "/"
+// literal: "/" now answers a stranger with marketing copy, not with a form.
+//
+// Not to be confused with the clinic PLATFORM's login (the Brain-Message
+// console, lib/platform-links.ts), which is where the landing's "Entrar" goes.
+export const LOGIN_ROUTE = "/entrar";
+
+// Where /esqueci_senha/atualizar_senha sends someone after a finished reset. The
+// login screen reads `?reset=success` to show its confirmation banner.
+export const LOGIN_RESET_SUCCESS_HREF = `${LOGIN_ROUTE}?reset=success`;
+
 // Where the "contratar" path starts. `resolvePlan` in app/(site)/cadastro/lib/plans.ts
 // falls back to `[planId]` when no `?catalog=` list is supplied, so the plan id
 // alone is a complete instruction for the wizard.
@@ -58,10 +74,10 @@ export function resolvePostLogin(role: string): PostLoginDecision {
   return { kind: "denied", message: UNKNOWN_ROLE_MESSAGE };
 }
 
-// What "/" — the entry screen — should do with a session that ALREADY exists when
-// it mounts: a bookmarked root, the back button after signing in, a link that
-// still points at "/". Returns the path to replace with, or null for "stay here
-// and render the login form".
+// What the login screen (LOGIN_ROUTE; "/" until 2026-10-19) should do with a
+// session that ALREADY exists when it mounts: a bookmark, the back button after
+// signing in, a link that still points at the login. Returns the path to replace
+// with, or null for "stay here and render the login form".
 //
 // Split out of that screen for the reason at the top of this file. The entry
 // screen is a React component, and the node-environment vitest setup cannot

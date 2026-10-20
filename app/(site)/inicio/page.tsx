@@ -38,7 +38,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 
 import { getDoctorMe, type DoctorMe } from "@/lib/manage-api";
-import { PORTAL_ROLES, canManageClinic } from "@/lib/portal-routes";
+import { LOGIN_ROUTE, PORTAL_ROLES, canManageClinic } from "@/lib/portal-routes";
 import { signOut } from "@/lib/sign-out";
 
 import { BrandIcon, type IconName } from "../_components/BrandIcon";
@@ -110,8 +110,8 @@ export default function InicioPage() {
         if (cancelled) return;
         if (isSessionExpired(e)) {
           clearSession();
-          // "/" is this domain's login screen — there is no separate /login here.
-          router.replace("/");
+          // LOGIN_ROUTE, not "/": "/" is the public landing page since 2026-10-19.
+          router.replace(LOGIN_ROUTE);
           return;
         }
         // Kept out of state but not swallowed: the banner below says the same

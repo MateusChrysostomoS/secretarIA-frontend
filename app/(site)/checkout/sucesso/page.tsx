@@ -15,6 +15,7 @@
 import { Suspense, useEffect, useState, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { LOGIN_ROUTE } from "@/lib/portal-routes";
 import { BrandGlyph } from "../../_components/BrandGlyph";
 import {
   exchangeOnboardingToken,
@@ -275,7 +276,7 @@ function renderView(view: ViewState, exchangeFailed: boolean): ReactNode {
             automaticamente. Entre com o e-mail usado na compra.
           </p>
           <div className="checkout-actions">
-            <Link href="/" className="btn btn--primary">
+            <Link href={LOGIN_ROUTE} className="btn btn--primary">
               Entrar
             </Link>
           </div>
@@ -297,7 +298,7 @@ function renderView(view: ViewState, exchangeFailed: boolean): ReactNode {
             Entre com o e-mail usado na compra para acessar o painel.
           </p>
           <div className="checkout-actions">
-            <Link href="/" className="btn btn--primary">
+            <Link href={LOGIN_ROUTE} className="btn btn--primary">
               Entrar
             </Link>
           </div>

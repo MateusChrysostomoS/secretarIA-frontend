@@ -35,6 +35,8 @@
 
 import { useEffect } from "react";
 
+import { PORTAL_HOME } from "@/lib/portal-routes";
+
 type SiteErrorProps = {
   error: Error & { digest?: string };
   // Re-mounts the crashed subtree. State is rebuilt from scratch, so a screen
@@ -109,7 +111,7 @@ export default function SiteError({ error, reset }: SiteErrorProps) {
           >
             Recarregar a página
           </button>
-          <a className="btn btn--ghost" href="/">
+          <a className="btn btn--ghost" href={PORTAL_HOME}>
             Ir para o início
           </a>
         </div>

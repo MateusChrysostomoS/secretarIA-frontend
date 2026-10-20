@@ -9,6 +9,7 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { LOGIN_ROUTE } from "@/lib/portal-routes";
 import { StepHeading, StepActions } from "./WizardShell";
 import { passwordError } from "../lib/password";
 import type { ContactFields } from "../lib/types";
@@ -179,7 +180,7 @@ export function ContactStep({
           {showLoginLink && (
             <>
               {" "}
-              <Link href="/">Entrar</Link>
+              <Link href={LOGIN_ROUTE}>Entrar</Link>
             </>
           )}
         </p>

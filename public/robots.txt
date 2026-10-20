@@ -1,9 +1,11 @@
 # secretarIA — https://secretaria-secretaria-frontend.cpux9k.easypanel.host
 #
-# Everything here except the entry screen and the sign-up funnel is a logged-in
-# clinic surface or a one-time link target (password reset, team invite,
-# checkout return, Google Calendar OAuth return). None of it belongs in a search
-# index, and some of it carries a token in the query string.
+# "/" is the product's public landing page (since 2026-10-19) and is meant to be
+# indexed, together with the legal pages it links (/termos/, /privacidade/) and
+# the sign-up funnel. Everything else is a logged-in clinic surface, the login
+# form (/entrar/, which was "/" before) or a one-time link target (password
+# reset, team invite, checkout return, Google Calendar OAuth return). None of it
+# belongs in a search index, and some of it carries a token in the query string.
 #
 # This file is served by nginx from out/robots.txt (Next.js copies public/ into
 # the export). Before it existed the catch-all in nginx.conf answered
@@ -11,6 +13,7 @@
 # for the rules got an HTML document instead.
 
 User-agent: *
+Disallow: /entrar/
 Disallow: /inicio/
 Disallow: /agenda/
 Disallow: /configuracao/

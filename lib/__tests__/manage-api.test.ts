@@ -189,7 +189,7 @@ describe("manageFetch refresh-and-retry", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(api.getSession()).toBeNull();
     expect(api.getImpersonation()).toBeNull();
-    expect((window as any).location.assign).toHaveBeenCalledWith("/");
+    expect((window as any).location.assign).toHaveBeenCalledWith("/entrar");
   });
 
   it("3. retry-once: 401 -> refresh 200 -> retried call 401 again -> rejects, no second refresh", async () => {

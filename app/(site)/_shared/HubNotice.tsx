@@ -12,6 +12,7 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import { Btn, Icon } from "./ui";
 import type { Session } from "@/lib/manage-api";
+import { LOGIN_ROUTE } from "@/lib/portal-routes";
 import { hubConfigured } from "@/lib/secretaria-hub";
 
 type HubNoticeProps = {
@@ -76,7 +77,7 @@ export function HubNotice({
         <Icon name="user" size={15} style={{ flexShrink: 0 }} />
         <span>
           Você está vendo dados de demonstração.{" "}
-          <Link href="/" style={{ color: "var(--brand)", fontWeight: 600 }}>
+          <Link href={LOGIN_ROUTE} style={{ color: "var(--brand)", fontWeight: 600 }}>
             Entre para conectar sua agenda real.
           </Link>
         </span>

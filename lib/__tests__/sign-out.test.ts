@@ -62,7 +62,7 @@ function seedSession(overrides: Partial<Session> = {}): Session {
 }
 
 describe("signOut (secretarIA Header 'Sair')", () => {
-  it("clears the session synchronously, revokes the refresh token, and routes to /login", async () => {
+  it("clears the session synchronously, revokes the refresh token, and routes to the login screen", async () => {
     seedSession();
     fetchMock.mockResolvedValue({ ok: true, status: 204, json: async () => ({}) });
     const navigate = vi.fn();
@@ -72,7 +72,7 @@ describe("signOut (secretarIA Header 'Sair')", () => {
     // Local clear + navigation happen before any network settles.
     expect(api.getSession()).toBeNull();
     expect(navigate).toHaveBeenCalledTimes(1);
-    expect(navigate).toHaveBeenCalledWith("/");
+    expect(navigate).toHaveBeenCalledWith("/entrar");
 
     // Best-effort revocation fired. No body: the refresh token lives in the
     // HttpOnly cookie, so `credentials: "include"` is what carries it, and
@@ -93,7 +93,7 @@ describe("signOut (secretarIA Header 'Sair')", () => {
 
     expect(api.getSession()).toBeNull();
     expect(navigate).toHaveBeenCalledTimes(1);
-    expect(navigate).toHaveBeenCalledWith("/");
+    expect(navigate).toHaveBeenCalledWith("/entrar");
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
   });
 
@@ -110,7 +110,7 @@ describe("signOut (secretarIA Header 'Sair')", () => {
     signOutMod.signOut(navigate);
 
     expect(navigate).toHaveBeenCalledTimes(1);
-    expect(navigate).toHaveBeenCalledWith("/");
+    expect(navigate).toHaveBeenCalledWith("/entrar");
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     expect(fetchMock.mock.calls[0][0]).toBe("/auth/logout");
   });

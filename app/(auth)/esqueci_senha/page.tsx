@@ -8,13 +8,14 @@
 //
 // Ported from brain-frontend's app/(SignOut)/esqueci_senha/page.tsx, pointed at
 // this app's own lib/manage-api (brain-api's native reset endpoints) instead of
-// lib/api (PreCheck) — see docs/CHECKPOINT_secretaria_frontend.md. No /login here:
-// this app's only entry point is /, so "back" links there.
+// lib/api (PreCheck) — see docs/CHECKPOINT_secretaria_frontend.md. "Back" goes to
+// this app's login, LOGIN_ROUTE (/entrar since 2026-10-19; it was "/" before).
 
 import Link from "next/link";
 import { useState } from "react";
 
 import { ManageApiError, requestPasswordReset } from "@/lib/manage-api";
+import { LOGIN_ROUTE } from "@/lib/portal-routes";
 
 import { AuthShell } from "../_shared/AuthShell";
 import { StepIndicator } from "../_shared/StepIndicator";
@@ -71,7 +72,7 @@ export default function ForgotPasswordPage() {
       success={success}
       belowCard={
         <p className="login-help">
-          Lembrou a senha? <Link href="/">Entrar</Link>
+          Lembrou a senha? <Link href={LOGIN_ROUTE}>Entrar</Link>
         </p>
       }
     >

@@ -4,6 +4,7 @@
 // Pure server component — no client JS needed.
 
 import Link from "next/link";
+import { SIGNUP_HREF } from "@/lib/portal-routes";
 import { BrandGlyph } from "../../_components/BrandGlyph";
 import "../checkout.css";
 
@@ -26,7 +27,7 @@ export default function CheckoutCanceladoPage() {
             quiser.
           </p>
           <div className="checkout-actions">
-            <Link href="/" className="btn btn--primary">
+            <Link href={SIGNUP_HREF} className="btn btn--primary">
               Contratar novamente
             </Link>
           </div>

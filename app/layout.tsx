@@ -8,16 +8,31 @@ import {
   Space_Grotesk,
 } from "next/font/google";
 
+import { SITE_URL } from "@/lib/platform-links";
+
 // RootLayout — the single <html>/<body> shell for the whole secretarIA app.
 // It deliberately imports NO component CSS: each route group imports its own
-// stylesheet (the public entry screen → globals.css in the (auth) group;
-// the portal → brand-ds.css in the (site) group), so the two design systems are
-// code-split per route and can never collide on the same page.
+// stylesheet (the login + password-reset screens → globals.css in the (auth)
+// group; the portal → brand-ds.css in the (site) group; the public landing →
+// brand-ds.css + landing.css in the (marketing) group), so the design systems
+// are code-split per route and can never collide on the same page.
 
+// Defaults for every route. The landing (app/(marketing)/page.tsx) sets its own
+// description, canonical and Open Graph tags; the portal screens inherit these.
+// No channel is named here on purpose: patients talk to the clinic through the
+// clinic's chat link today, and WhatsApp is not live yet.
 export const metadata: Metadata = {
-  title: "secretarIA — a secretária da sua clínica no WhatsApp",
+  title: {
+    default: "secretarIA — secretária virtual para clínicas",
+    template: "%s · secretarIA",
+  },
   description:
-    "A secretarIA atende os pacientes da sua clínica no WhatsApp: responde, agenda, remarca e cuida da agenda de todos os profissionais.",
+    "A secretarIA atende os pacientes da sua clínica pelo chat: tira dúvidas, agenda, remarca e cancela consultas na agenda de cada médico.",
+  applicationName: "secretarIA",
+  // Absolute base for canonical / og:url / og:image — only when the build was
+  // given NEXT_PUBLIC_SITE_URL. Without it the landing leaves those tags out
+  // rather than letting Next resolve them against http://localhost:3000.
+  ...(SITE_URL ? { metadataBase: SITE_URL } : {}),
 };
 
 // ── Fonts ───────────────────────────────────────────────────────────────────
@@ -112,10 +127,13 @@ const FONT_VARIABLES = [
 // Path-aware theme bootstrap, applied before first paint to avoid a theme flash.
 // localStorage key `secretaria_theme` — must stay in sync with STORAGE_KEY in
 // app/(site)/_components/useBrandTheme.ts. Default with no stored value: dark on
-// the entry screen (the auth chrome's original default, which its cream + teal
-// artwork is drawn for), light on the portal screens (the brand design's default).
+// the login screen (the auth chrome's original default, which its cream + teal
+// artwork is drawn for), light everywhere else — the portal screens and the
+// public landing at "/" (light first; it re-themes from the same tokens). The
+// login lived at "/" until 2026-10-19 and is /entrar/ now (LOGIN_ROUTE in
+// lib/portal-routes.ts); both spellings, with and without the trailing slash, match.
 const THEME_INIT_SCRIPT =
-  "(function(){try{var t=localStorage.getItem('secretaria_theme');if(t!=='light'&&t!=='dark'){t=location.pathname==='/'?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','light');}})();";
+  "(function(){try{var t=localStorage.getItem('secretaria_theme');if(t!=='light'&&t!=='dark'){var p=location.pathname;t=(p==='/entrar'||p==='/entrar/')?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','light');}})();";
 
 export default function RootLayout({
   children,

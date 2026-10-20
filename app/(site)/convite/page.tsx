@@ -25,6 +25,7 @@ import {
   setPassword,
   type Session,
 } from "@/lib/manage-api";
+import { LOGIN_ROUTE } from "@/lib/portal-routes";
 import { stripQueryParamFromUrl } from "@/lib/url-token";
 import "../checkout/checkout.css";
 
@@ -109,7 +110,7 @@ function ConviteInner() {
             peça um novo à sua clínica.
           </p>
           <div className="checkout-actions">
-            <Link href="/" className="btn btn--outline">
+            <Link href={LOGIN_ROUTE} className="btn btn--outline">
               Ir para o login
             </Link>
           </div>
@@ -131,7 +132,7 @@ function ConviteInner() {
             link de convite.
           </p>
           <div className="checkout-actions">
-            <Link href="/" className="btn btn--primary">
+            <Link href={LOGIN_ROUTE} className="btn btn--primary">
               Ir para o login
             </Link>
           </div>
