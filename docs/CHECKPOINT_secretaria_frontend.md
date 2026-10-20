@@ -38,6 +38,19 @@ lados, está em `secretarIA/docs/CHECKPOINT_whatsapp_text_limits.md`.
 > `docs/CHECKPOINT_agenda_datas_reais.md` — inclui as decisões de produto tomadas
 > (semana começando no domingo, busca do mês seguindo a grade) e por quê.
 
+> **2026-10-19 — `/` virou o site público do produto.** A landing da secretarIA
+> (`app/(marketing)/`) ocupa a raiz; o formulário de login do hub antigo mudou, sem
+> alteração de comportamento, para **`/entrar`** (`LOGIN_ROUTE` em `lib/portal-routes.ts`).
+> Todo redirect que queria dizer "vá fazer login" (guards, sessão expirada, "Sair", fim do
+> reset de senha) passou a usar a constante — um teste de fonte proíbe `"/"` literal nesses
+> lugares. O "Entrar" do site abre a **plataforma da clínica** (console Brain-Message) via
+> `NEXT_PUBLIC_PLATFORM_LOGIN_URL`; vazia ou inválida, cai em `/entrar`. O contato de clínicas
+> novas reaproveita `POST /demo-requests` do brain-api (`source=secretaria`), sem rota nova.
+> `/termos/` e `/privacidade/` são linkadas, mas pertencem a outra mudança. Variáveis novas
+> de build: `NEXT_PUBLIC_PLATFORM_LOGIN_URL` e `NEXT_PUBLIC_SITE_URL` (ver "Deploy no
+> EasyPanel"). Testes: `app/__tests__/landing-page.test.ts`, `app/__tests__/build-env.test.ts`,
+> `lib/__tests__/platform-links.test.ts`.
+
 ## O que é este repo
 
 O frontend dedicado da **secretarIA**, um dos 3 domínios da Brain desde 2026-08-14:
@@ -61,7 +74,8 @@ nasce com `InviteTeamMemberModal`, a lista de secretárias e o `Role` de 4 valor
 
 | Rota | O que é | Origem no brain-frontend |
 |---|---|---|
-| `/` | **login + contratar** — única porta de entrada, sem landing | composição NOVA (ver abaixo) |
+| `/` | **site público do produto** (landing) — desde 2026-10-19 | `app/(marketing)/page.tsx`, NOVO |
+| `/entrar` | **login** do hub (era `/` até 2026-10-19) | composição NOVA (ver abaixo) |
 | `/inicio` | **home do portal** (`PORTAL_HOME`) — nome da clínica + cards pro resto do app | modelada em `(site)/doctor/dashboard`, adicionada em 2026-08-23 (ver decisão nº7) |
 | `/cadastro` | wizard de signup de 9 passos | `(site)/cadastro/*` |
 | `/checkout/sucesso`, `/checkout/cancelado` | retorno do Stripe | `(site)/checkout/*` |
@@ -81,7 +95,10 @@ Grupos de rota: `(auth)` (só `/`, carrega `globals.css`) e `(site)` (todo o res
 `brand-ds.css`). Os dois design systems ficam code-split por rota e nunca colidem na mesma
 página — mesma disciplina do brain-frontend.
 
-## A tela `/` — composição nova, não é cópia
+## A tela de login (`/entrar`, antes `/`) — composição nova, não é cópia
+
+> Desde 2026-10-19 esta tela vive em `/entrar` e o CTA abaixo do card leva à landing
+> ("Conhecer a secretarIA"), não mais a `/cadastro`. O texto desta seção é o histórico.
 
 No brain-frontend, entrar e contratar são portas separadas: `/login` (alcançada pela home
 de marketing) e `/cadastro` (alcançada por um card de preço via `PlanCheckoutCta`). **Nenhuma
@@ -340,6 +357,11 @@ de Environment do EasyPanel NÃO tem efeito nenhum** — isso já quebrou uma in
      rede interna, que o navegador do médico não alcança.
    - Os defaults do `Dockerfile` já apontam para os hosts atuais; passe Build Args só para
      sobrescrever.
+   - **Site público (2026-10-19), sem default — precisam ser passadas:**
+     `NEXT_PUBLIC_PLATFORM_LOGIN_URL` = URL **completa** da tela de login da plataforma
+     (console Brain-Message, hoje `https://precheckv2-brain-message-frontend.cpux9k.easypanel.host/login`);
+     vazia, o "Entrar" do site abre `/entrar` deste app. `NEXT_PUBLIC_SITE_URL` = origem
+     pública deste site (esquema + host); vazia, a landing sai sem canonical/og:url/og:image.
 4. **Domains** → adicione o domínio do produto, porta `80`.
 5. Depois de subir, confirme no serviço **secretarIA** que `CORS_ALLOW_ORIGINS` inclui a
    origem nova **sem barra final** — uma barra sobrando produz `400 Disallowed CORS origin`.
