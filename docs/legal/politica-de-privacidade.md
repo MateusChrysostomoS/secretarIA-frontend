@@ -131,7 +131,7 @@ Parte desses dados também pode ser inserida pela equipe da clínica, por exempl
 | Google (Google Agenda da clínica ou do profissional) | Nome do paciente no título do evento; serviço, convênio, nome de quem será atendido e canal na descrição; o e-mail do paciente como convidado | Registrar a consulta na agenda da clínica e enviar o convite com lembretes | Estados Unidos e outros países |
 | Cloudflare (armazenamento R2) | Os arquivos enviados pelo Portal | Guardar os arquivos | Localização definida automaticamente pelo fornecedor, podendo ser fora do Brasil |
 | Hostinger | Os bancos de dados e os sistemas da plataforma, nos servidores contratados | Hospedagem | Brasil (São Paulo) |
-| Provedor de envio de e-mails: [PREENCHER: nome do provedor de e-mail transacional (SMTP) usado em produção] | Seu e-mail e o conteúdo das mensagens enviadas (códigos, confirmações, lembretes e avisos) | Enviar e-mails | [PREENCHER: país onde o provedor de e-mail trata os dados] |
+| Provedor de envio de e-mails: Google (Gmail) | Seu e-mail e o conteúdo das mensagens enviadas (códigos, confirmações, lembretes e avisos) | Enviar e-mails | EUA e outros países onde o Google opera |
 | Stripe | Dados de cobrança da clínica (não recebe dados de pacientes) | Processar pagamentos das clínicas | Estados Unidos e Brasil |
 | Asaas, só quando a clínica habilita sinal via Pix | Nome, telefone e valor | Gerar a cobrança do sinal na conta da própria clínica | Brasil |
 | PreCheck (produto da Brain), só quando a clínica também o contrata | Identificador do paciente, nome e serviço marcado | Iniciar a pré-consulta | Brasil; o tratamento dentro do PreCheck segue os documentos próprios dele |
