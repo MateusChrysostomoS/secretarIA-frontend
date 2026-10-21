@@ -42,6 +42,11 @@ function ids(doc: LegalDocument): Set<string> {
   return set;
 }
 
+const UPDATED_AT: Record<(typeof KEYS)[number], string> = {
+  termos: "19 de outubro de 2026",
+  privacidade: "21 de outubro de 2026",
+};
+
 describe.each(KEYS)("legal document %s", (key) => {
   const entry = LEGAL_DOCUMENTS[key];
   const source = readLegalSource(key);
@@ -55,7 +60,8 @@ describe.each(KEYS)("legal document %s", (key) => {
   });
 
   it("states its last update date", () => {
-    expect(doc.updatedAt).toBe("19 de outubro de 2026");
+    // Privacidade moved to 21/10: Anthropic (Claude) became the AI provider.
+    expect(doc.updatedAt).toBe(UPDATED_AT[key]);
   });
 
   it("numbers its sections 1..N with no gap or repeat", () => {

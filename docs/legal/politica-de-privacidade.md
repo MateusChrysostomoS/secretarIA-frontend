@@ -9,7 +9,7 @@
 
 # Política de Privacidade da secretarIA
 
-Última atualização: 19 de outubro de 2026
+Última atualização: 21 de outubro de 2026
 
 Esta Política explica como são tratados os dados pessoais na **secretarIA**, a secretária virtual que atende pacientes e organiza agendamentos em nome de clínicas e profissionais de saúde. Ela foi escrita para pacientes, para as clínicas e suas equipes e para quem visita o site da secretarIA, e segue a Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/2018, "LGPD") e o Marco Civil da Internet (Lei nº 12.965/2014).
 
@@ -107,7 +107,7 @@ Parte desses dados também pode ser inserida pela equipe da clínica, por exempl
 
 ## 5. Inteligência artificial
 
-**5.1. O que a IA faz.** Quando você escreve livremente, um modelo de linguagem interpreta a mensagem, sugere opções a partir da agenda e do cadastro da clínica e redige a resposta. O provedor é a **OpenAI** (Estados Unidos), contratada pela Brain e acessada por interface de programação (API).
+**5.1. O que a IA faz.** Quando você escreve livremente, um modelo de linguagem interpreta a mensagem, sugere opções a partir da agenda e do cadastro da clínica e redige a resposta. O provedor é a **Anthropic** (Estados Unidos), com o modelo Claude, contratada pela Brain e acessada por interface de programação (API).
 
 **5.2. O que é enviado ao provedor.** As instruções do Assistente, com os dados da clínica (nome, horários, serviços, nomes dos profissionais e informações cadastradas); a etapa em que o agendamento está; e as **30 mensagens mais recentes** da conversa, depois da pseudonimização descrita abaixo. **O conteúdo dos arquivos que você envia não é enviado ao provedor**: o histórico registra apenas que um arquivo chegou, com o nome ou a legenda do arquivo.
 
@@ -127,7 +127,8 @@ Parte desses dados também pode ser inserida pela equipe da clínica, por exempl
 |---|---|---|---|
 | A clínica (equipe autorizada) | A conversa, os dados do agendamento, os arquivos, o nome e o e-mail | Atender você | Brasil |
 | O profissional de saúde da consulta | Nome, serviço, data, horário e convênio, por e-mail | Avisar sobre a consulta marcada | Brasil |
-| OpenAI | A conversa pseudonimizada e os dados da clínica (seção 5) | Interpretar mensagens e redigir respostas | Estados Unidos |
+| Anthropic | A conversa pseudonimizada e os dados da clínica (seção 5) | Interpretar mensagens e redigir respostas | Estados Unidos |
+| OpenAI e, em caso de falha, Groq | O áudio das mensagens de voz enviadas pelo WhatsApp (seção 14.2) | Transcrever o áudio em texto | Estados Unidos |
 | Google (Google Agenda da clínica ou do profissional) | Nome do paciente no título do evento; serviço, convênio, nome de quem será atendido e canal na descrição; o e-mail do paciente como convidado | Registrar a consulta na agenda da clínica e enviar o convite com lembretes | Estados Unidos e outros países |
 | Cloudflare (armazenamento R2) | Os arquivos enviados pelo Portal | Guardar os arquivos | Localização definida automaticamente pelo fornecedor, podendo ser fora do Brasil |
 | Hostinger | Os bancos de dados e os sistemas da plataforma, nos servidores contratados | Hospedagem | Brasil (São Paulo) |
@@ -143,7 +144,7 @@ Parte desses dados também pode ser inserida pela equipe da clínica, por exempl
 
 ## 7. Transferência internacional de dados
 
-**7.1.** Parte dos fornecedores da seção 6 trata dados fora do Brasil: a **OpenAI** (Estados Unidos), o **Google** (Estados Unidos e outros países), a **Cloudflare** (localização definida pelo fornecedor) e a **Stripe** (Estados Unidos, apenas dados das clínicas). O mesmo vale, se for o caso, para o provedor de envio de e-mails indicado na seção 6.
+**7.1.** Parte dos fornecedores da seção 6 trata dados fora do Brasil: a **Anthropic** (Estados Unidos), a **OpenAI** e a **Groq** (Estados Unidos, só para transcrever mensagens de voz), o **Google** (Estados Unidos e outros países), a **Cloudflare** (localização definida pelo fornecedor) e a **Stripe** (Estados Unidos, apenas dados das clínicas). O mesmo vale, se for o caso, para o provedor de envio de e-mails indicado na seção 6.
 
 **7.2.** Essas transferências se apoiam no art. 33 da LGPD, em especial na necessidade da transferência para executar o serviço pedido pelo titular (art. 33, IX) e nas garantias contratuais de proteção de dados oferecidas pelos fornecedores (art. 33, II), observada a Resolução CD/ANPD nº 19/2024. Para reduzir o que sai do país, a conversa é pseudonimizada antes de ir ao provedor de IA (seção 5) e os arquivos não são enviados a ele.
 
