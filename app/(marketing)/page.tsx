@@ -1,24 +1,30 @@
-// "/" — the public landing page of the secretarIA product.
+// "/" — the public landing page of the secretarIA product, told as a guided
+// demo (TASK-078, 2026-11-05): hero → the secretarIA act (pinned: a slot is
+// booked in the clinic chat, lands on the agenda, the e-mail reminder goes out,
+// a question is handed to the team) → closing (how it works, what the AI does
+// and does not do, pilot conditions, security, FAQ, contact).
 //
 // Until 2026-10-19 "/" was the login form of the old hub; that screen moved,
-// unchanged, to /entrar (LOGIN_ROUTE). This page replaces it as the front door.
+// unchanged, to /entrar (LOGIN_ROUTE).
 //
 // A SERVER component on purpose: with `output: "export"` the whole page is in
 // the prerendered index.html — copy, figures, FAQ — so it reads (and indexes)
-// without JavaScript. The only client islands are the header's small-screen
-// menu, the contact form and the theme toggle.
+// without JavaScript. The client islands are the header's small-screen menu,
+// the contact form, the theme toggle and the demo's motion (smooth scroll, the
+// pinned act, the reveals), all of which leave the static HTML complete.
 //
 // It does NOT look for a session. A signed-in doctor who lands here clicks
-// "Entrar" like anyone else; probing the refresh cookie on every public visit
-// would cost a POST /api/auth/refresh per stranger for no visible gain.
+// "Entrar" like anyone else.
 //
-// COPY RULES (the founder's, 2026-10-19). State only what the product does
-// today and what the repos confirm: patients talk through the clinic's chat link
-// (WhatsApp: "em breve"), the agenda is each doctor's Google Agenda, reminders
-// and confirmations go by e-mail, the AI hands over to a person and never gives
-// medical advice. No numbers, logos, testimonials, certifications, "WhatsApp
-// oficial", encryption-at-rest or data-residency claims, and no naming of the
-// model provider. app/__tests__/landing-page.test.ts pins the riskiest of these.
+// COPY RULES (the founder's, 2026-10-19 and 2026-11-05). State only what the
+// product does today and what the repos confirm: patients talk through the
+// clinic's chat link (WhatsApp: "em breve"), the agenda is each doctor's Google
+// Agenda, reminders and confirmations go by e-mail, the AI hands over to a
+// person and never gives medical advice. No numbers, logos, testimonials,
+// certifications, "WhatsApp oficial", encryption-at-rest or data-residency
+// claims, and no naming of the model provider. Status label "em piloto" is
+// fixed. app/__tests__/landing-page.test.ts pins the riskiest of these.
+// Colour: the secretarIA amber palette (guided-demo.css).
 
 import type { Metadata } from "next";
 
@@ -28,18 +34,12 @@ import { ThemeToggle } from "@/app/(site)/_components/ThemeToggle";
 import { PLATFORM_LOGIN_HREF, PRIVACY_HREF, SITE_URL, TERMS_HREF } from "@/lib/platform-links";
 
 import { ContactForm } from "./_components/ContactForm";
-import {
-  AgendaFigure,
-  ContextoFigure,
-  ConversasFigure,
-  HeroFigure,
-  StepAskArt,
-  StepCodeArt,
-  StepLinkArt,
-  StepMailArt,
-  StepPickArt,
-} from "./_components/Figures";
+import { MotionReveal } from "./_components/demo/MotionReveal";
+import { SecretariaDemo } from "./_components/demo/SecretariaDemo";
+import { SmoothScroll } from "./_components/demo/SmoothScroll";
+import { HeroFigure } from "./_components/Figures";
 import { SiteHeader, type SiteNavLink } from "./_components/SiteHeader";
+import "./_components/demo/guided-demo.css";
 
 // ── Metadata ────────────────────────────────────────────────────────────────
 
@@ -85,38 +85,28 @@ export const metadata: Metadata = {
 // ── Content ─────────────────────────────────────────────────────────────────
 
 const NAV: SiteNavLink[] = [
+  { href: "#secretaria", label: "Na prática" },
   { href: "#como-funciona", label: "Como funciona" },
-  { href: "#plataforma", label: "Plataforma" },
   { href: "#limites", label: "O que a IA faz" },
   { href: "#seguranca", label: "Segurança" },
   { href: "#perguntas", label: "Perguntas" },
 ];
 
-const STEPS: { title: string; text: string; art: () => React.ReactElement }[] = [
+const HOW: { title: string; text: string; points: string[] }[] = [
   {
-    title: "Abre o link da clínica",
+    title: "Link ou QR code",
     text: "A clínica divulga um link ou QR code no site, nas redes sociais ou na recepção. Ele abre direto no navegador do celular ou do computador, sem instalar aplicativo.",
-    art: StepLinkArt,
+    points: ["Chat da clínica, no navegador", "WhatsApp em breve"],
   },
   {
-    title: "Conversa com a secretarIA",
-    text: "O paciente pergunta do jeito dele. A secretarIA responde com o que a clínica cadastrou: endereço, horários, serviços e preparo.",
-    art: StepAskArt,
+    title: "A clínica configura",
+    text: "A secretarIA responde com base no que a clínica cadastra. Mudou um horário, um serviço ou um convênio? Atualize e é isso que ela passa a usar.",
+    points: ["Profissionais e horários de cada um", "Serviços, duração e convênios aceitos"],
   },
   {
-    title: "Escolhe médico, dia e horário",
-    text: "Ela mostra os horários livres na agenda de cada profissional. Também é na conversa que o paciente remarca ou cancela, quando precisar.",
-    art: StepPickArt,
-  },
-  {
-    title: "Confirma com um código no e-mail",
-    text: "Antes de marcar, o paciente recebe um código no e-mail e digita na conversa. É assim que a clínica sabe com quem está falando.",
-    art: StepCodeArt,
-  },
-  {
-    title: "Recebe a confirmação e o lembrete",
-    text: "A confirmação chega por e-mail, e um lembrete antes da consulta. Na agenda da clínica, a marcação já aparece para a equipe.",
-    art: StepMailArt,
+    title: "Acompanhamento no portal",
+    text: "Médicos e secretárias entram com login próprio e veem as conversas e a agenda de cada médico. Com um clique, alguém da equipe assume e responde direto ao paciente.",
+    points: ["Conversas com o estado de cada atendimento", "Agenda em visão de dia, semana ou mês"],
   },
 ];
 
@@ -255,15 +245,16 @@ export default function LandingPage() {
   const year = new Date().getFullYear();
 
   return (
-    <div className="lp">
+    <div className="lp gd-page gd-site--secretaria">
       <a className="lp-skip" href="#conteudo">
         Pular para o conteúdo
       </a>
+      <SmoothScroll />
 
       <SiteHeader links={NAV} platformHref={PLATFORM_LOGIN_HREF} />
 
       <main id="conteudo" tabIndex={-1}>
-        {/* ── Hero ── */}
+        {/* ── Ato 1 — Hero ── */}
         <section className="lp-hero" aria-labelledby="hero-title">
           <div className="lp-wrap lp-hero__grid">
             <div className="lp-hero__copy">
@@ -278,11 +269,14 @@ export default function LandingPage() {
               </p>
               <div className="lp-hero__cta lp-rise lp-rise--4">
                 <a href="#contato" className="btn btn--primary btn--lg btn--icon-r">
-                  Falar com a equipe
+                  Agendar demonstração
                   <BrandIcon name="arrowR" />
                 </a>
-                <a href="#como-funciona" className="btn btn--outline btn--lg">
-                  Ver como funciona
+                <a className="gd-cue" href="#secretaria">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M12 5v14M6 13l6 6 6-6" />
+                  </svg>
+                  Veja na prática
                 </a>
               </div>
               <p className="lp-hero__status lp-rise lp-rise--4">Em piloto com as primeiras clínicas.</p>
@@ -310,172 +304,53 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ── Como funciona (paciente) ── */}
-        <section id="como-funciona" className="lp-section lp-section--ruled" aria-labelledby="como-title">
-          <div className="lp-wrap lp-how">
-            <div className="lp-how__aside">
-              <p className="lp-label">
-                Para o paciente
-              </p>
-              <h2 id="como-title" className="lp-h2" style={{ marginTop: 18 }}>
-                Da primeira pergunta à <em>consulta marcada</em>, numa conversa só.
-              </h2>
-              <p className="lp-body">
-                Sem precisar ligar e esperar alguém da recepção ficar livre. O paciente resolve no
-                tempo dele, e a clínica recebe a marcação pronta.
-              </p>
-              <p className="lp-note">
-                <strong>Hoje, o atendimento é pelo chat da clínica.</strong> O WhatsApp está em
-                preparação e chega em breve.
-              </p>
-            </div>
+        {/* ── Ato 2 — a secretarIA na prática (fixado) ── */}
+        <SecretariaDemo
+          cta={
+            <a href="#contato" className="btn btn--primary btn--lg btn--icon-r">
+              Quero participar do piloto
+              <BrandIcon name="arrowR" />
+            </a>
+          }
+        />
 
-            <ol className="lp-steps">
-              {STEPS.map((s, i) => {
-                const Art = s.art;
-                return (
-                  <li key={s.title} className="lp-step">
-                    <span className="lp-step__n lp-num" aria-hidden="true">
+        {/* ── Ato 3 — Fechamento ── */}
+        <section id="como-funciona" className="gd-how" aria-labelledby="como-title">
+          <div className="gd-wrap">
+            <MotionReveal className="gd-how__head">
+              <p className="lp-label">Como funciona</p>
+              <h2 id="como-title" className="gd-h2">
+                Três passos para a sua clínica <em>começar</em>.
+              </h2>
+            </MotionReveal>
+            <ol className="gd-how__grid" style={{ listStyle: "none", padding: 0 }}>
+              {HOW.map((step, i) => (
+                <li key={step.title}>
+                  <MotionReveal delay={i} className="gd-how__card gd-tone--sa">
+                    <span className="gd-how__n" aria-hidden="true">
                       {String(i + 1).padStart(2, "0")}
                     </span>
-                    <h3>{s.title}</h3>
-                    <p>{s.text}</p>
-                    <Art />
-                  </li>
-                );
-              })}
+                    <h3>{step.title}</h3>
+                    <p className="gd-how__text">{step.text}</p>
+                    <ul>
+                      {step.points.map((p) => (
+                        <li key={p}>
+                          <span className="gd-chip gd-tone--sa">{p}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </MotionReveal>
+                </li>
+              ))}
             </ol>
-          </div>
-        </section>
-
-        {/* ── Plataforma da clínica ── */}
-        <section id="plataforma" className="lp-section lp-band band-dark" aria-labelledby="plataforma-title">
-          <div className="lp-wrap">
-            <div className="lp-platform__intro">
-              <div className="lp-head">
-                <p className="lp-label">
-                  Para a clínica
-                </p>
-                <h2 id="plataforma-title" className="lp-h2" style={{ marginTop: 18 }}>
-                  Tudo o que a secretarIA faz, <em>a sua equipe vê e pode assumir.</em>
-                </h2>
-              </div>
-              <div>
-                <p className="lp-lead">
-                  Médicos e secretárias entram na plataforma da clínica com login próprio. Lá estão
-                  as conversas com os pacientes, a agenda de cada médico e tudo o que a IA sabe
-                  sobre a clínica.
-                </p>
-                <ul className="lp-roles" aria-label="Quem usa a plataforma">
-                  <li>
-                    <BrandIcon name="user" />
-                    Médicos
-                  </li>
-                  <li>
-                    <BrandIcon name="users" />
-                    Secretárias e recepção
-                  </li>
-                  <li>
-                    <BrandIcon name="sliders" />
-                    Gestão da clínica
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="lp-feature">
-              <div className="lp-feature__copy">
-                <p className="lp-label">Conversas</p>
-                <h3 className="lp-h3">
-                  Toda conversa à vista. <em>Assuma quando quiser.</em>
-                </h3>
-                <p className="lp-body">
-                  Cada conversa aparece com o estado do atendimento. Com um clique, alguém da equipe
-                  assume e responde direto ao paciente; quando terminar, devolve para a secretarIA.
-                </p>
-                <ul className="lp-ticks">
-                  <li>
-                    <BrandIcon name="check" />
-                    Estados claros: aguardando resposta, IA conduzindo, respondida
-                  </li>
-                  <li>
-                    <BrandIcon name="check" />
-                    Filtro para ver só quem está esperando resposta
-                  </li>
-                  <li>
-                    <BrandIcon name="check" />
-                    Enquanto a equipe conduz, a IA não responde aquele paciente
-                  </li>
-                </ul>
-              </div>
-              <ConversasFigure />
-            </div>
-
-            <div className="lp-feature lp-feature--flip">
-              <div className="lp-feature__copy">
-                <p className="lp-label">Agenda</p>
-                <h3 className="lp-h3">
-                  A agenda de cada médico, <em>com todas as marcações.</em>
-                </h3>
-                <p className="lp-body">
-                  O que o paciente marcou na conversa e o que a equipe marcou na plataforma ficam na
-                  mesma agenda, em visão de dia, semana ou mês.
-                </p>
-                <ul className="lp-ticks">
-                  <li>
-                    <BrandIcon name="check" />
-                    Nova consulta e bloqueio de horário pela equipe
-                  </li>
-                  <li>
-                    <BrandIcon name="check" />
-                    Remarcar e cancelar, com aviso ao paciente no cancelamento
-                  </li>
-                  <li>
-                    <BrandIcon name="check" />
-                    Status de cada consulta: agendado, confirmou, compareceu, faltou
-                  </li>
-                </ul>
-              </div>
-              <AgendaFigure />
-            </div>
-
-            <div className="lp-feature">
-              <div className="lp-feature__copy">
-                <p className="lp-label">Contexto</p>
-                <h3 className="lp-h3">
-                  Você decide <em>o que a IA sabe.</em>
-                </h3>
-                <p className="lp-body">
-                  A secretarIA responde com base no que a clínica cadastra aqui. Mudou um horário,
-                  um serviço ou um convênio? Atualize e é isso que ela passa a usar.
-                </p>
-                <ul className="lp-ticks">
-                  <li>
-                    <BrandIcon name="check" />
-                    Profissionais e os horários de atendimento de cada um
-                  </li>
-                  <li>
-                    <BrandIcon name="check" />
-                    Serviços, duração e convênios aceitos
-                  </li>
-                  <li>
-                    <BrandIcon name="check" />
-                    Informações da clínica, mensagens e lembretes
-                  </li>
-                </ul>
-              </div>
-              <ContextoFigure />
-            </div>
           </div>
         </section>
 
         {/* ── O que a IA faz / não faz ── */}
         <section id="limites" className="lp-section" aria-labelledby="limites-title">
           <div className="lp-wrap">
-            <div className="lp-head">
-              <p className="lp-label">
-                Limites claros
-              </p>
+            <MotionReveal className="lp-head">
+              <p className="lp-label">Limites claros</p>
               <h2 id="limites-title" className="lp-h2" style={{ marginTop: 18 }}>
                 Uma secretária, <em>não uma médica.</em>
               </h2>
@@ -483,10 +358,10 @@ export default function LandingPage() {
                 A secretarIA cuida do atendimento e da agenda. Tudo o que é decisão clínica continua
                 com o médico, e tudo o que ela não sabe vai para a equipe.
               </p>
-            </div>
+            </MotionReveal>
 
             <div className="lp-ledger">
-              <div className="lp-ledger__col">
+              <MotionReveal className="lp-ledger__col">
                 <h3 className="lp-h3">
                   <span className="mark mark--yes" aria-hidden="true">
                     <BrandIcon name="check" />
@@ -501,8 +376,8 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-              </div>
-              <div className="lp-ledger__col">
+              </MotionReveal>
+              <MotionReveal delay={1} className="lp-ledger__col">
                 <h3 className="lp-h3">
                   <span className="mark mark--no" aria-hidden="true">
                     <BrandIcon name="x" />
@@ -517,7 +392,7 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-              </div>
+              </MotionReveal>
             </div>
 
             <div className="lp-sos">
@@ -532,13 +407,33 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ── Segurança e LGPD ── */}
+        {/* ── Condições do piloto (no price list: conditions are agreed in the pilot) ── */}
+        <section id="condicoes" className="gd-buy" aria-labelledby="condicoes-title">
+          <div className="gd-wrap">
+            <MotionReveal className="gd-buy__box gd-tone--sa">
+              <div>
+                <p className="lp-label">Condições</p>
+                <h2 id="condicoes-title" className="gd-h2">
+                  Em piloto com as <em>primeiras clínicas.</em>
+                </h2>
+                <p className="gd-buy__text">
+                  As condições são combinadas diretamente com a equipe. Ela foi pensada para
+                  clínicas com dois ou mais médicos.
+                </p>
+              </div>
+              <a href="#contato" className="btn btn--primary btn--lg btn--icon-r">
+                Quero participar do piloto
+                <BrandIcon name="arrowR" />
+              </a>
+            </MotionReveal>
+          </div>
+        </section>
+
+        {/* ── Segurança e LGPD — unchanged ── */}
         <section id="seguranca" className="lp-section lp-safe" aria-labelledby="seguranca-title">
           <div className="lp-wrap lp-safe__grid">
             <div className="lp-head">
-              <p className="lp-label">
-                Segurança e LGPD
-              </p>
+              <p className="lp-label">Segurança e LGPD</p>
               <h2 id="seguranca-title" className="lp-h2" style={{ marginTop: 18 }}>
                 Dados de pacientes <em>pedem cuidado.</em>
               </h2>
@@ -573,9 +468,7 @@ export default function LandingPage() {
         <section id="perguntas" className="lp-section" aria-labelledby="perguntas-title">
           <div className="lp-wrap lp-faq__grid">
             <div className="lp-head">
-              <p className="lp-label">
-                Perguntas frequentes
-              </p>
+              <p className="lp-label">Perguntas frequentes</p>
               <h2 id="perguntas-title" className="lp-h2" style={{ marginTop: 18 }}>
                 O que as clínicas <em>costumam perguntar.</em>
               </h2>
@@ -598,13 +491,11 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ── Contato ── */}
+        {/* ── Contato — the closing CTA ── */}
         <section id="contato" className="lp-section lp-section--ruled" aria-labelledby="contato-title">
           <div className="lp-wrap lp-contact">
             <div className="lp-contact__copy">
-              <p className="lp-label">
-                Contato
-              </p>
+              <p className="lp-label">Agendar demonstração</p>
               <h2 id="contato-title" className="lp-h2" style={{ marginTop: 18 }}>
                 Quer a secretarIA <em>na sua clínica?</em>
               </h2>
@@ -657,10 +548,10 @@ export default function LandingPage() {
               <h2 id="ft-produto">Produto</h2>
               <ul>
                 <li>
-                  <a href="#como-funciona">Como funciona</a>
+                  <a href="#secretaria">Na prática</a>
                 </li>
                 <li>
-                  <a href="#plataforma">Plataforma da clínica</a>
+                  <a href="#como-funciona">Como funciona</a>
                 </li>
                 <li>
                   <a href="#limites">O que a IA faz</a>
