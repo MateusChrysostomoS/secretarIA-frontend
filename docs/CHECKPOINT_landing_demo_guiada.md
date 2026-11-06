@@ -38,3 +38,25 @@ As regras de texto de `app/__tests__/landing-page.test.ts` continuam valendo e p
 ## Pendências
 
 Mesclar em `main`, rodar `graphify update .`, deploy só com autorização do dono.
+
+## Rodada 2 (2026-11-06) — responsividade e conversas com a cara do Portal
+
+Pedido do dono, a partir de prints numa tela de 1920×1080 com Windows em 125% (a página vê
+~1536×729 em pixels CSS):
+
+- **Botão do ato cortado:** a coluna de texto e a cena dos atos fixados agora medem pela ALTURA da
+  tela também (título, passos e frase de valor em `clamp(... vh ...)`; a grade do ato tem uma linha
+  `minmax(0, 1fr)` e a cena `min-height: 0`, então o celular/agenda encolhem em vez de passar da borda).
+  Medido com Playwright: botão e cena dentro da tela em 1536×729, 1366×657, 1280×600, 1440×900 e
+  1920×911. Em telas muito baixas (≤620 px) só o passo atual fica na lista.
+- **Conversas iguais ao produto:** `ChatParts.tsx` desenha as bolhas como o Portal do paciente
+  (Brain-Message-Frontend `MessageBubble`/`ReplyButtons`, lado do paciente): produto à esquerda com a
+  marca e o brilho, botões dentro da bolha (o escolhido fica verde com ✓), "Opção escolhida" na
+  resposta, hora e ✓✓ no canto, pessoa da clínica em verde ("Maria · recepção"). Os roteiros seguem o
+  fluxo real (PreCheck: "✅ Concordo", Sim/Não/Voltar; secretarIA: "O que você precisa?" → "🗓️ Agendar",
+  horários como botões, código mascarado "••••••"). Conteúdo continua fictício. Cores das bolhas = cores
+  de produto dos sites (PreCheck azul, secretarIA âmbar, equipe verde), não o teal/amarelo do Portal.
+- **Celular:** durante o ato, a barra de digitar e a barra de endereço somem para a conversa ter espaço;
+  no resumo, as linhas secundárias saem para "Quem avalia e decide é o médico" aparecer sempre.
+  Sem JavaScript ou com "reduzir movimento", tudo continua visível e estático.- **Hero da secretarIA:** o chat do topo usa as mesmas bolhas, e o conjunto chat + cartão da agenda
+  fica dentro da primeira tela (palco limitado à altura visível; mensagens antigas saem por cima).

@@ -8,29 +8,61 @@
 // each doctor's Google Agenda; confirmation and reminder go by e-mail; status
 // label "em piloto" is fixed; no medical advice; made-up data, labelled.
 
-import { Fragment, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { Bubble, Composer, DayPill, SystemLine, ThreadHead, type ReplyButton } from "./ChatParts";
 import { PinnedAct } from "./PinnedAct";
 
-type Msg = { beat: number; from: "in" | "out"; text: ReactNode; full?: boolean };
+// The conversation follows the shape of the real secretarIA flow in the
+// Portal: "O que você precisa?" with "🗓️ Agendar", the free times offered as
+// buttons, the e-mail code typed in the chat (masked "••••••", as the Portal
+// masks it), and, for what it cannot answer, the offer to call the team — a
+// person then answers in the clinic's green. Content is invented.
+type Msg = {
+  beat: number;
+  voice: "sa" | "patient" | "team";
+  time: string;
+  text: ReactNode;
+  echo?: boolean;
+  buttons?: ReplyButton[];
+  author?: string;
+  /** dropped from the compact version (shown on the PreCheck site) */
+  full?: boolean;
+};
 
-// `full` beats are dropped from the compact version (shown on the PreCheck site).
 const CHAT: Msg[] = [
-  { beat: 1, from: "out", text: "Oi! Queria marcar uma consulta com a Dra. Helena." },
-  { beat: 2, from: "in", text: "Claro! Estes são os próximos horários livres da Dra. Helena:" },
-  { beat: 4, from: "out", text: "Quinta, 14:00." },
-  { beat: 5, from: "in", text: "Para confirmar, digite o código que enviei para o seu e-mail.", full: true },
-  { beat: 6, from: "out", text: "••••••", full: true },
-  { beat: 7, from: "in", text: "Pronto! Consulta marcada para quinta, 14:00. A confirmação foi para o seu e-mail." },
-  { beat: 10, from: "out", text: "Vocês têm estacionamento para pacientes?" },
-  { beat: 11, from: "in", text: "Não tenho essa informação. Quer que eu chame alguém da equipe?" },
-  { beat: 12, from: "out", text: "Sim, por favor." },
+  {
+    beat: 1,
+    voice: "sa",
+    time: "14:02",
+    text: "Olá! Sou a secretária virtual da Clínica Vale Verde. O que você precisa?",
+    buttons: [{ label: "Agendar", icon: "🗓️", chosen: true }, { label: "Outro" }],
+  },
+  { beat: 2, voice: "patient", time: "14:02", echo: true, text: <>🗓️ Agendar</> },
+  {
+    beat: 3,
+    voice: "sa",
+    time: "14:02",
+    text: "Estes são os próximos horários livres da Dra. Helena:",
+    buttons: [{ label: "Qui, 14:00", chosen: true }, { label: "Qui, 16:00" }, { label: "Sex, 09:00" }],
+  },
+  { beat: 4, voice: "patient", time: "14:03", echo: true, text: "Qui, 14:00" },
+  { beat: 5, voice: "sa", time: "14:03", text: "Para confirmar, digite o código que enviei para o seu e-mail.", full: true },
+  { beat: 6, voice: "patient", time: "14:04", text: "••••••", full: true },
+  { beat: 7, voice: "sa", time: "14:04", text: "Pronto! Consulta marcada para quinta, 14:00. A confirmação foi para o seu e-mail." },
+  { beat: 10, voice: "patient", time: "14:05", text: "Vocês têm estacionamento para pacientes?" },
+  {
+    beat: 11,
+    voice: "sa",
+    time: "14:05",
+    text: "Não tenho essa informação. Quer que eu chame alguém da equipe?",
+    buttons: [{ label: "Sim, por favor", chosen: true }, { label: "Não, obrigado" }],
+  },
+  { beat: 12, voice: "patient", time: "14:05", echo: true, text: "Sim, por favor" },
 ];
-
-const SLOTS = ["Qui, 14:00", "Qui, 16:00", "Sex, 09:00"];
 
 const STEPS: { at: number; text: string; full?: boolean }[] = [
   { at: 1, text: "O paciente pede um horário no chat da clínica." },
-  { at: 2, text: "A secretarIA mostra os horários livres na agenda do médico." },
+  { at: 3, text: "A secretarIA mostra os horários livres na agenda do médico." },
   { at: 5, text: "O paciente confirma o e-mail com um código.", full: true },
   { at: 8, text: "A consulta entra na agenda e o lembrete sai por e-mail." },
   { at: 10, text: "Quando não sabe a resposta, ela chama alguém da equipe." },
@@ -108,45 +140,41 @@ export function SecretariaDemo({ cta, compact = false, eyebrow }: SecretariaDemo
               </span>
               <span className="gd-web__url">clinica.example/chat</span>
             </div>
-            <div className="gd-web__head">
-              <span className="gd-web__ava" aria-hidden="true">
-                S
-              </span>
-              <span className="gd-web__who">
-                <strong>Clínica Exemplo</strong>
-                <small>Assistente virtual · não dá orientação médica</small>
-              </span>
-              <span className="gd-web__state">
-                <span className="gd-state gd-state--ai" data-out="13">
-                  IA conduzindo
+            <ThreadHead
+              product="sa"
+              aside={
+                <span className="gd-web__state">
+                  <span className="gd-state gd-state--ai" data-out="13">
+                    IA conduzindo
+                  </span>
+                  <span className="gd-state gd-state--team" data-beat="13" data-fx="pop">
+                    Com a equipe
+                  </span>
                 </span>
-                <span className="gd-state gd-state--team" data-beat="13" data-fx="pop">
-                  Com a equipe
-                </span>
-              </span>
-            </div>
-            <div className="gd-chat gd-chat--web">
+              }
+            />
+            <div className="gd-chat">
+              <DayPill>Hoje</DayPill>
               {chat.map((m) => (
-                <Fragment key={m.beat}>
-                  <div className="gd-msg" data-beat={m.beat} data-fx="msg">
-                    <div className={`gd-bub gd-bub--${m.from}`}>{m.text}</div>
-                  </div>
-                  {/* the offered times sit right under the offer (beat 3) */}
-                  {m.beat === 2 && (
-                    <div className="gd-msg gd-msg--slots" data-beat="3" data-fx="msg">
-                      <div className="gd-slots">
-                        {SLOTS.map((s) => (
-                          <span key={s}>{s}</span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </Fragment>
+                <Bubble
+                  key={m.beat}
+                  voice={m.voice}
+                  beat={m.beat}
+                  time={m.time}
+                  echo={m.echo}
+                  author={m.author}
+                  buttons={m.buttons}
+                  chooseBeat={m.buttons ? m.beat + 1 : undefined}
+                >
+                  {m.text}
+                </Bubble>
               ))}
-              <div className="gd-msg" data-beat="13" data-fx="msg">
-                <p className="gd-sys">Maria, da recepção, assumiu a conversa.</p>
-              </div>
+              <SystemLine beat={13}>Maria, da recepção, assumiu a conversa.</SystemLine>
+              <Bubble voice="team" beat={13} time="14:06" author="Maria · recepção">
+                Oi! Aqui é a Maria. Já vejo isso para você.
+              </Bubble>
             </div>
+            <Composer />
           </div>
 
           <div className="gd-agenda" data-beat="8" data-only="narrow" data-fx="cover" data-out-narrow="10">

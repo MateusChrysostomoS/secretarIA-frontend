@@ -27,6 +27,7 @@ import { BrandGlyph } from "@/app/(site)/_components/BrandGlyph";
 import { BrandIcon } from "@/app/(site)/_components/BrandIcon";
 
 import { Glyph } from "./Glyph";
+import { Bubble, Composer, DayPill, ThreadHead } from "./demo/ChatParts";
 
 function Caption({ n, children }: { n: number; children: ReactNode }) {
   return (
@@ -59,42 +60,31 @@ export function HeroFigure() {
   return (
     <figure className="lp-figure lp-hero__figure">
       <div className="lp-stage" aria-hidden="true">
+        {/* the patient Portal's look (ChatParts): bubbles with the product's
+            name, the times as reply buttons, the tapped one echoed back */}
         <div className="lp-vig lp-chat">
           <BrowserBar label="Chat da Clínica Vale Verde" />
-          <div className="lp-chat__head">
-            <span className="lp-ava">s</span>
-            <span>
-              <span className="lp-chat__name">secretarIA</span>
-              <span className="lp-chat__sub" style={{ display: "block" }}>
-                Clínica Vale Verde
-              </span>
-            </span>
-          </div>
-          <div className="lp-chat__body">
-            <div className="v-msg v-msg--in">
-              Olá! Bem-vinda à Clínica Vale Verde. Sou a secretária virtual e cuido dos
-              agendamentos por aqui.
-            </div>
-            <div className="v-msg v-msg--out">Quero marcar com a Dra. Helena, na quinta de manhã.</div>
-            <div className="v-msg v-msg--in">
+          <ThreadHead product="sa" />
+          <div className="gd-chat lp-chat__thread">
+            <DayPill>Hoje</DayPill>
+            <Bubble voice="sa" time="10:41">
+              Olá! Sou a secretária virtual da Clínica Vale Verde e cuido dos agendamentos por aqui.
+            </Bubble>
+            <Bubble voice="patient" time="10:41">
+              Quero marcar com a Dra. Helena, na quinta de manhã.
+            </Bubble>
+            <Bubble
+              voice="sa"
+              time="10:42"
+              buttons={[{ label: "09:00" }, { label: "10:00", chosen: true }, { label: "11:00" }]}
+            >
               Na quinta, a Dra. Helena Prado tem estes horários livres:
-              <span className="v-slots">
-                <span className="v-slot">09:00</span>
-                <span className="v-slot v-slot--on">10:00</span>
-                <span className="v-slot">11:00</span>
-              </span>
-            </div>
-            <div className="v-msg v-msg--out">10:00, por favor.</div>
-            <div className="v-msg v-msg--in">
-              Para confirmar, enviei um código para o seu e-mail. É só digitar aqui na conversa.
-            </div>
+            </Bubble>
+            <Bubble voice="patient" time="10:42" echo>
+              10:00
+            </Bubble>
           </div>
-          <div className="lp-chat__compose">
-            <span>Digite sua mensagem</span>
-            <i>
-              <BrandIcon name="send" />
-            </i>
-          </div>
+          <Composer />
         </div>
 
         <div className="lp-vig lp-daycard">

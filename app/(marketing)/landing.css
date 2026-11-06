@@ -215,8 +215,10 @@
 }
 .lp-hero__grid {
   display: grid; grid-template-columns: minmax(0, 1.14fr) minmax(0, 0.86fr);
-  gap: clamp(40px, 5vw, 72px); align-items: center;
-  padding-block: clamp(40px, 5.5vw, 80px) clamp(56px, 6vw, 88px);
+  gap: clamp(40px, 5vw, 72px); align-items: start;
+  /* the top gap follows the screen's height too: on a short laptop screen the
+     chat and the agenda card both fit in the first view */
+  padding-block: clamp(24px, min(5.5vw, 7vh), 80px) clamp(56px, 6vw, 88px);
 }
 .lp-hero__copy .lp-kicker { margin-bottom: 26px; }
 .lp-hero__copy .lp-lead { margin-top: 26px; }
@@ -379,12 +381,32 @@
 .v-status--miss { background: var(--v-miss-bg); color: var(--v-miss-ink); border-color: var(--v-miss-bd); }
 .v-status--block { background: var(--v-block-bg); color: var(--v-block-ink); border-color: var(--v-block-bd); }
 
-.lp-chat .v-msg { animation: lp-pop 0.45s var(--ease) both; }
-.lp-chat .v-msg:nth-child(1) { animation-delay: 0.45s; }
-.lp-chat .v-msg:nth-child(2) { animation-delay: 0.75s; }
-.lp-chat .v-msg:nth-child(3) { animation-delay: 1.05s; }
-.lp-chat .v-msg:nth-child(4) { animation-delay: 1.35s; }
-.lp-chat .v-msg:nth-child(5) { animation-delay: 1.65s; }
+/* hero chat: the patient Portal's thread (ChatParts + guided-demo.css); the
+   composer keeps room at the bottom for the agenda card that overlaps it */
+.lp-chat .gd-compose { padding-bottom: 66px; }
+.lp-chat .gd-thead__back { display: none; }
+/* side by side with the copy, the chat + agenda card never run past the first
+   screen: the stage is capped at the visible height and the thread keeps its
+   newest messages, the older ones scroll off the top as in a real chat */
+@media (min-width: 1041px) {
+  .lp-stage {
+    display: flex; flex-direction: column;
+    max-height: calc(100svh - 68px - clamp(24px, min(5.5vw, 7vh), 80px) - 20px);
+  }
+  .lp-chat { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+  .lp-chat .lp-chat__thread {
+    flex: 1 1 auto; min-height: 0; overflow: hidden; justify-content: flex-end;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 26px);
+            mask-image: linear-gradient(to bottom, transparent 0, #000 26px);
+  }
+  .lp-chat > :not(.lp-chat__thread) { flex: none; }
+  .lp-daycard { flex: none; }
+}
+.lp-chat .gd-msg { animation: lp-pop 0.45s var(--ease) both; }
+.lp-chat .gd-msg:nth-child(2) { animation-delay: 0.45s; }
+.lp-chat .gd-msg:nth-child(3) { animation-delay: 0.75s; }
+.lp-chat .gd-msg:nth-child(4) { animation-delay: 1.05s; }
+.lp-chat .gd-msg:nth-child(5) { animation-delay: 1.35s; }
 .lp-daycard { animation: lp-rise 0.7s var(--ease) 1.9s both; }
 
 /* ---------- como funciona (patient) ---------- */
@@ -776,7 +798,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lp-rise, .lp-chat .v-msg, .lp-daycard { animation: none; }
+  .lp-rise, .lp-chat .gd-msg, .lp-daycard { animation: none; }
   .lp .btn, .lp .btn:active { transition: none; transform: none; }
   .lp-faq summary .ico { transition: none; }
 }
