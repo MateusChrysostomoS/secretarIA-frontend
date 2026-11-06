@@ -192,6 +192,11 @@ export function ThreadHead({ product, aside }: { product: "pc" | "sa"; aside?: R
       <span className="gd-thead__who">
         <strong>Clínica Vale Verde</strong>
         <small>
+          {/* the secretarIA's face (her logo) next to her name — decorative,
+              the name beside it already says who answers */}
+          {product === "sa" ? (
+            <img className="gd-thead__face" src="/brand/mascots/secretaria-head.webp" width={13} height={15} alt="" />
+          ) : null}
           <Wordmark product={product} /> responde
         </small>
       </span>

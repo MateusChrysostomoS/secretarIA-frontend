@@ -2,7 +2,10 @@
 // demo (TASK-078, 2026-11-05): hero → the secretarIA act (pinned: a slot is
 // booked in the clinic chat, lands on the agenda, the e-mail reminder goes out,
 // a question is handed to the team) → closing (how it works, what the AI does
-// and does not do, pilot conditions, security, FAQ, contact).
+// and does not do, pilot conditions, the PreCheck as the sister product,
+// security, FAQ, contact). Her mascot (owner, 2026-11-06) is the header logo
+// (her face), stands beside "Limites claros", works at the laptop next to the
+// contact form and signs the footer.
 //
 // Until 2026-10-19 "/" was the login form of the old hub; that screen moved,
 // unchanged, to /entrar (LOGIN_ROUTE).
@@ -28,13 +31,13 @@
 
 import type { Metadata } from "next";
 
-import { BrandGlyph } from "@/app/(site)/_components/BrandGlyph";
 import { BrandIcon, type IconName } from "@/app/(site)/_components/BrandIcon";
 import { ThemeToggle } from "@/app/(site)/_components/ThemeToggle";
 import { PLATFORM_LOGIN_HREF, PRIVACY_HREF, SITE_URL, TERMS_HREF } from "@/lib/platform-links";
 
 import { ContactForm } from "./_components/ContactForm";
 import { MotionReveal } from "./_components/demo/MotionReveal";
+import { ProductPromo } from "./_components/demo/ProductPromo";
 import { ScrollCue } from "./_components/demo/ScrollCue";
 import { SecretariaDemo } from "./_components/demo/SecretariaDemo";
 import { SmoothScroll } from "./_components/demo/SmoothScroll";
@@ -84,6 +87,9 @@ export const metadata: Metadata = {
 };
 
 // ── Content ─────────────────────────────────────────────────────────────────
+
+// The PreCheck's public site — the sister product the page recommends.
+const PRECHECK_SITE = "https://precheck.com.br/";
 
 const NAV: SiteNavLink[] = [
   { href: "#secretaria", label: "Na prática" },
@@ -351,16 +357,28 @@ export default function LandingPage() {
         {/* ── O que a IA faz / não faz ── */}
         <section id="limites" className="lp-section" aria-labelledby="limites-title">
           <div className="lp-wrap">
-            <MotionReveal className="lp-head">
-              <p className="lp-label">Limites claros</p>
-              <h2 id="limites-title" className="lp-h2" style={{ marginTop: 18 }}>
-                Uma secretária, <em>não uma médica.</em>
-              </h2>
-              <p className="lp-lead">
-                A secretarIA cuida do atendimento e da agenda. Tudo o que é decisão clínica continua
-                com o médico, e tudo o que ela não sabe vai para a equipe.
-              </p>
-            </MotionReveal>
+            <div className="lp-limits__top">
+              <MotionReveal className="lp-head">
+                <p className="lp-label">Limites claros</p>
+                <h2 id="limites-title" className="lp-h2" style={{ marginTop: 18 }}>
+                  Uma secretária, <em>não uma médica.</em>
+                </h2>
+                <p className="lp-lead">
+                  A secretarIA cuida do atendimento e da agenda. Tudo o que é decisão clínica continua
+                  com o médico, e tudo o que ela não sabe vai para a equipe.
+                </p>
+              </MotionReveal>
+              {/* her mascot, standing — decorative: the heading carries the message */}
+              <img
+                className="lp-mascot lp-mascot--limits"
+                src="/brand/mascots/secretaria-standing.webp"
+                width={560}
+                height={1050}
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
 
             <div className="lp-ledger">
               <MotionReveal className="lp-ledger__col">
@@ -430,6 +448,39 @@ export default function LandingPage() {
             </MotionReveal>
           </div>
         </section>
+
+        {/* ── PreCheck — the sister product, linked to its own site (owner,
+            2026-11-06). No WhatsApp mention here on purpose: on this page
+            WhatsApp is named only as "em breve" (the secretarIA's channel). ── */}
+        <ProductPromo
+          id="precheck"
+          tone="pc"
+          product="PreCheck"
+          state="em uso"
+          title={
+            <>
+              O PreCheck prepara a consulta <em>antes do paciente chegar.</em>
+            </>
+          }
+          text="Antes da consulta, o PreCheck conversa com o paciente: primeiro as perguntas padrão do tipo de atendimento, depois perguntas sob medida para a queixa dele. O médico recebe um resumo organizado. Quem avalia e decide é o médico."
+          points={[
+            "Perguntas padrão definidas pelo médico",
+            "Perguntas aprofundadas para cada queixa",
+            "Resumo com os sinais de alarme em destaque",
+          ]}
+          art={{
+            src: "/brand/mascots/precheck-tablet.webp",
+            width: 720,
+            height: 654,
+            alt: "Mascote do PreCheck segurando um tablet com o resumo do paciente",
+          }}
+          cta={
+            <a href={PRECHECK_SITE} className="btn btn--primary btn--lg btn--icon-r">
+              Conhecer o PreCheck
+              <BrandIcon name="arrowR" />
+            </a>
+          }
+        />
 
         {/* ── Segurança e LGPD — unchanged ── */}
         <section id="seguranca" className="lp-section lp-safe" aria-labelledby="seguranca-title">
@@ -525,6 +576,16 @@ export default function LandingPage() {
                   Entrar na plataforma
                 </a>
               </p>
+              {/* her mascot at work (laptop + agenda) — decorative */}
+              <img
+                className="lp-mascot lp-mascot--contact"
+                src="/brand/mascots/secretaria-laptop.webp"
+                width={600}
+                height={813}
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
             </div>
             <ContactForm />
           </div>
@@ -536,7 +597,7 @@ export default function LandingPage() {
           <div className="lp-footer__grid">
             <div className="lp-footer__brand">
               <span className="lp-brand" aria-hidden="true">
-                <BrandGlyph size={26} />
+                <img className="lp-brand__face" src="/brand/mascots/secretaria-head.webp" width={27} height={30} alt="" />
                 <span className="lp-brand__word">
                   secretar<em>IA</em>
                 </span>

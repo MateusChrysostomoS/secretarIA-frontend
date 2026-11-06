@@ -92,3 +92,16 @@ Pedido do dono, a partir de prints numa tela de 1920×1080 com Windows em 125% (
   segue a rolagem com `scrub: 1.4`, trilho com `sine.inOut` (1.2) e bolhas em 1.1, e mais rolagem por
   mensagem (PreCheck 22, secretarIA 20 / 18 no site do PreCheck). Medido com a roda: no máximo ~10 px por
   quadro, mediana ~1 px.
+
+- **Rodada 4 (2026-11-06) — mascotes e cabeçalho:** o site do PreCheck não tem mais o ato fixado da
+  secretarIA; no lugar, uma seção curta e estática ("Da mesma empresa · secretarIA", em piloto, WhatsApp em
+  breve) com a mascote do celular e o botão "Conhecer a secretarIA" → https://secretariabrainai.com.br/.
+  O site da secretarIA ganhou a seção espelho para o PreCheck (mascote azul do tablet, "Conhecer o
+  PreCheck" → https://precheck.com.br/, sem citar WhatsApp nessa seção). Componente compartilhado
+  `ProductPromo` (sincronizado de brain-frontend; o botão usa a cor do OUTRO produto). Cabeçalho da
+  secretarIA no padrão do PreCheck: "Brain │ [rosto] secretarIA" (no celular saem a palavra Brain e o
+  traço). Rosto dela também no cabeçalho das conversas simuladas, na linha do ato da secretarIA (Brain e
+  secretarIA) e no rodapé do site da secretarIA; mascote em pé ao lado de "Limites claros" e no notebook
+  ao lado do formulário. Imagens em `public/brand/mascots/` (WebP recortado, gerado dos PNG do dono).
+  Validação: tsc, vitest (295 / 623 / 20) e build verdes; Playwright claro/escuro, 1366×768 e 390×760;
+  atos fixados continuam cabendo em 1366×657, 1280×600 e 390×664.

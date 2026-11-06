@@ -621,3 +621,65 @@ html.lenis, html.lenis body { height: auto; }
 .gd-buy__box .gd-h2 { margin-top: 12px; }
 .gd-buy__box .gd-h2 em { color: var(--t-text); }
 .gd-buy__text { margin-top: 12px; max-width: 54ch; font-size: 16.5px; line-height: 1.55; color: var(--gd-soft); }
+
+/* ---------- "da mesma empresa" — the other product, with its mascot ---------- */
+/* ProductPromo. The PreCheck site shows the secretarIA here (in place of the
+   pinned act it had) and the secretarIA site shows the PreCheck (owner,
+   2026-11-06). The tone tint and the mascot carry the other product's colour. */
+.gd-promo { padding-block: clamp(64px, 8vw, 104px); border-top: 1px solid var(--gd-line); }
+.gd-promo__box {
+  position: relative; overflow: hidden;
+  display: grid; grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+  align-items: center; gap: clamp(20px, 4vw, 56px);
+  padding: clamp(28px, 4vw, 48px) clamp(24px, 5vw, 64px);
+  border-radius: 28px; border: 1px solid var(--t-bd);
+  /* the tone's own tint, a little deeper behind the mascot */
+  background:
+    radial-gradient(70% 90% at 18% 58%, color-mix(in oklab, var(--t-ink) 16%, transparent) 0%, transparent 70%),
+    var(--t-bg);
+}
+.gd-promo__art { position: relative; margin: 0; display: grid; place-items: center; }
+.gd-promo__img {
+  width: min(100%, 320px); height: auto;
+  filter: drop-shadow(0 22px 26px color-mix(in oklab, var(--t-ink) 22%, transparent));
+  animation: gd-float 6.5s ease-in-out infinite;
+}
+@keyframes gd-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(-1.2deg); }
+}
+.gd-promo__copy { display: grid; gap: 16px; justify-items: start; min-width: 0; }
+.gd-promo__copy .gd-h2 em { color: var(--t-text); }
+.gd-promo__text { max-width: 54ch; font-size: 17px; line-height: 1.6; color: var(--gd-soft); text-wrap: pretty; }
+.gd-promo__points { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+.gd-promo__points li { display: grid; grid-template-columns: 18px 1fr; gap: 10px; align-items: start; font-size: 15.5px; line-height: 1.45; color: var(--gd-ink); }
+.gd-promo__points svg { margin-top: 2px; color: var(--t-ink); }
+.gd-promo__cta { margin-top: 6px; }
+/* the button wears the OTHER product's colour, not the host site's (an amber
+   button for the secretarIA on the PreCheck site, a blue one for the PreCheck
+   on the secretarIA site); .btn--primary / .btn-primary are the two design
+   systems' primary-button classes. The :is(#landing-view, …) lifts the rule
+   over the PreCheck site's own "#landing-view .btn-primary" (an id selector);
+   on the other sites the .gd-page half is the one that matches. */
+:is(#landing-view, .gd-page) .gd-promo__cta :is(.btn--primary, .btn-primary) {
+  background: var(--t-solid); border-color: var(--t-solid); color: var(--t-on); box-shadow: none;
+}
+:is(#landing-view, .gd-page) .gd-promo__cta :is(.btn--primary, .btn-primary):hover {
+  background: color-mix(in oklab, var(--t-solid) 86%, var(--gd-ink)); border-color: transparent; color: var(--t-on);
+}
+
+@media (max-width: 860px) {
+  .gd-promo__box { grid-template-columns: 1fr; }
+  .gd-promo__img { width: min(58%, 230px); }
+  .gd-promo__cta, .gd-promo__cta .btn, .gd-promo__cta .btn-primary { width: 100%; justify-content: center; }
+}
+
+/* the secretarIA's face next to her name in the demo chats' header */
+.gd-thead__face { display: inline-block; width: auto; height: 15px; margin-right: 4px; vertical-align: -3px; }
+/* …and in the act's tag line, in place of the tone dot */
+.gd-tag__face { display: block; width: auto; height: 28px; margin-block: -6px; }
+@media (max-width: 860px) { .is-live .gd-tag__face { height: 22px; margin-block: -4px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .gd-promo__img { animation: none; }
+}

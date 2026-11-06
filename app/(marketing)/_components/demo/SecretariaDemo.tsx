@@ -180,7 +180,8 @@ export function SecretariaDemo({ cta, compact = false, eyebrow }: SecretariaDemo
       <div className="gd-wrap gd-act__grid">
         <div className="gd-act__copy">
           <p className="gd-tag">
-            <span className="gd-tag__dot" aria-hidden="true" />
+            {/* her face (the secretarIA logo) in place of the tone dot */}
+            <img className="gd-tag__face" src="/brand/mascots/secretaria-head.webp" width={25} height={28} alt="" />
             {eyebrow ?? "secretarIA"} <span className="gd-tag__state">em piloto</span>
             <span className="gd-soon">WhatsApp em breve</span>
           </p>

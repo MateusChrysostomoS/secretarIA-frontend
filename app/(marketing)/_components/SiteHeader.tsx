@@ -54,13 +54,19 @@ export function SiteHeader({ links, platformHref }: SiteHeaderProps) {
   return (
     <header className="lp-header">
       <div className="lp-wrap lp-nav">
+        {/* "Brain │ secretarIA" — the same lockup the PreCheck site shows
+            ("Brain │ PreCheck"), with the secretarIA's face as her logo (owner,
+            2026-11-06). On narrow screens the "Brain" word and the rule step
+            aside; the glyph stays (landing.css). */}
         <Link href="/" className="lp-brand" aria-label="secretarIA, um produto Brain — início" prefetch={false}>
-          <BrandGlyph size={28} />
+          <span className="lp-brand__brain" aria-hidden="true">
+            <BrandGlyph size={24} />
+            <span className="lp-brand__brainword">Brain</span>
+          </span>
+          <span className="lp-brand__rule" aria-hidden="true" />
+          <img className="lp-brand__face" src="/brand/mascots/secretaria-head.webp" width={27} height={30} alt="" />
           <span className="lp-brand__word" aria-hidden="true">
             secretar<em>IA</em>
-          </span>
-          <span className="lp-brand__by" aria-hidden="true">
-            por Brain
           </span>
         </Link>
 
