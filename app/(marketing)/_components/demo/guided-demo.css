@@ -313,6 +313,9 @@ html.lenis, html.lenis body { height: auto; }
 .gd-thead__who .gd-wm { font-size: 12px; }
 
 .gd-chat { display: flex; flex-direction: column; padding: 4px 2px 10px; background: var(--pt-page); }
+/* the conversation itself; while an act plays, PinnedAct slides it up as the
+   messages arrive (a transform, so the movement stays smooth) */
+.gd-chat__track { position: relative; display: flex; flex-direction: column; }
 .gd-day { display: flex; justify-content: center; padding: 6px 0 0; }
 .gd-day span {
   padding: 2px 9px; border-radius: 999px; border: 1px solid var(--gd-line);
@@ -493,11 +496,12 @@ html.lenis, html.lenis body { height: auto; }
 }
 .is-live .gd-phone, .is-live .gd-web, .is-live .gd-agenda { min-height: 0; }
 .is-live .gd-chat {
-  flex: 1 1 auto; min-height: 0; overflow: hidden; justify-content: flex-end;
+  flex: 1 1 auto; min-height: 0; overflow: hidden;
   /* older messages fade out at the top, as they scroll away in a real chat */
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 26px);
           mask-image: linear-gradient(to bottom, transparent 0, #000 26px);
 }
+.is-live .gd-chat__track { flex: none; will-change: transform; }
 .is-live .gd-summary { align-self: center; }
 .is-live .gd-agenda .gd-toast { position: absolute; left: 14px; right: 14px; bottom: 14px; z-index: 2; }
 .is-live .gd-duo { min-height: 0; }

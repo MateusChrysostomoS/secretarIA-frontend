@@ -43,14 +43,18 @@ const NARROW = "(max-width: 860px)";
 
 function revealInto(tl: Timeline, el: HTMLElement, at: string) {
   switch (el.dataset.fx) {
-    case "msg":
+    case "msg": {
+      // the conversation slides up first (chatTracks), then the bubble rises
+      // into the room it opened — transform + opacity only, no layout per frame
+      const out = el.querySelector(".gd-pb--out") !== null;
       tl.fromTo(
         el,
-        { height: 0, autoAlpha: 0 },
-        { height: "auto", autoAlpha: 1, ease: "power2.out" },
-        at,
+        { autoAlpha: 0, y: 16, scale: 0.96, transformOrigin: out ? "100% 100%" : "0% 100%" },
+        { autoAlpha: 1, y: 0, scale: 1, duration: 0.85, ease: "power3.out" },
+        `${at}+=0.18`,
       );
       break;
+    }
     case "pop":
       tl.fromTo(el, { autoAlpha: 0, scale: 0.9, y: 6 }, { autoAlpha: 1, scale: 1, y: 0, ease: "back.out(1.6)" }, at);
       break;
@@ -122,9 +126,42 @@ export function PinnedAct({ id, tone, labelledBy, beatVh = 22, children }: Pinne
           ).sort((a, b) => a - b);
 
           const tl = gsap.timeline({ defaults: { duration: 1 } });
+
+          // Each conversation is a track inside its chat window. Every message
+          // keeps its place in the layout from the start (hidden), and the
+          // track is translated so the window ends at the latest message shown:
+          // like a real chat scrolling, smooth because only a transform moves.
+          // Measured lazily, so a resize (ScrollTrigger refresh) re-measures.
+          const tracks = Array.from(stage.querySelectorAll<HTMLElement>(".gd-chat__track"));
+          const shownBottom = (track: HTMLElement, n: number) => {
+            const chat = track.parentElement as HTMLElement;
+            const cs = getComputedStyle(chat);
+            const view = chat.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+            let bottom = 0;
+            for (const child of Array.from(track.children) as HTMLElement[]) {
+              const b = child.dataset.beat;
+              if (b !== undefined && Number(b) > n) continue;
+              bottom = Math.max(bottom, child.offsetTop + child.offsetHeight);
+            }
+            return Math.round(view - bottom);
+          };
+          const lastBeat = new Map<HTMLElement, number>();
+          tracks.forEach((t) => tl.set(t, { y: () => shownBottom(t, 0) }, 0));
+
           for (const n of beats) {
             const at = `b${n}`;
             tl.addLabel(at);
+            tracks.forEach((t) => {
+              if (!t.querySelector(`:scope > [data-beat="${n}"]`)) return;
+              const prev = lastBeat.get(t) ?? 0;
+              lastBeat.set(t, n);
+              tl.fromTo(
+                t,
+                { y: () => shownBottom(t, prev) },
+                { y: () => shownBottom(t, n), ease: "power2.inOut", immediateRender: false },
+                at,
+              );
+            });
             stage.querySelectorAll<HTMLElement>(`[data-beat="${n}"]`).forEach((el) => {
               if (el.dataset.only === (narrow ? "wide" : "narrow")) return;
               revealInto(tl, el, at);
@@ -166,7 +203,7 @@ export function PinnedAct({ id, tone, labelledBy, beatVh = 22, children }: Pinne
             end: () => `+=${Math.round(((beats.length * beatVh) / 100) * window.innerHeight)}`,
             pin: stage,
             pinSpacing: true,
-            scrub: 0.6,
+            scrub: 1,
             animation: tl,
             invalidateOnRefresh: true,
             onUpdate: () => syncSteps(tl.time()),

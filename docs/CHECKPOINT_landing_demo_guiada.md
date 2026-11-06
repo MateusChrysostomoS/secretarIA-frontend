@@ -84,3 +84,7 @@ Pedido do dono, a partir de prints numa tela de 1920×1080 com Windows em 125% (
   1440×900 e 390×664 (botão e cena dentro da tela), reduzir movimento sem nada oculto.
 - Afirmações novas a pedido do dono: a secretarIA responde endereço, preparo e a consulta atual/anterior do
   paciente. Dados (endereço, datas) são fictícios.
+
+- **Movimento mais suave (rodada 3b):** as mensagens não animam mais a altura (o que recalculava a conversa
+  inteira a cada quadro e dava solavancos). A conversa fica num trilho que desliza para cima (só
+  `transform`), e cada bolha surge com fade + leve subida. Rolagem com `scrub: 1`.

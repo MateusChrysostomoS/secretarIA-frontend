@@ -220,8 +220,10 @@ export function SecretariaDemo({ cta, compact = false, eyebrow }: SecretariaDemo
                 }
               />
               <div className="gd-chat" role="region" aria-label="Conversa de exemplo: paciente novo marcando consulta" tabIndex={0}>
-                <DayPill>Hoje</DayPill>
-                <Thread msgs={NEW_PATIENT.filter(keep)} />
+                <div className="gd-chat__track">
+                  <DayPill>Hoje</DayPill>
+                  <Thread msgs={NEW_PATIENT.filter(keep)} />
+                </div>
               </div>
               <Composer />
             </div>
@@ -252,17 +254,19 @@ export function SecretariaDemo({ cta, compact = false, eyebrow }: SecretariaDemo
                 }
               />
               <div className="gd-chat" role="region" aria-label="Conversa de exemplo: paciente tirando dúvidas" tabIndex={0}>
-                {/* the earlier visit, already in the history */}
-                <DayPill>12 de agosto</DayPill>
-                <Bubble voice="sa" time="09:41">
-                  Pronto! Seu retorno com a Dra. Helena está marcado para hoje, 11:00.
-                </Bubble>
-                <DayPill>Hoje</DayPill>
-                <Thread msgs={KNOWN_PATIENT.filter(keep)} />
-                <SystemLine beat={HANDOFF}>Maria, da recepção, assumiu a conversa.</SystemLine>
-                <Bubble voice="team" beat={HANDOFF} time="10:05" author="Maria · recepção">
-                  Oi! Aqui é a Maria. Já vejo isso com a Dra. Helena para você.
-                </Bubble>
+                <div className="gd-chat__track">
+                  {/* the earlier visit, already in the history */}
+                  <DayPill>12 de agosto</DayPill>
+                  <Bubble voice="sa" time="09:41">
+                    Pronto! Seu retorno com a Dra. Helena está marcado para hoje, 11:00.
+                  </Bubble>
+                  <DayPill>Hoje</DayPill>
+                  <Thread msgs={KNOWN_PATIENT.filter(keep)} />
+                  <SystemLine beat={HANDOFF}>Maria, da recepção, assumiu a conversa.</SystemLine>
+                  <Bubble voice="team" beat={HANDOFF} time="10:05" author="Maria · recepção">
+                    Oi! Aqui é a Maria. Já vejo isso com a Dra. Helena para você.
+                  </Bubble>
+                </div>
               </div>
               <Composer />
             </div>
