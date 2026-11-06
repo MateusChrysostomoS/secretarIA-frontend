@@ -176,7 +176,7 @@ export function SecretariaDemo({ cta, compact = false, eyebrow }: SecretariaDemo
   const keep = (m: Msg) => !(compact && m.full);
 
   return (
-    <PinnedAct id="secretaria" tone="sa" labelledBy="gd-sa-title" beatVh={compact ? 15 : 16}>
+    <PinnedAct id="secretaria" tone="sa" labelledBy="gd-sa-title" beatVh={compact ? 18 : 20}>
       <div className="gd-wrap gd-act__grid">
         <div className="gd-act__copy">
           <p className="gd-tag">

@@ -88,3 +88,7 @@ Pedido do dono, a partir de prints numa tela de 1920×1080 com Windows em 125% (
 - **Movimento mais suave (rodada 3b):** as mensagens não animam mais a altura (o que recalculava a conversa
   inteira a cada quadro e dava solavancos). A conversa fica num trilho que desliza para cima (só
   `transform`), e cada bolha surge com fade + leve subida. Rolagem com `scrub: 1`.
+- **Ainda mais suave (rodada 3c):** roda do mouse amortecida (Lenis `lerp` 0.075, passo 0.8), animação
+  segue a rolagem com `scrub: 1.4`, trilho com `sine.inOut` (1.2) e bolhas em 1.1, e mais rolagem por
+  mensagem (PreCheck 22, secretarIA 20 / 18 no site do PreCheck). Medido com a roda: no máximo ~10 px por
+  quadro, mediana ~1 px.

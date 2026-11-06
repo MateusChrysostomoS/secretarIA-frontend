@@ -50,8 +50,8 @@ function revealInto(tl: Timeline, el: HTMLElement, at: string) {
       tl.fromTo(
         el,
         { autoAlpha: 0, y: 16, scale: 0.96, transformOrigin: out ? "100% 100%" : "0% 100%" },
-        { autoAlpha: 1, y: 0, scale: 1, duration: 0.85, ease: "power3.out" },
-        `${at}+=0.18`,
+        { autoAlpha: 1, y: 0, scale: 1, duration: 1.1, ease: "power2.out" },
+        `${at}+=0.25`,
       );
       break;
     }
@@ -158,7 +158,7 @@ export function PinnedAct({ id, tone, labelledBy, beatVh = 22, children }: Pinne
               tl.fromTo(
                 t,
                 { y: () => shownBottom(t, prev) },
-                { y: () => shownBottom(t, n), ease: "power2.inOut", immediateRender: false },
+                { y: () => shownBottom(t, n), duration: 1.2, ease: "sine.inOut", immediateRender: false },
                 at,
               );
             });
@@ -203,7 +203,7 @@ export function PinnedAct({ id, tone, labelledBy, beatVh = 22, children }: Pinne
             end: () => `+=${Math.round(((beats.length * beatVh) / 100) * window.innerHeight)}`,
             pin: stage,
             pinSpacing: true,
-            scrub: 1,
+            scrub: 1.4,
             animation: tl,
             invalidateOnRefresh: true,
             onUpdate: () => syncSteps(tl.time()),

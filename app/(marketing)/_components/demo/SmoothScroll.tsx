@@ -31,7 +31,9 @@ export function SmoothScroll() {
       if (cancelled) return;
 
       gsap.registerPlugin(ScrollTrigger);
-      const lenis = new Lenis({ autoRaf: false, lerp: 0.12, smoothWheel: true });
+      // a low lerp and a shorter wheel step: the pinned chats glide instead of
+      // stepping one wheel notch at a time (owner, 2026-11-06)
+      const lenis = new Lenis({ autoRaf: false, lerp: 0.075, wheelMultiplier: 0.8, smoothWheel: true });
       lenis.on("scroll", ScrollTrigger.update);
       const tick = (time: number) => lenis.raf(time * 1000);
       gsap.ticker.add(tick);
