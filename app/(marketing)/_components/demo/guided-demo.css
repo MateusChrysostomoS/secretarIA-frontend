@@ -566,7 +566,7 @@ html.lenis, html.lenis body { height: auto; }
   .gd-scene--pc, .gd-scene--sa { grid-template-columns: 1fr; }
   .gd-phone { max-width: 360px; width: 100%; justify-self: center; }
   .gd-how__grid { grid-template-columns: 1fr; }
-  .gd-act__cta .btn, .gd-act__cta .btn-primary { width: 100%; justify-content: center; }
+  .gd-act__cta .btn, .gd-act__cta .btn-primary, .gd-act__cta .mk-btn { width: 100%; justify-content: center; }
 
   .is-live .gd-stage { padding-top: calc(var(--gd-header) + 12px); padding-bottom: 12px; }
   .is-live .gd-act__grid { display: flex; flex-direction: column; gap: 10px; }

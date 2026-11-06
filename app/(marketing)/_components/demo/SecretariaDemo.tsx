@@ -284,12 +284,12 @@ const KNOWN_FROM = 32;
 const HANDOFF = 41;
 
 const STEPS: { at: number; text: string }[] = [
-  { at: 1, text: "O paciente novo informa e-mail e nome e aceita os termos (LGPD)." },
-  { at: 7, text: "Escolhe Agendar, diz para quem é, o convênio, o profissional e o serviço." },
-  { at: 19, text: "Escolhe o dia e o horário livre e confirma pelo código do e-mail." },
-  { at: 28, text: "Se a clínica cobra sinal, paga por Pix e a consulta é confirmada." },
-  { at: KNOWN_FROM, text: "Quem já é paciente pergunta endereço, preparo e a própria consulta." },
-  { at: 38, text: "Pergunta de saúde vai para a equipe, que assume a conversa." },
+  { at: 1, text: "Paciente novo: e-mail, nome e termos (LGPD)." },
+  { at: 7, text: "Agendar: para quem é, convênio, profissional e serviço." },
+  { at: 19, text: "Dia e horário livres, e o código do e-mail." },
+  { at: 28, text: "Sinal por Pix, se a clínica cobra, e a confirmação." },
+  { at: KNOWN_FROM, text: "Quem já é paciente tira dúvidas e vê a própria consulta." },
+  { at: 38, text: "Pergunta de saúde vai para a equipe, que assume." },
 ];
 
 function Thread({ msgs }: { msgs: Msg[] }) {
