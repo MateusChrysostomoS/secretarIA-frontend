@@ -369,6 +369,17 @@ html.lenis, html.lenis body { height: auto; }
 }
 .gd-rb__face { background: var(--pt-surface); border-color: var(--gd-line-strong); color: var(--gd-soft); }
 .gd-rb__on { position: absolute; inset: 0; background: var(--br-bg); border-color: var(--br-ink); color: var(--br-text); }
+/* a list row's second line (a doctor's specialty) sits under the label */
+.gd-rb__face, .gd-rb__on { flex-wrap: wrap; row-gap: 0; }
+.gd-rb__note { flex-basis: 100%; font-size: 0.92em; font-weight: 500; opacity: 0.8; }
+/* the Pix "copia e cola" code (a copy box in the Portal) and a plain link line */
+.gd-pix {
+  display: block; margin-top: 4px; padding: 6px 8px; border-radius: 8px;
+  background: var(--pt-surface); border: 1px dashed var(--gd-line-strong);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; line-height: 1.35;
+  color: var(--gd-soft); word-break: break-all;
+}
+.gd-pb__link { color: var(--sa-text); text-decoration: underline; text-underline-offset: 2px; }
 .gd-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .gd-compose {
   display: flex; align-items: center; gap: 8px; padding: 8px 10px 10px;

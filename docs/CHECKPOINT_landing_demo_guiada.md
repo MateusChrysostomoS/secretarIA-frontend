@@ -105,3 +105,14 @@ Pedido do dono, a partir de prints numa tela de 1920×1080 com Windows em 125% (
   ao lado do formulário. Imagens em `public/brand/mascots/` (WebP recortado, gerado dos PNG do dono).
   Validação: tsc, vitest (295 / 623 / 20) e build verdes; Playwright claro/escuro, 1366×768 e 390×760;
   atos fixados continuam cabendo em 1366×657, 1280×600 e 390×664.
+
+- **Rodada 5 (2026-11-06) — Agendar completo:** o celular do paciente novo agora mostra o fluxo inteiro do
+  Agendar, com os textos e botões reais da secretarIA (lidos no código em 2026-11-06): convênio
+  ("Particular"), profissional (linha com a especialidade), serviço + cartão de preço, dia, horário,
+  resumo com "✅ Confirmar", código do e-mail, CPF (mascarado), Pix do sinal (no modo da clínica que cobra
+  antes de confirmar) e "Pagamento recebido! Seu agendamento está confirmado. ✅". O sinal é opção da
+  clínica (desligado por padrão); a etapa na coluna diz "Se a clínica cobra sinal…". Ato da secretarIA:
+  41 passos, 16% da tela por passo. Botões ganharam uma segunda linha opcional (descrição da linha da
+  lista). Logo do cabeçalho do site da secretarIA subida (espaço embaixo) para os olhos ficarem na altura
+  do topo das letras. Validação: tsc, vitest (295 / 623 / 20) e build verdes; atos cabem em 1366×657,
+  1280×600 e 390×664.

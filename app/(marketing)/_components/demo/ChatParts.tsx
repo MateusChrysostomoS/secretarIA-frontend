@@ -23,6 +23,9 @@ export type ReplyButton = {
   label: string;
   /** The emoji the real flows put before the label (✅, ❌, ⬅️, 🗓️). */
   icon?: string;
+  /** A list row's second line in the real flow (a doctor's specialty), shown
+   *  after the label. */
+  note?: string;
   chosen?: boolean;
 };
 
@@ -126,12 +129,14 @@ export function Bubble({ voice, beat, time, echo, author, buttons, chooseBeat, c
                 <span className="gd-rb__face">
                   {b.icon && <span aria-hidden="true">{b.icon}</span>}
                   {b.label}
+                  {b.note && <small className="gd-rb__note">{b.note}</small>}
                 </span>
                 {b.chosen && (
                   <span className="gd-rb__on" data-beat={chooseBeat} data-fx={chooseBeat === undefined ? undefined : "pop"}>
                     <Check size={13} />
                     {b.icon && <span aria-hidden="true">{b.icon}</span>}
                     {b.label}
+                    {b.note && <small className="gd-rb__note">{b.note}</small>}
                     <span className="gd-sr"> (escolhida)</span>
                   </span>
                 )}

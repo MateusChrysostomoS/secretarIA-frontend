@@ -173,7 +173,9 @@
   line-height: 1; color: var(--ink);
 }
 .lp-brand__rule { width: 1px; height: 26px; flex-shrink: 0; background: var(--line-strong); }
-.lp-brand__face { display: block; width: auto; height: 32px; margin-block: -4px; }
+/* space below the face lifts it so her eyes line up, roughly, with the top of the
+   lower-case letters of "secretar" (owner, 2026-11-06) */
+.lp-brand__face { display: block; width: auto; height: 32px; margin: -12px 0 4px; }
 .lp-brand__word {
   font-family: var(--font-serif); font-size: 23px; font-weight: 500; letter-spacing: -0.01em;
   line-height: 1; color: var(--ink);
