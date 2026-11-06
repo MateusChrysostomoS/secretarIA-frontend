@@ -60,3 +60,27 @@ Pedido do dono, a partir de prints numa tela de 1920×1080 com Windows em 125% (
   no resumo, as linhas secundárias saem para "Quem avalia e decide é o médico" aparecer sempre.
   Sem JavaScript ou com "reduzir movimento", tudo continua visível e estático.- **Hero da secretarIA:** o chat do topo usa as mesmas bolhas, e o conjunto chat + cartão da agenda
   fica dentro da primeira tela (palco limitado à altura visível; mensagens antigas saem por cima).
+
+## Rodada 3 (2026-11-06) — roteiros reais e seta para baixo
+
+- **PreCheck em 4 etapas, como o produto funciona:** termos (LGPD) com "✅ Concordo" → perguntas padrão
+  do fluxo, iguais para todos (primeira consulta, idade, remédio de uso diário, motivo da consulta) →
+  perguntas aprofundadas que a IA escreve para a queixa daquele paciente → resumo para o médico (linhas
+  "Queixa principal", "Aprofundamento", "Perguntas padrão"). O passo antigo "conta o motivo com as
+  próprias palavras" saiu da lista (o motivo é uma das perguntas padrão). Fonte: `docs/flow_adulto_v1.json`
+  e o simulador do `/comecar` do PreCheck ("aprofundaria sua queixa com perguntas geradas por IA").
+  O "Como funciona" passou a dizer o mesmo.
+- **secretarIA em dois celulares:** à esquerda, paciente novo na ordem real do primeiro contato no Portal
+  (e-mail → nome → termos LGPD "✅ Concordo / ✏️ Mudar nome" → "O que você precisa?" "🗓️ Agendar" →
+  "Essa consulta é pra você? 😊" "✅ Sim, é pra mim" → horários → código → marcado, com aviso "Na Google
+  Agenda"). Convênio e profissional, que o fluxo real pergunta, foram pulados na demonstração. À direita,
+  paciente que já é da clínica: endereço, a própria consulta e a anterior (histórico), o que levar; a
+  pergunta de saúde não é respondida — vai para a equipe e a Maria assume. No celular, o segundo cobre o
+  primeiro quando a história dele começa. A semana da agenda saiu do ato (ficou o aviso).
+- **Seta "Role para ver"** no pé do topo dos três sites (`ScrollCue.tsx`); no computador fica no fim da
+  primeira tela, mesmo quando o topo é um pouco mais alto que a tela.
+- Sem JavaScript / reduzir movimento: conversas longas rolam dentro do celular; nada escondido.
+- Validação: tsc, vitest (295 / 623 / 20) e build verdes; Playwright em 1536×729, 1366×657, 1280×600,
+  1440×900 e 390×664 (botão e cena dentro da tela), reduzir movimento sem nada oculto.
+- Afirmações novas a pedido do dono: a secretarIA responde endereço, preparo e a consulta atual/anterior do
+  paciente. Dados (endereço, datas) são fictícios.

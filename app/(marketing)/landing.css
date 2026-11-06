@@ -749,6 +749,9 @@
 }
 @media (max-width: 1040px) {
   .lp-hero__grid { grid-template-columns: minmax(0, 1fr); }
+  /* room for the "role para ver" arrow at the foot of the hero */
+  .lp-hero { padding-bottom: 76px; }
+  .lp-hero .gd-scrolldown { top: auto; bottom: 14px; }
   .lp-hero__copy { max-width: 680px; }
   .lp-stage { max-width: 600px; }
   .lp-how { grid-template-columns: minmax(0, 1fr); }

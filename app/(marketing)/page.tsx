@@ -35,6 +35,7 @@ import { PLATFORM_LOGIN_HREF, PRIVACY_HREF, SITE_URL, TERMS_HREF } from "@/lib/p
 
 import { ContactForm } from "./_components/ContactForm";
 import { MotionReveal } from "./_components/demo/MotionReveal";
+import { ScrollCue } from "./_components/demo/ScrollCue";
 import { SecretariaDemo } from "./_components/demo/SecretariaDemo";
 import { SmoothScroll } from "./_components/demo/SmoothScroll";
 import { HeroFigure } from "./_components/Figures";
@@ -302,6 +303,7 @@ export default function LandingPage() {
               <HeroFigure />
             </div>
           </div>
+          <ScrollCue to="secretaria" />
         </section>
 
         {/* ── Ato 2 — a secretarIA na prática (fixado) ── */}
