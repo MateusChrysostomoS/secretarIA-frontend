@@ -11,7 +11,7 @@
 // prefers-reduced-motion (guided-demo.css).
 //
 // Copy rules still apply to what callers pass in: status labels are fixed
-// (PreCheck em uso · secretarIA em piloto · WhatsApp em breve) and nothing here
+// (PreCheck em uso · secretarIA disponível · WhatsApp em breve) and nothing here
 // may suggest the AI diagnoses.
 
 import type { ReactNode } from "react";
@@ -33,7 +33,7 @@ type ProductPromoProps = {
   tone: "pc" | "sa";
   /** Product name shown in the tag line ("secretarIA", "PreCheck"). */
   product: ReactNode;
-  /** Fixed status label: "em uso" for PreCheck, "em piloto" for secretarIA. */
+  /** Fixed status label: "em uso" for PreCheck, "disponível" for secretarIA. */
   state: string;
   /** Optional dashed "coming soon" chip (secretarIA: "WhatsApp em breve"). */
   soon?: string;

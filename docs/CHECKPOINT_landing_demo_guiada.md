@@ -116,3 +116,11 @@ Pedido do dono, a partir de prints numa tela de 1920×1080 com Windows em 125% (
   lista). Logo do cabeçalho do site da secretarIA subida (espaço embaixo) para os olhos ficarem na altura
   do topo das letras. Validação: tsc, vitest (295 / 623 / 20) e build verdes; atos cabem em 1366×657,
   1280×600 e 390×664.
+
+- **secretarIA pronta + PreCheck no Portal (2026-11-06, dono):** a secretarIA não está mais "em piloto": é
+  "disponível" no chat da clínica (Portal Brain), só o WhatsApp é "em breve". Trocado nos três sites (selos, topo,
+  status, perguntas frequentes, botões "Quero a secretarIA na clínica"). Na Brain, o cartão de preço da
+  secretarIA mostra "Disponível" e, enquanto a compra direta continua bloqueada no código (ela vende a
+  instalação com WhatsApp), o botão leva à equipe em vez da lista de espera. No site do PreCheck,
+  /comecar e /outros-produtos agora explicam o link/QR Code que abre a conversa no Portal Brain, "como
+  no WhatsApp", e a secretarIA aparece como disponível.

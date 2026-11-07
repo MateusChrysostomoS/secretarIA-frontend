@@ -10,7 +10,7 @@
 // Copy rules (owner, 2026-10-19, 2026-11-05 and 2026-11-06): the channel
 // TODAY is the clinic's chat link in the browser — WhatsApp only as "em
 // breve"; agenda is each doctor's Google Agenda; confirmation and reminder go
-// by e-mail; status label "em piloto" is fixed; no medical advice (health
+// by e-mail; status "disponível" (ready in the Portal, owner 2026-11-06); no medical advice (health
 // questions are handed to the team); made-up data, labelled; the code and the
 // CPF the patient types show masked, as the Portal shows them.
 
@@ -327,7 +327,7 @@ export function SecretariaDemo({ cta }: SecretariaDemoProps) {
           <p className="gd-tag">
             {/* her face (the secretarIA logo) in place of the tone dot */}
             <img className="gd-tag__face" src="/brand/mascots/secretaria-head.webp" width={25} height={28} alt="" />
-            secretarIA <span className="gd-tag__state">em piloto</span>
+            secretarIA <span className="gd-tag__state">disponível</span>
             <span className="gd-soon">WhatsApp em breve</span>
           </p>
           <h2 id="gd-sa-title" className="gd-h2">

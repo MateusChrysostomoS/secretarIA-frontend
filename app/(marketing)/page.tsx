@@ -2,7 +2,7 @@
 // demo (TASK-078, 2026-11-05): hero → the secretarIA act (pinned: a slot is
 // booked in the clinic chat, lands on the agenda, the e-mail reminder goes out,
 // a question is handed to the team) → closing (how it works, what the AI does
-// and does not do, pilot conditions, the PreCheck as the sister product,
+// and does not do, conditions, the PreCheck as the sister product,
 // security, FAQ, contact). Her mascot (owner, 2026-11-06) is the header logo
 // (her face), stands beside "Limites claros", works at the laptop next to the
 // contact form and signs the footer.
@@ -25,8 +25,9 @@
 // Agenda, reminders and confirmations go by e-mail, the AI hands over to a
 // person and never gives medical advice. No numbers, logos, testimonials,
 // certifications, "WhatsApp oficial", encryption-at-rest or data-residency
-// claims, and no naming of the model provider. Status label "em piloto" is
-// fixed. app/__tests__/landing-page.test.ts pins the riskiest of these.
+// claims, and no naming of the model provider. Status (owner, 2026-11-06): the
+// secretarIA is READY in the clinic's chat (Portal Brain) — "disponível", not a
+// pilot; only WhatsApp is "em breve". app/__tests__/landing-page.test.ts pins the riskiest of these.
 // Colour: the secretarIA amber palette (guided-demo.css).
 
 import type { Metadata } from "next";
@@ -239,8 +240,7 @@ const FAQ: { q: string; a: React.ReactNode }[] = [
     q: "Quanto custa?",
     a: (
       <p>
-        A secretarIA está em piloto com as primeiras clínicas, e as condições são combinadas
-        diretamente com a equipe. <a className="lp-link" href="#contato">Fale com a gente</a>.
+        As condições são combinadas diretamente com a equipe, conforme o tamanho da clínica. <a className="lp-link" href="#contato">Fale com a gente</a>.
       </p>
     ),
   },
@@ -286,7 +286,7 @@ export default function LandingPage() {
                   Veja na prática
                 </a>
               </div>
-              <p className="lp-hero__status lp-rise lp-rise--4">Em piloto com as primeiras clínicas.</p>
+              <p className="lp-hero__status lp-rise lp-rise--4">Disponível no chat da clínica. WhatsApp em breve.</p>
 
               <ul className="lp-facts lp-rise lp-rise--5" aria-label="Como a secretarIA funciona hoje">
                 <li>
@@ -316,7 +316,7 @@ export default function LandingPage() {
         <SecretariaDemo
           cta={
             <a href="#contato" className="btn btn--primary btn--lg btn--icon-r">
-              Quero participar do piloto
+              Quero a secretarIA na clínica
               <BrandIcon name="arrowR" />
             </a>
           }
@@ -427,14 +427,14 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ── Condições do piloto (no price list: conditions are agreed in the pilot) ── */}
+        {/* ── Condições (no price list: conditions are agreed with the team) ── */}
         <section id="condicoes" className="gd-buy" aria-labelledby="condicoes-title">
           <div className="gd-wrap">
             <MotionReveal className="gd-buy__box gd-tone--sa">
               <div>
                 <p className="lp-label">Condições</p>
                 <h2 id="condicoes-title" className="gd-h2">
-                  Em piloto com as <em>primeiras clínicas.</em>
+                  Pronta para atender <em>a sua clínica.</em>
                 </h2>
                 <p className="gd-buy__text">
                   As condições são combinadas diretamente com a equipe. Ela foi pensada para
@@ -442,7 +442,7 @@ export default function LandingPage() {
                 </p>
               </div>
               <a href="#contato" className="btn btn--primary btn--lg btn--icon-r">
-                Quero participar do piloto
+                Quero a secretarIA na clínica
                 <BrandIcon name="arrowR" />
               </a>
             </MotionReveal>
@@ -553,7 +553,7 @@ export default function LandingPage() {
                 Quer a secretarIA <em>na sua clínica?</em>
               </h2>
               <p className="lp-body">
-                Estamos em piloto com as primeiras clínicas. Conte um pouco sobre a sua e a equipe
+                Conte um pouco sobre a sua clínica e a equipe
                 responde pelo <span className="lp-nw">e-mail</span> informado.
               </p>
               <ul className="lp-contact__list">
